@@ -1,0 +1,129 @@
+generated: "2025-12-24T13:34:41.337Z"
+project: "alexandria"
+project_type: "governance-system"
+selected_track: "method"
+field_type: "greenfield"
+workflow_path: "method-greenfield"
+description: "Alexandria - Automated Technical Governance System for Claude Code"
+
+workflow_status:
+
+  # Phase 0: Discovery Workflows (Optional)
+  phase_0:
+    name: "Discovery"
+    status: "completed"
+    workflows:
+
+      - id: "product-brief"
+        name: "Product Brief"
+        status: "completed"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:create-product-brief"
+        type: "optional"
+        note: "Strategic product planning - selected by user"
+        output_file: "/home/negus/dev/alexandria/_bmad-output/project-planning-artifacts/product-brief-alexandria-2025-12-24.md"
+        completed_date: "2025-12-24"
+
+  # Phase 1: Planning (Required)
+  phase_1:
+    name: "Planning"
+    status: "pending"
+    workflows:
+
+      - id: "prd"
+        name: "Product Requirements Document"
+        status: "pending"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-prd"
+        type: "required"
+        note: "Complete PRD with FRs and NFRs"
+        output_file: ""
+
+      - id: "create-ux-design"
+        name: "UX Design"
+        status: "pending"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+        type: "required"
+        note: "Complete UX/UI specification for Alexandria interface"
+        output_file: ""
+
+  # Phase 2: Solutioning (Required)
+  phase_2:
+    name: "Solutioning"
+    status: "pending"
+    workflows:
+
+      - id: "create-architecture"
+        name: "System Architecture"
+        status: "pending"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:create-architecture"
+        type: "required"
+        note: "Complete system design for governance engine"
+        output_file: ""
+
+      - id: "create-epics-and-stories"
+        name: "Epics & Stories"
+        status: "pending"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        type: "required"
+        note: "Break down PRD into implementable epics and stories"
+        prerequisites:
+          - "prd"
+          - "create-architecture"
+        output_file: ""
+
+      - id: "test-design"
+        name: "Test Design"
+        status: "pending"
+        agent: "tea"
+        command: "/bmad:bmm:workflows:testarch-test-design"
+        type: "recommended"
+        note: "System-level testability review before implementation"
+        output_file: ""
+
+      - id: "implementation-readiness"
+        name: "Implementation Readiness Gate"
+        status: "pending"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:check-implementation-readiness"
+        type: "required"
+        note: "Quality gate - validates PRD + Architecture + Epics + Stories"
+        prerequisites:
+          - "prd"
+          - "create-architecture"
+          - "create-epics-and-stories"
+        output_file: ""
+
+  # Phase 3: Implementation (Tracked separately in sprint-status.yaml)
+  phase_3:
+    name: "Implementation"
+    status: "pending"
+    workflows:
+
+      - id: "sprint-planning"
+        name: "Sprint Planning"
+        status: "pending"
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+        type: "required"
+        note: "Creates sprint-status.yaml - subsequent work tracked there"
+        output_file: ""
+
+# Discovery Configuration
+discovery_selected:
+  - "product-brief"
+
+discovery_not_selected:
+  - "brainstorm"
+  - "research"
+
+# Next Steps
+next_workflow:
+  id: "prd"
+  name: "Product Requirements Document"
+  agent: "pm"
+  command: "/bmad:bmm:workflows:create-prd"
+  description: "Create detailed PRD with functional and non-functional requirements based on product brief"
