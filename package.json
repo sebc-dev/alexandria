@@ -1,0 +1,36 @@
+{
+  "name": "alexandria",
+  "version": "0.1.0",
+  "description": "Système de gouvernance technique automatisée pour Claude Code",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests --ext .ts",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "test:arch": "bun test tests/architecture"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "drizzle-orm": "0.36.4",
+    "hono": "4.11.1",
+    "openai": "^4.77.3",
+    "zod": "4.2.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.13",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsarch": "^5.4.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "bun": ">=1.3.5"
+  }
+}
