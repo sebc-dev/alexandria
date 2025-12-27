@@ -17,6 +17,39 @@ totalEpics: 7
 
 Ce document fournit la décomposition complète des épopées et stories pour **alexandria**, en transformant les exigences du PRD et de l'Architecture en stories implémentables.
 
+## Ordre d'Exécution des Epics
+
+### Séquentiel (Complétion Obligatoire dans l'Ordre)
+
+1. **Epic 1: Local Development Environment Ready** → Doit être complété en premier
+2. **Epic 2: Automated Quality Gates Enforce Architecture Compliance** → Requiert Epic 1 (infrastructure)
+
+### Après Completion Epic 1+2
+
+3. **Epic 3: Knowledge Base Management** → Indépendant, peut démarrer immédiatement
+
+### Après Completion Epic 3
+
+- **Epic 4: Intelligent Context Fusion Prevents Code Drift** → Requiert documents d'Epic 3
+- **Epic 6: Code Validation & Conformity** → Requiert conventions d'Epic 3 (indépendant d'Epic 4)
+
+### Après Completion Epic 4
+
+- **Epic 5: Claude Code Integration** → Requiert pipeline RAG d'Epic 4
+- **Epic 7: Observability & Debugging** → Observe pipeline (peut démarrer plus tôt pour logging infrastructure)
+
+### Graphe de Dépendances
+
+```
+Epic 1 (Foundation)
+  └─> Epic 2 (Quality Gates)
+       └─> Epic 3 (Knowledge Base)
+            ├─> Epic 4 (RAG Filter)
+            │    ├─> Epic 5 (Claude Code Integration)
+            │    └─> Epic 7 (Observability)
+            └─> Epic 6 (Code Validation - indépendant de 4-5)
+```
+
 ## Inventaire des Exigences
 
 ### Exigences Fonctionnelles
@@ -341,7 +374,7 @@ Ce document fournit la décomposition complète des épopées et stories pour **
 
 ## Liste des Épopées
 
-### Epic 1: Infrastructure & Setup Initial
+### Epic 1: Local Development Environment Ready for Alexandria
 
 **Résultat utilisateur:** Les développeurs peuvent installer et configurer Alexandria localement avec PostgreSQL + pgvector, validant que tous les composants sont fonctionnels
 
@@ -356,23 +389,183 @@ Ce document fournit la décomposition complète des épopées et stories pour **
 - Naming conventions strictes: camelCase DB, PascalCase files, suffix "Port"
 - Dependency injection manuelle via constructor
 
+#### Story 1.1: Project Structure & Configuration Setup
+
+**En tant que** développeur,
+**Je veux** avoir la structure de projet hexagonale et la configuration de base,
+**Afin de** pouvoir commencer le développement avec les bonnes fondations architecturales.
+
+**Critères d'acceptation:**
+
+1. Structure dossiers hexagonale créée: `src/domain/`, `src/ports/`, `src/adapters/`, `src/config/`, `src/shared/`
+2. Bun 1.3.5 installé et configuré (package.json, bun.lockb)
+3. TypeScript 5.9.7 configuré en strict mode (tsconfig.json)
+4. Configuration .env avec variables requises (ALEXANDRIA_DB_URL, OPENAI_API_KEY, LOG_LEVEL)
+5. Validation Zod de la configuration au démarrage (fail-fast si invalide)
+6. Naming conventions documentées et appliquées (camelCase DB, PascalCase files, suffix "Port")
+7. README.md avec instructions d'installation
+
+**Exigences couvertes:** Architecture #1, #7, #8, #10, NFR7, NFR21, NFR24
+
 ---
 
-### Epic 2: CI/CD & Quality Assurance
+#### Story 1.2: PostgreSQL & pgvector Infrastructure
 
-**Résultat utilisateur:** L'équipe de développement bénéficie d'un pipeline CI/CD automatisé dès le début, garantissant la qualité du code via tests unitaires, intégration, et validation d'architecture hexagonale à chaque commit
+**En tant que** développeur,
+**Je veux** avoir PostgreSQL et pgvector configurés et opérationnels,
+**Afin de** pouvoir stocker les conventions et générer des embeddings vectoriels.
+
+**Critères d'acceptation:**
+
+1. PostgreSQL 17.7 installé localement
+2. Extension pgvector 0.8.1 installée et activée
+3. Script `scripts/setup-db.ts` créé pour initialisation DB
+4. Script `scripts/seed-data.ts` créé pour données de test
+5. Connexion DB validée au démarrage (fail-fast si inaccessible)
+6. Credentials sécurisés via ALEXANDRIA_DB_URL (.env)
+7. Documentation pour setup PostgreSQL local
+
+**Exigences couvertes:** Architecture #1, #3, NFR7, NFR8, NFR15, NFR16
+
+---
+
+#### Story 1.3: Domain Layer Foundation
+
+**En tant que** développeur,
+**Je veux** avoir les entités domain et ports définis,
+**Afin de** respecter l'architecture hexagonale et l'isolation du domaine.
+
+**Critères d'acceptation:**
+
+1. Entité Convention créée (domain/entities/Convention.ts) avec readonly properties
+2. Entité Documentation créée (domain/entities/Documentation.ts) avec immutability
+3. Value Objects créés: ProjectId, TechnologyId, EmbeddingVector, ConformityScore
+4. Pattern immutability: static factories, méthodes retournent nouvelles instances
+5. Ports interfaces définis: ConventionRepositoryPort, DocumentationRepositoryPort, EmbeddingServicePort
+6. Domain layer ne dépend d'AUCUNE librairie externe (pas de Zod, Drizzle, Hono)
+7. Tests unitaires domain entities (pure logic, pas de mocks)
+
+**Exigences couvertes:** Architecture #2, #9, NFR21, NFR23
+
+---
+
+#### Story 1.4: Database Schema & Migrations
+
+**En tant que** développeur,
+**Je veux** avoir le schéma de base de données complet avec migrations,
+**Afin de** pouvoir persister les conventions, documentation et embeddings.
+
+**Critères d'acceptation:**
+
+1. Drizzle ORM 0.36.4 configuré avec support pgvector
+2. Schéma `conventions` avec colonne embedding (vector type)
+3. Schéma `documentation` avec métadonnées
+4. Schéma `technologies` et `projects`
+5. Tables pivot: `convention_technologies`, `document_projects`
+6. Index HNSW créé: m=16, ef_construction=64, cosine similarity
+7. Index PostgreSQL: `idx_conventions_project_id`, `idx_documentation_technology_id`
+8. Migration initiale exécutable via Drizzle
+9. Script de rollback disponible
+
+**Exigences couvertes:** Architecture #1, #3, #4, NFR18, NFR25
+
+---
+
+#### Story 1.5: Dependency Injection & Bootstrap
+
+**En tant que** développeur,
+**Je veux** avoir un système de DI manuel et un bootstrap centralisé,
+**Afin de** construire les dépendances dans le bon ordre et injecter les ports.
+
+**Critères d'acceptation:**
+
+1. Bootstrap centralisé dans `src/index.ts`
+2. Constructor injection pour tous les use-cases (injectent Ports)
+3. Ordre création respecté: Adapters secondaires → Use-cases → Adapters primaires
+4. Pas d'IoC container (DI manuel uniquement)
+5. Error handling fail-fast au démarrage
+6. Validation présence credentials au démarrage (NFR7)
+7. Logging démarrage avec composants initialisés
+
+**Exigences couvertes:** Architecture #11, NFR16, NFR17, NFR26
+
+---
+
+#### Story 1.6: Architecture Compliance Validation
+
+**En tant que** développeur,
+**Je veux** avoir des tests automatisés validant l'architecture hexagonale,
+**Afin de** garantir que le domain reste isolé et que les conventions sont respectées.
+
+**Critères d'acceptation:**
+
+1. ts-arch installé et configuré
+2. Tests architecture: Domain ne dépend pas de Adapters/Infrastructure
+3. Tests architecture: Domain ne dépend pas de Zod/Drizzle/Hono
+4. Tests architecture: Ports ne dépendent pas de Adapters
+5. Tests naming: Ports ont suffix "Port"
+6. Tests naming: Files en PascalCase, variables en camelCase
+7. Tests exécutables via `bun test:arch`
+8. CI pipeline configured pour exécuter tests architecture (build-breaking)
+
+**Exigences couvertes:** Architecture #2, #7, NFR21, NFR23
+
+---
+
+### Epic 2: Automated Quality Gates Enforce Architecture Compliance
+
+**Résultat utilisateur:** L'équipe de développement bénéficie d'un pipeline CI/CD automatisé dès le début avec stratégie 3-Tiers de quality enforcement, garantissant la qualité du code via tests unitaires, intégration, validation d'architecture hexagonale à chaque commit, et review AI contextuelle
 
 **FRs couvertes:** Architecture #12 (CI/CD Pipeline), NFR23 (Tests Coverage), Architecture #2 (Architecture Hexagonale validation)
 
 **Notes d'implémentation:**
-- GitHub Actions workflow complet
+
+**Stratégie 3-Tiers Quality Enforcement:**
+
+**Tier 1: ts-arch - Hard Enforcement (Build-Breaking)**
+- Tests architecture hexagonale via ts-arch dans CI pipeline
+- Règles: Domain ne dépend pas de Adapters/Infrastructure/Zod/Drizzle/Hono
+- Règles: Ports ne dépendent pas de Adapters/Infrastructure
+- Build échoue immédiatement si violations détectées
+- Garantie: 100% enforcement architecture, 0 violations en production
+
+**Tier 2: ESLint - Real-Time IDE Feedback**
+- Configuration ESLint avec import/no-restricted-paths pour architecture hexagonale
+- Pre-commit hooks (Husky ou lefthook) lançant ESLint avant commit
+- TypeScript strict rules: no-explicit-any, explicit-function-return-type, no-unused-vars
+- Feedback <1s dans IDE pendant écriture code
+- Détection immédiate violations pendant développement
+
+**Tier 3: CodeRabbit - AI-Powered Contextual Review**
+- Review automatique sur chaque Pull Request via CodeRabbit AI
+- Configuration .coderabbit.yaml avec profile "chill" pour reviews ciblées
+- path_instructions spécifiques par couche (domain/, ports/, adapters/, application/)
+- AST-grep custom rules dans .coderabbit/rules/: no-then-chains, no-bare-throws, no-domain-adapter-import, no-zod-in-domain, no-drizzle-in-domain, no-hono-in-domain
+- Knowledge base: CLAUDE.md avec documentation architecture hexagonale
+- Learnings activés pour amélioration continue
+- Gitleaks integration pour détection secrets
+- Focus: violations subtiles, sécurité, patterns métier (ce que ts-arch/ESLint manquent)
+
+**GitHub Actions Pipeline:**
 - Jobs: Lint & Type Check, Architecture Compliance (ts-arch), Tests Unitaires, Tests Intégration
 - PostgreSQL service container (pgvector/pgvector:pg17)
 - Tests unitaires domain core sans mocks
 - Tests intégration avec PostgreSQL + OpenAI réels
-- ts-arch rules vérifiant Domain isolation (pas de dépendances Adapters/Zod/Drizzle)
 - Secrets GitHub: OPENAI_API_KEY
-- Pre-commit hooks optionnels (lint, typecheck, arch tests)
+
+**Fichiers de configuration à créer:**
+- .coderabbit.yaml (configuration CodeRabbit complète)
+- .coderabbit/rules/ (6 règles AST-grep custom)
+- CLAUDE.md (documentation architecture pour CodeRabbit knowledge base)
+- .eslintrc.js (règles ESLint + import restrictions)
+- tests/architecture.spec.ts (tests ts-arch)
+- .github/workflows/ci.yml (GitHub Actions pipeline)
+- Pre-commit hooks config (Husky ou lefthook)
+
+**Objectifs mesurables:**
+- 100% enforcement architecture hexagonale (ts-arch build-breaking)
+- Réduction 70% temps review manuel
+- Feedback <1s via ESLint dans IDE
 
 ---
 
@@ -394,9 +587,9 @@ Ce document fournit la décomposition complète des épopées et stories pour **
 
 ---
 
-### Epic 4: Active Compliance Filter (RAG Pipeline)
+### Epic 4: Intelligent Context Fusion Prevents Code Drift
 
-**Résultat utilisateur:** Le système peut récupérer intelligemment les conventions pertinentes et la documentation liée, puis reformuler le contexte en guide mono-approche pour Claude Code
+**Résultat utilisateur:** Les développeurs reçoivent un contexte intelligent, sans contradictions, qui élimine les patterns obsolètes et garantit la conformité du code dès la première itération
 
 **FRs couvertes:** FR16-FR28 (Active Compliance Filter 3-Layer RAG), FR29-FR38 (Context Retrieval & Delivery), Architecture #3 (HNSW Config), Architecture #5 (Layer 3 Orchestration), NFR1-NFR6 (Performance), NFR30 (Pipeline Visibility)
 
