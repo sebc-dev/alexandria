@@ -1,18 +1,30 @@
-# Development Process & Code Quality
+# Code Quality Enforcement - Stratégie 3-Tiers
 
-## Objectif & Philosophie
+## Table des matières
 
-Alexandria étant un outil de gouvernance technique pour garantir la conformité du code généré par IA, il est **critique** que le code d'Alexandria lui-même respecte les plus hauts standards de qualité. L'architecture hexagonale est une contrainte **non-négociable** qui permet l'expérimentation technique et l'évolution post-MVP sans dette technique.
+- [Vue d'ensemble](#vue-densemble)
+- [Tier 1: ts-arch - Hard Enforcement](#tier-1-ts-arch---hard-enforcement-build-breaking)
+- [Tier 2: ESLint - Real-Time IDE Feedback](#tier-2-eslint---real-time-ide-feedback)
+- [Tier 3: CodeRabbit - AI-Powered Contextual Review](#tier-3-coderabbit---ai-powered-contextual-review)
+- [Configuration CodeRabbit](#configuration-coderabbit-pour-alexandria)
+- [AST-grep Custom Rules](#ast-grep-custom-rules)
+- [Documentation Architecture (CLAUDE.md)](#documentation-architecture-claudemd)
+- [Workflow Développement Type](#workflow-développement-type)
+- [Bénéfices Mesurables](#bénéfices-mesurables)
+- [Coûts & Considérations](#coûts--considérations)
+- [Prochaines Étapes](#prochaines-étapes)
 
-**Objectif:** Garantir que chaque commit respecte l'architecture hexagonale, les conventions TypeScript strictes, et maintient une qualité de code élevée, tout en **facilitant les reviews** avec un objectif de ≤2 commentaires par commit.
-
-**Philosophie:** Approche préventive multi-couches combinant enforcement déterministe (ts-arch, ESLint) et intelligence contextuelle (CodeRabbit AI).
-
-## Stratégie 3-Tiers pour Enforcement Qualité
+## Vue d'ensemble
 
 Alexandria utilise une approche **complémentaire à 3 tiers** pour garantir la qualité du code et le respect de l'architecture hexagonale:
 
-### Tier 1: ts-arch - Hard Enforcement (Build-Breaking)
+**Philosophie:** Approche préventive multi-couches combinant enforcement déterministe (ts-arch, ESLint) et intelligence contextuelle (CodeRabbit AI).
+
+**Objectif:** Garantir que chaque commit respecte l'architecture hexagonale, les conventions TypeScript strictes, et maintient une qualité de code élevée, tout en **facilitant les reviews** avec un objectif de ≤2 commentaires par commit.
+
+---
+
+## Tier 1: ts-arch - Hard Enforcement (Build-Breaking)
 
 **Rôle:** Validation déterministe des règles architecturales **non-négociables**.
 
@@ -84,7 +96,9 @@ describe("Hexagonal Architecture - Alexandria", () => {
 
 **Bénéfice:** Garantie absolue que l'architecture hexagonale est respectée - le build échoue si violations.
 
-### Tier 2: ESLint - Real-Time IDE Feedback
+---
+
+## Tier 2: ESLint - Real-Time IDE Feedback
 
 **Rôle:** Feedback immédiat dans l'IDE pendant l'écriture du code.
 
@@ -162,7 +176,9 @@ module.exports = {
 
 **Bénéfice:** Détection immédiate des violations pendant l'écriture - économise des cycles de review.
 
-### Tier 3: CodeRabbit - AI-Powered Contextual Review
+---
+
+## Tier 3: CodeRabbit - AI-Powered Contextual Review
 
 **Rôle:** Review intelligente contextuelle focalisée sur les violations subtiles, sécurité, et patterns métier.
 
