@@ -21,81 +21,86 @@ workflow_status:
         command: "/bmad:bmm:workflows:create-product-brief"
         type: "optional"
         note: "Strategic product planning - selected by user"
-        output_file: "/home/negus/dev/alexandria/_bmad-output/project-planning-artifacts/product-brief-alexandria-2025-12-24.md"
+        output_file: "_bmad-output/project-planning-artifacts/brief"
         completed_date: "2025-12-24"
 
   # Phase 1: Planning (Required)
   phase_1:
     name: "Planning"
-    status: "pending"
+    status: "completed"
     workflows:
 
       - id: "prd"
         name: "Product Requirements Document"
-        status: "pending"
+        status: "completed"
         agent: "pm"
         command: "/bmad:bmm:workflows:create-prd"
         type: "required"
         note: "Complete PRD with FRs and NFRs"
-        output_file: ""
+        output_file: "_bmad-output/project-planning-artifacts/prd"
+        completed_date: "2025-12-26"
 
       - id: "create-ux-design"
         name: "UX Design"
-        status: "pending"
+        status: "skipped"
         agent: "ux-designer"
         command: "/bmad:bmm:workflows:create-ux-design"
         type: "required"
-        note: "Complete UX/UI specification for Alexandria interface"
+        note: "No GUI for now - CLI/API only"
         output_file: ""
 
   # Phase 2: Solutioning (Required)
   phase_2:
     name: "Solutioning"
-    status: "pending"
+    status: "completed"
     workflows:
 
       - id: "create-architecture"
         name: "System Architecture"
-        status: "pending"
+        status: "completed"
         agent: "architect"
         command: "/bmad:bmm:workflows:create-architecture"
         type: "required"
         note: "Complete system design for governance engine"
-        output_file: ""
+        output_file: "_bmad-output/project-planning-artifacts/architecture"
+        completed_date: "2025-12-26"
 
       - id: "create-epics-and-stories"
         name: "Epics & Stories"
-        status: "pending"
+        status: "completed"
         agent: "pm"
         command: "/bmad:bmm:workflows:create-epics-and-stories"
         type: "required"
-        note: "Break down PRD into implementable epics and stories"
+        note: "7 épopées créées (Epic 2 mis à jour avec CodeRabbit) - Stories détaillées à générer ultérieurement"
         prerequisites:
           - "prd"
           - "create-architecture"
-        output_file: ""
+        output_file: "_bmad-output/project-planning-artifacts/epics.md"
+        completed_date: "2025-12-26"
 
       - id: "test-design"
         name: "Test Design"
-        status: "pending"
+        status: "completed"
         agent: "tea"
         command: "/bmad:bmm:workflows:testarch-test-design"
         type: "recommended"
-        note: "System-level testability review before implementation"
-        output_file: ""
+        note: "System-level testability review completed - Gate decision: PASS - Blocker TC-006 (k6 infrastructure) résolu"
+        output_file: "_bmad-output/test-design-system"
+        completed_date: "2025-12-27"
 
       - id: "implementation-readiness"
         name: "Implementation Readiness Gate"
-        status: "pending"
+        status: "skipped"
         agent: "architect"
         command: "/bmad:bmm:workflows:check-implementation-readiness"
         type: "required"
-        note: "Quality gate - validates PRD + Architecture + Epics + Stories"
+        note: "Skipped - Approche Just-In-Time : Stories détaillées seront générées pendant Sprint Planning via workflow create-story"
         prerequisites:
           - "prd"
           - "create-architecture"
           - "create-epics-and-stories"
         output_file: ""
+        completed_date: "2025-12-27"
 
   # Phase 3: Implementation (Tracked separately in sprint-status.yaml)
   phase_3:
@@ -122,8 +127,8 @@ discovery_not_selected:
 
 # Next Steps
 next_workflow:
-  id: "prd"
-  name: "Product Requirements Document"
-  agent: "pm"
-  command: "/bmad:bmm:workflows:create-prd"
-  description: "Create detailed PRD with functional and non-functional requirements based on product brief"
+  id: "sprint-planning"
+  name: "Sprint Planning"
+  agent: "sm"
+  command: "/bmad:bmm:workflows:sprint-planning"
+  description: "Creates sprint-status.yaml - subsequent work tracked there. Stories will be generated Just-In-Time via create-story workflow"
