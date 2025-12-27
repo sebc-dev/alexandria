@@ -250,11 +250,11 @@ Epic 1 (Foundation)
 
 **2. Architecture Hexagonale (Contrainte NON-NÉGOCIABLE):**
 - Séparation stricte Domain/Ports/Adapters
-- Domain layer ne dépend JAMAIS d'Adapters (vérifiable par ts-arch)
+- Domain layer ne dépend JAMAIS d'Adapters (vérifiable par Dependency Cruiser)
 - Domain layer ne peut importer Zod, Drizzle, Hono
 - Tous les use-cases injectent Ports (pas implémentations concrètes)
 - Structure dossiers: `src/domain/`, `src/ports/`, `src/adapters/`
-- Validation via ts-arch rules (tests automatisés)
+- Validation via Dependency Cruiser rules CI/CD + ESLint Plugin Boundaries en local (tests automatisés)
 
 **3. Configuration Vector Search (HNSW):**
 - Index Type: HNSW (Hierarchical Navigable Small World)
@@ -322,7 +322,7 @@ Epic 1 (Foundation)
 - Tous use-cases injectent Ports via constructor
 
 **12. CI/CD Pipeline (GitHub Actions):**
-- Jobs: Lint & Type Check, Architecture Compliance (ts-arch), Tests Unitaires, Tests Intégration
+- Jobs: Lint & Type Check, Architecture Compliance (Dependency Cruiser), Tests Unitaires, Tests Intégration
 - PostgreSQL service container: `pgvector/pgvector:pg17` image
 - Secrets GitHub: `OPENAI_API_KEY` pour tests intégration
 
@@ -384,7 +384,7 @@ Epic 1 (Foundation)
 - Setup Bun 1.3.5, PostgreSQL 17.7 + pgvector 0.8.1, structure dossiers hexagonale
 - Configuration .env avec validation Zod fail-fast
 - Scripts d'initialisation et migrations Drizzle
-- Validation de l'architecture via ts-arch tests
+- Validation de l'architecture via Dependency Cruiser (CI/CD) et ESLint Plugin Boundaries (local)
 - Immutability patterns: readonly properties, static factories
 - Naming conventions strictes: camelCase DB, PascalCase files, suffix "Port"
 - Dependency injection manuelle via constructor
@@ -491,22 +491,35 @@ Epic 1 (Foundation)
 
 ---
 
-#### Story 1.6: Architecture Compliance Validation
+#### Story 1.6: Architecture Compliance Tooling Setup
 
 **En tant que** développeur,
-**Je veux** avoir des tests automatisés validant l'architecture hexagonale,
-**Afin de** garantir que le domain reste isolé et que les conventions sont respectées.
+**Je veux** avoir les outils de validation d'architecture configurés (Dependency Cruiser + ESLint Plugin Boundaries),
+**Afin de** garantir que le domain reste isolé et que les conventions sont respectées en local et en CI/CD.
 
 **Critères d'acceptation:**
 
-1. ts-arch installé et configuré
-2. Tests architecture: Domain ne dépend pas de Adapters/Infrastructure
-3. Tests architecture: Domain ne dépend pas de Zod/Drizzle/Hono
-4. Tests architecture: Ports ne dépendent pas de Adapters
-5. Tests naming: Ports ont suffix "Port"
-6. Tests naming: Files en PascalCase, variables en camelCase
-7. Tests exécutables via `bun test:arch`
-8. CI pipeline configured pour exécuter tests architecture (build-breaking)
+1. **Dependency Cruiser** installé et configuré (`bun add -d dependency-cruiser`)
+2. Configuration `.dependency-cruiser.js` créée avec règles:
+   - no-circular: Détection dépendances circulaires (error)
+   - no-orphans: Détection modules orphelins (warn)
+   - Architecture hexagonale: Domain (`src/domain`) ne doit pas accéder Adapters (`src/adapters`)
+   - Domain ne dépend pas de Zod/Drizzle/Hono
+   - Options Bun/TypeScript: `tsPreCompilationDeps: true`, `tsConfig`, `cache: true`
+3. Scripts package.json configurés: `arch:check`, `arch:graph`, `arch:html`
+4. **ESLint Plugin Boundaries** installé (`bun add -d eslint-plugin-boundaries @typescript-eslint/parser @typescript-eslint/eslint-plugin`)
+5. Configuration `eslint.config.js` (flat config) avec boundaries plugin **Alexandria**:
+   - Définition éléments: domain, ports, adapters-primary, adapters-secondary, config, shared
+   - Règle `boundaries/element-types`:
+     - Domain → interdit: * (aucune dépendance)
+     - Ports → autorisé: domain uniquement
+     - Adapters → autorisé: ports, domain, shared
+   - Règle `boundaries/no-private`: Pas d'import fichiers privés
+   - Règle `boundaries/external`: Domain ne peut pas importer Zod/Drizzle/Hono
+6. Configuration VS Code `.vscode/settings.json` pour ESLint auto-fix
+7. Tests exécutables via `bun run arch:check` (Dependency Cruiser)
+8. Validation locale via `bun run lint` (ESLint Boundaries)
+9. Documentation des règles dans README.md
 
 **Exigences couvertes:** Architecture #2, #7, NFR21, NFR23
 
@@ -522,50 +535,129 @@ Epic 1 (Foundation)
 
 **Stratégie 3-Tiers Quality Enforcement:**
 
-**Tier 1: ts-arch - Hard Enforcement (Build-Breaking)**
-- Tests architecture hexagonale via ts-arch dans CI pipeline
-- Règles: Domain ne dépend pas de Adapters/Infrastructure/Zod/Drizzle/Hono
-- Règles: Ports ne dépendent pas de Adapters/Infrastructure
+**Tier 1: Dependency Cruiser - Hard Enforcement (Build-Breaking CI/CD)**
+- Validation architecture hexagonale via Dependency Cruiser dans CI pipeline
+- Installation: `bun add -d dependency-cruiser`
+- Configuration `.dependency-cruiser.js` avec règles strictes **Alexandria**:
+  - **no-circular**: Détection dépendances circulaires (severity: error)
+  - **no-orphans**: Détection modules orphelins non utilisés (severity: warn)
+  - **not-to-test**: Code prod ne doit pas importer tests (severity: error)
+  - **no-domain-to-adapters**: Domain (`src/domain`) ne doit JAMAIS accéder Adapters (`src/adapters/**`) (severity: error)
+  - **no-domain-to-ports**: Domain ne doit pas dépendre de Ports (inversion de dépendance) (severity: error)
+  - **no-domain-external-libs**: Domain ne doit pas importer Zod/Drizzle/Hono (severity: error)
+  - **no-ports-to-adapters**: Ports (`src/ports`) ne doivent pas accéder Adapters (severity: error)
+  - **adapters-only-to-ports**: Adapters peuvent uniquement importer via Ports, pas directement Domain (severity: warn)
+- Options critiques Bun/TypeScript:
+  - `tsPreCompilationDeps: true` pour analyse TypeScript
+  - `tsConfig: './tsconfig.json'` pour résolution types
+  - `moduleSystems: ['es6', 'cjs', 'ts']`
+  - `cache: true` pour performance
+- Scripts package.json:
+  - `arch:check`: Validation architecture (build-breaking)
+  - `arch:graph`: Génération graphe SVG des dépendances
+  - `arch:html`: Rapport HTML pour debugging
+- GitHub Actions job `dependency-check`:
+  - Exécution `bun run arch:check` sur PR et push main/develop
+  - Génération graphe dependency-graph.svg en cas d'échec (artifact)
+  - Setup Bun + Graphviz pour visualisation
+- Baseline support: Fichier `.dependency-cruiser-baseline.json` pour projets existants avec violations legacy
 - Build échoue immédiatement si violations détectées
 - Garantie: 100% enforcement architecture, 0 violations en production
 
-**Tier 2: ESLint - Real-Time IDE Feedback**
-- Configuration ESLint avec import/no-restricted-paths pour architecture hexagonale
-- Pre-commit hooks (Husky ou lefthook) lançant ESLint avant commit
+**Tier 2: ESLint + ESLint Plugin Boundaries - Real-Time IDE Feedback**
+- Installation: `bun add -d eslint eslint-plugin-boundaries @typescript-eslint/parser @typescript-eslint/eslint-plugin`
+- Configuration ESLint flat config (`eslint.config.js`):
+  - Plugin boundaries avec définition éléments architecturaux **Alexandria (Architecture Hexagonale)**:
+    - `domain`: `src/domain/**/*` (couche métier pure, aucune dépendance externe)
+    - `ports`: `src/ports/**/*` (interfaces, peuvent référencer domain uniquement)
+    - `adapters-primary`: `src/adapters/primary/**/*` (MCP server, CLI - peuvent référencer ports + domain)
+    - `adapters-secondary`: `src/adapters/secondary/**/*` (DB, OpenAI - peuvent référencer ports + domain)
+    - `config`: `src/config/**/*` (peut référencer tout)
+    - `shared`: `src/shared/**/*` (utilitaires partagés, aucune dépendance métier)
+  - Règle `boundaries/element-types` avec default: disallow
+    - **Domain** → interdit: * (aucune dépendance, couche pure)
+    - **Ports** → autorisé: domain uniquement
+    - **Adapters Primary** → autorisé: ports, domain, shared
+    - **Adapters Secondary** → autorisé: ports, domain, shared
+    - **Config** → autorisé: * (bootstrap, peut tout référencer)
+    - **Shared** → interdit: domain, ports, adapters (utilitaires purs)
+  - Règle `boundaries/no-private`: Empêche import fichiers privés d'un module
+  - Règle `boundaries/external`: Domain ne peut pas importer Zod/Drizzle/Hono/axios
 - TypeScript strict rules: no-explicit-any, explicit-function-return-type, no-unused-vars
-- Feedback <1s dans IDE pendant écriture code
+- Configuration VS Code (`.vscode/settings.json`):
+  - `eslint.validate` pour TypeScript
+  - `editor.codeActionsOnSave` avec fixAll.eslint
+  - Feedback <1s dans IDE pendant écriture code
+- Scripts package.json:
+  - `lint`: Validation ESLint (`.ts`, `.tsx`)
+  - `lint:fix`: Auto-fix violations
+  - `lint:watch`: Mode watch pour feedback continu
+- Debug mode: `ESLINT_PLUGIN_BOUNDARIES_DEBUG=1` pour voir classification fichiers
+- Pre-commit hooks (Husky) lançant `bun run validate` (lint + arch:check)
 - Détection immédiate violations pendant développement
 
 **Tier 3: CodeRabbit - AI-Powered Contextual Review**
 - Review automatique sur chaque Pull Request via CodeRabbit AI
 - Configuration .coderabbit.yaml avec profile "chill" pour reviews ciblées
-- path_instructions spécifiques par couche (domain/, ports/, adapters/, application/)
+- path_instructions spécifiques par couche **Alexandria** (domain/, ports/, adapters/primary/, adapters/secondary/, config/, shared/)
 - AST-grep custom rules dans .coderabbit/rules/: no-then-chains, no-bare-throws, no-domain-adapter-import, no-zod-in-domain, no-drizzle-in-domain, no-hono-in-domain
-- Knowledge base: CLAUDE.md avec documentation architecture hexagonale
+- Knowledge base: CLAUDE.md avec documentation architecture hexagonale Alexandria
 - Learnings activés pour amélioration continue
 - Gitleaks integration pour détection secrets
-- Focus: violations subtiles, sécurité, patterns métier (ce que ts-arch/ESLint manquent)
+- Focus: violations subtiles, sécurité, patterns métier (ce que Dependency Cruiser/ESLint manquent)
 
 **GitHub Actions Pipeline:**
-- Jobs: Lint & Type Check, Architecture Compliance (ts-arch), Tests Unitaires, Tests Intégration
+- Jobs: Lint & Type Check, Architecture Compliance (Dependency Cruiser), Tests Unitaires, Tests Intégration
 - PostgreSQL service container (pgvector/pgvector:pg17)
+- Workflow `.github/workflows/architecture.yml`:
+  - Triggers: pull_request + push (main, develop)
+  - Setup Bun + Install dependencies
+  - Run `bun run arch:check` (build-breaking)
+  - Generate Mermaid diagram dans PR summary (via `depcruise --output-type mermaid`)
+  - Upload dependency-graph.svg artifact si échec
 - Tests unitaires domain core sans mocks
 - Tests intégration avec PostgreSQL + OpenAI réels
 - Secrets GitHub: OPENAI_API_KEY
 
 **Fichiers de configuration à créer:**
-- .coderabbit.yaml (configuration CodeRabbit complète)
-- .coderabbit/rules/ (6 règles AST-grep custom)
-- CLAUDE.md (documentation architecture pour CodeRabbit knowledge base)
-- .eslintrc.js (règles ESLint + import restrictions)
-- tests/architecture.spec.ts (tests ts-arch)
-- .github/workflows/ci.yml (GitHub Actions pipeline)
-- Pre-commit hooks config (Husky ou lefthook)
+- `.dependency-cruiser.js` (configuration Dependency Cruiser complète avec règles hexagonales)
+- `.dependency-cruiser-baseline.json` (baseline violations legacy, optionnel)
+- `eslint.config.js` (flat config ESLint + plugin boundaries)
+- `.vscode/settings.json` (VS Code ESLint auto-fix)
+- `.coderabbit.yaml` (configuration CodeRabbit complète)
+- `.coderabbit/rules/` (6 règles AST-grep custom)
+- `CLAUDE.md` (documentation architecture pour CodeRabbit knowledge base)
+- `.github/workflows/architecture.yml` (GitHub Actions pipeline Dependency Cruiser)
+- `.github/workflows/ci.yml` (GitHub Actions pipeline tests)
+- `.husky/pre-commit` (pre-commit hook validation)
+
+**Scripts package.json complets:**
+```json
+{
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:watch": "esw . --ext .ts,.tsx --watch --color",
+    "arch:check": "depcruise src --include-only '^src' --config .dependency-cruiser.js",
+    "arch:graph": "depcruise src --include-only '^src' --output-type dot | dot -T svg > dependency-graph.svg",
+    "arch:html": "depcruise src --include-only '^src' --output-type err-html --output-to dependency-report.html",
+    "validate": "bun run lint && bun run arch:check",
+    "precommit": "bun run validate"
+  }
+}
+```
+
+**Stratégie "Défense en Profondeur" (Recommandée):**
+- **Local (ESLint Boundaries)**: Feedback immédiat <1s dans IDE pendant écriture code
+- **Pre-commit (Husky)**: Validation lint + arch avant chaque commit
+- **CI/CD (Dependency Cruiser)**: Validation complète build-breaking sur PR/push
+- **PR Review (CodeRabbit)**: Review AI contextuelle patterns subtils
 
 **Objectifs mesurables:**
-- 100% enforcement architecture hexagonale (ts-arch build-breaking)
+- 100% enforcement architecture hexagonale (Dependency Cruiser build-breaking)
 - Réduction 70% temps review manuel
-- Feedback <1s via ESLint dans IDE
+- Feedback <1s via ESLint Plugin Boundaries dans IDE
+- Visualisation continue dépendances dans PR (Mermaid graphs)
 
 ---
 

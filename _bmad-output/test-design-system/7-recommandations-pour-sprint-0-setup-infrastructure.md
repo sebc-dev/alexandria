@@ -9,10 +9,10 @@
    - Circuit breaker après 5 échecs consécutifs
    - Test: Mock 429 responses, assert retry behavior
 
-2. **Add ts-arch Custom Rule pour Multi-Project Isolation** (TC-005)
+2. **Add Dependency Cruiser Custom Rule pour Multi-Project Isolation** (TC-005)
    - Règle: Tous repository methods doivent filtrer par `project_id`
    - Build-breaking si WHERE clause manquante
-   - Test: ts-arch test suite
+   - Test: Dependency Cruiser test suite
 
 ### Epic 2: CI/CD & Quality Assurance
 

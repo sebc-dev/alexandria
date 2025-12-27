@@ -35,10 +35,10 @@
 
 ## **Pattern Enforcement Mechanisms**
 
-**1. Architecture Tests (ts-arch):**
+**1. Architecture Tests (Dependency Cruiser):**
 ```typescript
 // tests/architecture/hexagonal.arch.test.ts
-import { filesOfProject } from 'ts-arch/dist/core/project-loader'
+import { filesOfProject } from 'Dependency Cruiser/dist/core/project-loader'
 import { expect, describe, it } from 'bun:test'
 
 describe('Hexagonal Architecture Rules', () => {
@@ -84,7 +84,7 @@ describe('Hexagonal Architecture Rules', () => {
 
 **2. ESLint Configuration:**
 ```json
-// .eslintrc.json
+// eslint.config.json
 {
   "extends": [
     "eslint:recommended",

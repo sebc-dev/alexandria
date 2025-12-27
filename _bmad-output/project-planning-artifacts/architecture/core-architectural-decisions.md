@@ -11,7 +11,7 @@
 
 **Important Decisions (Shape Architecture):**
 
-1. **CI/CD Pipeline** - GitHub Actions avec tests unitaires, intégration, linting, ts-arch
+1. **CI/CD Pipeline** - GitHub Actions avec tests unitaires, intégration, linting, Dependency Cruiser
 2. **Layer 3 Caching** - Pas de cache pour MVP (simplicité prioritaire)
 3. **API Security** - MCP protocol natif sans exposition HTTP publique
 
@@ -210,7 +210,7 @@ Sub-Agent alexandria-reformulation → Contexte reformulé → Claude Code gén�
 
   2. **Architecture Compliance**:
      ```yaml
-     - bun run arch:test   # ts-arch rules
+     - bun run arch:check   # Dependency Cruiser validation
      ```
      - Vérifie: Domain ne dépend pas d'Adapters
      - Vérifie: Ports sont pures interfaces
@@ -367,7 +367,8 @@ Sub-Agent alexandria-reformulation → Contexte reformulé → Claude Code gén�
 
 7. **Phase 7 - CI/CD & Tooling**:
    - GitHub Actions workflow
-   - ts-arch rules
+   - Dependency Cruiser rules
+   - ESLint Plugin Boundaries configuration
    - Scripts (log rotation, seed data)
 
 **Cross-Component Dependencies:**
@@ -408,45 +409,38 @@ Sub-Agent alexandria-reformulation → Contexte reformulé → Claude Code gén�
   - Quota Plan Max consommé par reformulations
   - LoggerPort doit tracker sub-agent invocation count (monitoring coût)
 
-**Architectural Constraints Enforced by ts-arch:**
+**Architectural Constraints Enforced by Dependency Cruiser:**
 
-```typescript
-// tests/architecture/hexagonal.arch.test.ts
-import { filesOfProject } from 'ts-arch/dist/core/project-loader'
-import { expect } from 'bun:test'
-
-describe('Hexagonal Architecture Rules', () => {
-  const project = filesOfProject()
-
-  it('Domain should not depend on Adapters', () => {
-    expect(
-      project
-        .inFolder('domain')
-        .shouldNot()
-        .dependOnFiles()
-        .inFolder('adapters')
-    ).toBeTruthy()
-  })
-
-  it('Domain should not depend on external libraries except pure TypeScript', () => {
-    expect(
-      project
-        .inFolder('domain')
-        .shouldNot()
-        .dependOnFiles()
-        .matchingPattern('.*node_modules.*')
-        .excluding('.*node_modules/typescript.*')
-    ).toBeTruthy()
-  })
-
-  it('Adapters should implement Ports', () => {
-    expect(
-      project
-        .inFolder('adapters')
-        .should()
-        .dependOnFiles()
-        .inFolder('ports')
-    ).toBeTruthy()
-  })
-})
+```javascript
+// .dependency-cruiser.js
+module.exports = {
+  forbidden: [
+    {
+      name: 'no-domain-to-adapters',
+      severity: 'error',
+      comment: 'Domain should not depend on Adapters',
+      from: { path: '^src/domain' },
+      to: { path: '^src/adapters' }
+    },
+    {
+      name: 'no-domain-external-libs',
+      severity: 'error',
+      comment: 'Domain should not import external libraries except TypeScript',
+      from: { path: '^src/domain' },
+      to: { path: 'node_modules', pathNot: 'node_modules/typescript' }
+    },
+    {
+      name: 'adapters-must-use-ports',
+      severity: 'warn',
+      comment: 'Adapters should implement Ports',
+      from: { path: '^src/adapters' },
+      to: { path: '^src/adapters', pathNot: '^src/ports' }
+    }
+  ],
+  options: {
+    tsPreCompilationDeps: true,
+    tsConfig: { fileName: './tsconfig.json' },
+    moduleSystems: ['es6', 'cjs', 'ts']
+  }
+};
 ```

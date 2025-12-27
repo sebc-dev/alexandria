@@ -95,7 +95,7 @@ alexandria/
 ├── .env                    # gitignored
 ├── .gitignore
 ├── .prettierrc
-├── .eslintrc.json
+├── eslint.config.json
 ├── docker-compose.yml      # PostgreSQL + pgvector (Story 1.2)
 │
 ├── src/
@@ -198,7 +198,7 @@ alexandria/
     "@types/bun": "latest",
     "prettier": "latest",
     "eslint": "latest",
-    "ts-arch": "latest"
+    "Dependency Cruiser": "latest"
   }
 }
 ```
@@ -351,7 +351,7 @@ coverage/
 
 ### Critical Architecture Rules (Enforced in Story 1.6)
 
-These rules will be automatically enforced by ts-arch tests:
+These rules will be automatically enforced by Dependency Cruiser tests:
 
 1. **Domain Isolation**: Domain layer MUST NOT import from adapters/, Zod, Drizzle, or Hono
 2. **Ports Purity**: Ports MUST be pure TypeScript interfaces with no implementations
@@ -389,7 +389,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
-- Task 1: Package.json version corrections (TypeScript 5.9.3, tsarch instead of ts-arch)
+- Task 1: Package.json version corrections (TypeScript 5.9.3, tsarch instead of Dependency Cruiser)
 - Task 5: Zod 4.2.1 API differences (.issues instead of .errors, ZodIssue type import)
 
 ### Completion Notes List
@@ -398,7 +398,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Created package.json with exact dependency versions
 - Installed Bun dependencies successfully (232 packages)
 - Configured all required dev scripts (dev, test, typecheck, lint, format)
-- Note: Used TypeScript 5.9.3 (5.9.7 unavailable), tsarch 5.4.1 (ts-arch package doesn't exist)
+- Note: Used TypeScript 5.9.3 (5.9.7 unavailable), tsarch 5.4.1 (Dependency Cruiser package doesn't exist)
 
 ✅ **Task 2: Configure TypeScript strict mode** (Commit: 150fb6d)
 - Created tsconfig.json with strict: true enabled

@@ -10,7 +10,7 @@
 | **ASR-004** | NFR15: PostgreSQL + pgvector detection | OPS | 1 | 3 | **3 MEDIUM** | Drive fail-fast startup validation + clear error messages |
 | **ASR-005** | NFR16: Fail-fast behavior | OPS | 2 | 2 | **4 MEDIUM** | Drive graceful degradation strategy (Layer 3 fallback) |
 | **ASR-006** | NFR18: Data integrity (transactions) | DATA | 1 | 3 | **3 MEDIUM** | Drive PostgreSQL transaction usage + rollback on failures |
-| **ASR-007** | Architecture #2: Hexagonal isolation | TECH | 1 | 3 | **3 MEDIUM** | Drive ts-arch validation + import restriction rules |
+| **ASR-007** | Architecture #2: Hexagonal isolation | TECH | 1 | 3 | **3 MEDIUM** | Drive Dependency Cruiser validation + import restriction rules |
 | **ASR-008** | Architecture #4: Multi-project isolation | SEC | 2 | 3 | **6 HIGH** | Drive application-level filtering + ProjectId value object |
 
 ## 2.2 Résumé ASRs

@@ -276,7 +276,7 @@ minorIssues: 1
 **From Development Process (Code Quality):**
 
 1. **3-Tier Quality Enforcement Strategy:**
-   - Tier 1: ts-arch for hard enforcement (build-breaking)
+   - Tier 1: Dependency Cruiser for hard enforcement (build-breaking)
    - Tier 2: ESLint for real-time IDE feedback
    - Tier 3: CodeRabbit for AI-powered contextual review
 
@@ -288,7 +288,7 @@ minorIssues: 1
 
 3. **Development Workflow Requirements:**
    - Pre-commit hooks running ESLint
-   - CI pipeline running ts-arch tests
+   - CI pipeline running Dependency Cruiser tests
    - CodeRabbit auto-review on PRs with ≤2 comments target
 
 **From Project Scoping:**
@@ -422,7 +422,7 @@ The epics document defines **7 epics** organized by user value:
 | Architecture Req | Description | Epic Coverage | Status |
 |------------------|-------------|---------------|---------|
 | **Arch #1** | Stack Technique Obligatoire (Bun, Hono, TypeScript, Drizzle, PostgreSQL) | Epic 1: Infrastructure & Setup | ✓ Covered |
-| **Arch #2** | Architecture Hexagonale (NON-NÉGOCIABLE) | Epic 1 + Epic 2 (ts-arch validation) | ✓ Covered |
+| **Arch #2** | Architecture Hexagonale (NON-NÉGOCIABLE) | Epic 1 + Epic 2 (Dependency Cruiser validation) | ✓ Covered |
 | **Arch #3** | HNSW Configuration (Vector Search) | Epic 1 + Epic 4 | ✓ Covered |
 | **Arch #4** | Multi-Project Isolation | Epic 3: Knowledge Base Management | ✓ Covered |
 | **Arch #5** | Layer 3 Orchestration (Sub-agent) | Epic 4 + Epic 5 | ✓ Covered |
@@ -461,7 +461,7 @@ All 106 functional requirements, 33 non-functional requirements, and 12 architec
 ✅ **Complete FR Traceability:** Every functional requirement explicitly mapped to an epic
 ✅ **NFR Integration:** Non-functional requirements embedded in appropriate epics (not treated as afterthought)
 ✅ **Architecture as First-Class:** Architecture constraints treated as requirements and validated through epics
-✅ **3-Tier Quality Strategy:** Epic 2 implements comprehensive quality enforcement (ts-arch, ESLint, CodeRabbit)
+✅ **3-Tier Quality Strategy:** Epic 2 implements comprehensive quality enforcement (Dependency Cruiser, ESLint, CodeRabbit)
 ✅ **Logical Epic Organization:** Epics organized by user value, not technical layers
 ✅ **Comprehensive Notes:** Each epic includes implementation notes with technical details
 
@@ -1242,7 +1242,7 @@ Rephrase to: "Developers receive intelligent, conflict-free context that elimina
 
 8. **Prepare CI/CD Pipeline** - **Part of Epic 2**
    - Note: Epic 2 already covers this comprehensively with 3-Tier Quality Strategy
-   - Ensure .coderabbit.yaml, ESLint config, ts-arch tests ready
+   - Ensure .coderabbit.yaml, ESLint config, Dependency Cruiser tests ready
    - **Deliverable:** Automated quality gates active from day 1
 
 ### Final Assessment Summary

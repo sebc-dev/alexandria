@@ -8,7 +8,7 @@
 | **TC-002** | **HNSW Performance Baseline Missing** | ⚠️ CONCERNS | Impossible valider NFR2 sans baseline | Sprint 0: k6 benchmarks avec 100/1K/10K embeddings |
 | **TC-003** | **Sub-Agent External Dependency** | ⚠️ CONCERNS | Layer 3 hors contrôle Alexandria → Flaky tests possibles | Mock sub-agent pour integration, test fallback explicitement |
 | **TC-004** | **OpenAI API Rate Limiting** | ⚠️ CONCERNS | Embedding generation peut échouer (429) sans retry | Add exponential backoff + circuit breaker (Epic 1) |
-| **TC-005** | **Multi-Project Isolation Validation** | ⚠️ CONCERNS | Application-level filtering facile à oublier → Security risk | ts-arch custom rule + integration tests multi-projets obligatoires |
+| **TC-005** | **Multi-Project Isolation Validation** | ⚠️ CONCERNS | Application-level filtering facile à oublier → Security risk | Dependency Cruiser custom rule + integration tests multi-projets obligatoires |
 | **TC-006** | **No Performance Test Infrastructure** | ✅ **RESOLVED** | k6 pas installé, pas de load test scripts | ~~Epic 7: Add k6 scripts + CI job pour performance validation~~ **RESOLVED 2025-12-27** - See section 6.3 |
 
 ## 6.2 Gate Decision Impact

@@ -14,7 +14,7 @@
 - **Mockability (Architecture Hexagonale):**
   - Domain layer JAMAIS dépendant des adapters → Interfaces mockables
   - Dependency Injection manuelle via constructors
-  - ts-arch enforcement (build-breaking si violations)
+  - Dependency Cruiser enforcement (build-breaking si violations)
   - Tous use-cases injectent Ports (ConventionRepositoryPort, EmbeddingServicePort, etc.)
 
 - **External Dependencies Mockability:**
@@ -105,7 +105,7 @@
 | **TC-002** | **HNSW Performance Baseline Missing** | 2 | 2 | **4 MEDIUM** | Sprint 0: k6 benchmarks avec 100/1K/10K embeddings |
 | **TC-003** | **Sub-Agent External Dependency** | 2 | 2 | **4 MEDIUM** | Mock sub-agent integration, test fallback explicitement |
 | **TC-004** | **OpenAI API Rate Limiting (429)** | 2 | 2 | **4 MEDIUM** | Add exponential backoff + circuit breaker (Epic 1) |
-| **TC-005** | **Multi-Project Isolation Validation** | 1 | 3 | **3 LOW-MED** | ts-arch custom rule + integration tests multi-projets |
+| **TC-005** | **Multi-Project Isolation Validation** | 1 | 3 | **3 LOW-MED** | Dependency Cruiser custom rule + integration tests multi-projets |
 
 **Verdict Reliability:** ⚠️ **CONCERNS** - Testabilité acceptable MAIS 4 mitigations requises
 

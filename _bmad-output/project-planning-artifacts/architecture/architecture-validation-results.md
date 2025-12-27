@@ -6,7 +6,7 @@
 Toutes les décisions architecturales fonctionnent ensemble harmonieusement. La stack Bun 1.3.5 + Hono 4.11.1 + TypeScript 5.9.7 + Drizzle 0.36.4 + Zod 4.2.1 est entièrement compatible. PostgreSQL 17.7 avec pgvector 0.8.1 supporte parfaitement HNSW indexing avec cosine similarity. L'architecture hexagonale s'intègre parfaitement avec le MCP protocol stdio et le système de sub-agents Claude Code. Aucun conflit de versions ou d'incompatibilités détectés.
 
 **Pattern Consistency:**
-Les patterns d'implémentation supportent pleinement les décisions architecturales. L'immutability pattern (readonly properties) est cohérent avec l'architecture hexagonale et DDD. Les naming conventions sont cohérentes à travers tous les layers (PascalCase entities, suffix "Port", suffix "Error", camelCase Drizzle). Les path alias `@/` éliminent les imports relatifs fragiles. La séparation stricte Domain/Ports/Adapters est vérifiable par ts-arch rules. Zod validation boundaries respectent l'architecture hexagonale (uniquement dans adapters layer).
+Les patterns d'implémentation supportent pleinement les décisions architecturales. L'immutability pattern (readonly properties) est cohérent avec l'architecture hexagonale et DDD. Les naming conventions sont cohérentes à travers tous les layers (PascalCase entities, suffix "Port", suffix "Error", camelCase Drizzle). Les path alias `@/` éliminent les imports relatifs fragiles. La séparation stricte Domain/Ports/Adapters est vérifiable par Dependency Cruiser rules. Zod validation boundaries respectent l'architecture hexagonale (uniquement dans adapters layer).
 
 **Structure Alignment:**
 La structure du projet supporte parfaitement toutes les décisions architecturales. Les dossiers `src/domain/`, `src/ports/`, `src/adapters/` mappent directement l'architecture hexagonale. Les use-cases layer1/, layer2/ correspondent au RAG 3-layer. Les boundaries sont clairement définis (MCP server, sub-agent externe, database, embedding service). L'integration via dependency injection permet le respect des ports. La structure de tests miroir (`tests/unit/domain/`, `tests/integration/`) facilite la maintenabilité.
@@ -63,7 +63,7 @@ Les patterns d'implémentation sont complets avec exemples good/bad:
 - **Process Patterns:** Validation placement (Zod boundaries), Transactions (Drizzle), DI, Async/await, avec anti-patterns
 - **Immutability Patterns:** Value Objects, Entities (readonly + méthodes métier), avec anti-patterns
 - **Port Interface Design:** Interface pures, suffix "Port", NO implementations dans ports/, avec anti-patterns
-- **Enforcement Guidelines:** ts-arch rules, linting ESLint, format Prettier
+- **Enforcement Guidelines:** Dependency Cruiser rules, linting ESLint, format Prettier
 
 ## Gap Analysis Results
 
@@ -140,7 +140,7 @@ L'architecture est cohérente, complète, et prête pour implémentation par des
 **✅ Project Structure**
 
 - [x] Complete directory structure defined (150+ fichiers/répertoires, arborescence complète Alexandria)
-- [x] Component boundaries established (Domain/Ports/Adapters séparation stricte, ts-arch rules)
+- [x] Component boundaries established (Domain/Ports/Adapters séparation stricte, Dependency Cruiser rules)
 - [x] Integration points mapped (RAG pipeline diagramme, Upload flow, Use-Case→Repository, MCP Tool→Use-Case, Skill→MCP→Sub-Agent)
 - [x] Requirements to structure mapping complete (Chaque FR → fichiers spécifiques, 7 catégories fonctionnelles mappées)
 
@@ -156,15 +156,15 @@ Justification:
 - ✅ Patterns complets avec exemples good/bad
 - ✅ Structure complète et spécifique (pas de placeholders)
 - ✅ Gaps identifiés sont non-bloquants (3 mineurs, 3 optionnels)
-- ✅ Enforcement mechanisms définis (ts-arch, ESLint, Prettier)
+- ✅ Enforcement mechanisms définis (Dependency Cruiser, ESLint, Prettier)
 
 **Key Strengths:**
 
-1. **Architecture Hexagonale Stricte:** Séparation Domain/Ports/Adapters vérifiable par ts-arch, isolation complète du domain layer (NO external dependencies), testabilité maximale
+1. **Architecture Hexagonale Stricte:** Séparation Domain/Ports/Adapters vérifiable par Dependency Cruiser, isolation complète du domain layer (NO external dependencies), testabilité maximale
 
 2. **RAG 3-Layer Innovant:** Séparation claire Layer 1 (vector search) + Layer 2 (linking) + Layer 3 (reformulation externe via sub-agent), orchestration Skill élégante, fallback graceful si Layer 3 échoue
 
-3. **Patterns Complets avec Exemples:** Chaque pattern documenté avec exemples good ✅ et anti-patterns bad ❌, facilite implémentation cohérente entre agents AI, enforcement via outils (ts-arch, ESLint, Prettier)
+3. **Patterns Complets avec Exemples:** Chaque pattern documenté avec exemples good ✅ et anti-patterns bad ❌, facilite implémentation cohérente entre agents AI, enforcement via outils (Dependency Cruiser, ESLint, Prettier)
 
 4. **Type-Safety Maximale:** TypeScript 5.9.7 strict mode, Zod validation systématique (boundaries adapters), Drizzle ORM type-safe, Path alias `@/` pour imports absolus, pas de `any` types
 
@@ -194,7 +194,7 @@ Justification:
 
 1. **Follow all architectural decisions exactly as documented:** Chaque décision dans ce document est finale et doit être respectée à la lettre. Ne pas dévier des versions spécifiées (Bun 1.3.5, PostgreSQL 17.7, etc.). Ne pas introduire de nouvelles dépendances sans justification et validation.
 
-2. **Use implementation patterns consistently across all components:** Chaque pattern défini (naming, structure, format, communication, process, immutability) doit être appliqué uniformément. Référez-vous aux exemples good ✅ et évitez les anti-patterns bad ❌. Utilisez ts-arch rules pour vérifier l'isolation des layers.
+2. **Use implementation patterns consistently across all components:** Chaque pattern défini (naming, structure, format, communication, process, immutability) doit être appliqué uniformément. Référez-vous aux exemples good ✅ et évitez les anti-patterns bad ❌. Utilisez Dependency Cruiser rules pour vérifier l'isolation des layers.
 
 3. **Respect project structure and boundaries:** Ne pas créer de fichiers en dehors de l'arborescence définie. Respecter la séparation stricte Domain/Ports/Adapters (Domain ne dépend PAS d'Adapters). Utiliser les path alias `@/` pour tous les imports. Ne pas créer de barrel exports (`index.ts`).
 
@@ -224,7 +224,7 @@ bun add -d typescript@5.9.7 \
           @types/node \
           eslint \
           prettier \
-          ts-arch
+          Dependency Cruiser
 
 # Étape 4: Créer structure dossiers complète
 mkdir -p src/{config,shared/{errors,types,utils},domain/{entities,value-objects,errors,use-cases/{layer1,layer2,conventions,documentation,validation,projects,technologies}},ports/{primary,secondary},adapters/{primary/mcp-server/{middleware,tools,schemas},secondary/{database/errors,embedding/errors,logging/formatters}}}
@@ -305,7 +305,7 @@ Après Phase 1 Infrastructure, continuer avec:
 - **Phase 4:** Use Cases (Layer 1, Layer 2, CRUD)
 - **Phase 5:** Primary Adapters (Hono MCP Server, Tools, Schemas)
 - **Phase 6:** Sub-Agent & Skill (Orchestration finale)
-- **Phase 7:** CI/CD & Tooling (GitHub Actions, ts-arch, scripts)
+- **Phase 7:** CI/CD & Tooling (GitHub Actions, Dependency Cruiser, scripts)
 
 Consulter section "Decision Impact Analysis → Implementation Sequence" dans ce document pour détails complets de chaque phase.
 
