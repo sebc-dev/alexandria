@@ -56,19 +56,19 @@
 
 ## 4.4 Maintainability (NFR21-NFR25) - ✅ PASS
 
-**Outils:** CI automation (GitHub Actions) + ts-arch + ESLint + CodeRabbit
+**Outils:** CI automation (GitHub Actions) + Dependency Cruiser + ESLint + CodeRabbit
 
 | NFR | Test Approach | Tools | Target | Priority | Pass Criteria |
 |-----|---------------|-------|--------|----------|---------------|
 | **NFR21: Code Documentation** | TSDoc coverage validation | ESLint plugin-jsdoc | 100% public APIs | P1 | 0 ESLint errors pour missing JSDoc |
-| **NFR22: Code Organization** | Architecture compliance | ts-arch build-breaking tests | 0 violations | P0 | Build fails si Domain imports Adapters |
+| **NFR22: Code Organization** | Architecture compliance | Dependency Cruiser build-breaking tests | 0 violations | P0 | Build fails si Domain imports Adapters |
 | **NFR23: Tests Coverage** | Coverage threshold enforcement | Bun test --coverage | ≥80% | P0 | Coverage report ≥80% lines/branches |
 | **NFR24: Configuration Management** | `.env.example` sync check | CI script validation | All vars documented | P1 | Tous vars `.env` présents dans `.env.example` |
 | **NFR25: Dependency Management** | Vulnerability scan | npm audit (CI) | 0 critical/high | P0 | npm audit returns 0 critical/high vulnerabilities |
 
 **Epic 2 Integration (Tier 3 Strategy):**
 
-- **Tier 1:** ts-arch (build-breaking) → 100% architecture enforcement
+- **Tier 1:** Dependency Cruiser (build-breaking) → 100% architecture enforcement
 - **Tier 2:** ESLint + pre-commit hooks → Real-time IDE feedback
 - **Tier 3:** CodeRabbit AI → Contextual PR reviews avec AST-grep custom rules
 

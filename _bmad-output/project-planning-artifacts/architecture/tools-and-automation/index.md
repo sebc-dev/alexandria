@@ -17,13 +17,13 @@ Alexandria étant un outil de gouvernance technique pour garantir la conformité
 
 **Objectif:** Garantir que chaque commit respecte l'architecture hexagonale, les conventions TypeScript strictes, et maintient une qualité de code élevée, tout en **facilitant les reviews** avec un objectif de ≤2 commentaires par commit.
 
-**Approche:** Stratégie préventive multi-couches combinant enforcement déterministe (ts-arch, ESLint) et intelligence contextuelle (CodeRabbit AI).
+**Approche:** Stratégie préventive multi-couches combinant enforcement déterministe (Dependency Cruiser, ESLint) et intelligence contextuelle (CodeRabbit AI).
 
 ## Stratégie 3-Tiers pour Enforcement Qualité
 
 Alexandria utilise une approche **complémentaire à 3 tiers** pour garantir la qualité du code et le respect de l'architecture hexagonale:
 
-### Tier 1: ts-arch - Hard Enforcement (Build-Breaking)
+### Tier 1: Dependency Cruiser - Hard Enforcement (Build-Breaking)
 
 **Rôle:** Validation déterministe des règles architecturales **non-négociables**.
 
@@ -58,7 +58,7 @@ Pour la configuration complète de chaque tier (fichiers de configuration, règl
 ## Bénéfices mesurables
 
 **Qualité Code:**
-- **100% enforcement architecture** via ts-arch (build-breaking)
+- **100% enforcement architecture** via Dependency Cruiser (build-breaking)
 - **0 violations architecture** passent en production
 - **Feedback <1s** via ESLint dans IDE
 
@@ -74,7 +74,7 @@ Pour la configuration complète de chaque tier (fichiers de configuration, règl
 
 ## Ressources externes
 
-- [Documentation ts-arch](https://github.com/MaibornWolff/ts-arch)
+- [Documentation Dependency Cruiser](https://github.com/MaibornWolff/Dependency Cruiser)
 - [Documentation ESLint](https://eslint.org/)
 - [CodeRabbit GitHub Marketplace](https://github.com/marketplace/coderabbitai)
 - [AST-grep Documentation](https://ast-grep.github.io/)

@@ -12,7 +12,7 @@ alexandria/
 ├── .env
 ├── .gitignore
 ├── .prettierrc
-├── .eslintrc.json
+├── eslint.config.json
 ├── docker-compose.yml
 │
 ├── .github/
@@ -209,7 +209,7 @@ alexandria/
     │       └── OpenAIEmbedding.test.ts                # OpenAI API réel
     │
     └── architecture/
-        └── hexagonal.arch.test.ts                     # ts-arch rules
+        └── hexagonal.arch.test.ts                     # Dependency Cruiser validation
 ```
 
 ## Architectural Boundaries
@@ -242,7 +242,7 @@ alexandria/
 - **NO external dependencies**: Pas d'import Zod, Drizzle, Hono dans domain/
 - **Immutability**: Entities et Value Objects avec `readonly` properties
 - **Business Logic**: Use-cases orchestrent entities via ports
-- **Boundary enforcement**: ts-arch rules vérifient isolation
+- **Boundary enforcement**: Dependency Cruiser (CI/CD) + ESLint Plugin Boundaries (local) vérifient isolation
 
 **Ports Layer (Interfaces Pures):**
 - **Primary Ports**: Définissent comment MCP server interagit avec domain
@@ -566,7 +566,7 @@ Success response → MCP JSON-RPC 2.0 format
 - `.env.example`: Template (committed)
 - `.gitignore`: Exclude logs/, .env, node_modules
 - `.prettierrc`: Code formatting
-- `.eslintrc.json`: Linting rules
+- `eslint.config.json`: Linting rules
 - `docker-compose.yml`: PostgreSQL + pgvector service
 
 **Build Configuration:**
@@ -582,7 +582,7 @@ Success response → MCP JSON-RPC 2.0 format
    - Value Objects: Validation, immutability, identity-less
    - Use-Cases: Business workflows, orchestration
    - Errors: Domain-specific errors
-   - **NO external dependencies** (vérifié par ts-arch)
+   - **NO external dependencies** (vérifié par Dependency Cruiser + ESLint Plugin Boundaries)
 
 2. **Ports Layer** (`src/ports/`):
    - Primary: Interfaces pour drivers (MCP server)
@@ -592,7 +592,7 @@ Success response → MCP JSON-RPC 2.0 format
 3. **Adapters Layer** (`src/adapters/`):
    - Primary: MCP server (Hono), tools, middleware, schemas
    - Secondary: Database (Drizzle), Embedding (OpenAI), Logging (Bun)
-   - **Implémentent les ports** (vérifié par ts-arch)
+   - **Implémentent les ports** (vérifié par Dependency Cruiser + ESLint Plugin Boundaries)
 
 4. **Shared Layer** (`src/shared/`):
    - Errors: Base classes (DomainError, InfrastructureError)

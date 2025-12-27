@@ -38,7 +38,7 @@ jobs:
   architecture-compliance:
     runs-on: ubuntu-latest
     steps:
-      - run: bun test:architecture  # ts-arch build-breaking tests
+      - run: bun test:architecture  # Dependency Cruiser build-breaking tests
 ```
 
 ## 5.3 Required Secrets

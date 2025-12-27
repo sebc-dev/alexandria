@@ -110,7 +110,7 @@ note: "Skipped - Approche Just-In-Time : Stories détaillées seront générées
    bun test                  # Bun native test runner
    bun test:unit            # Tests unitaires
    bun test:integration     # Tests d'intégration
-   bun test:arch            # Tests d'architecture (ts-arch)
+   bun test:arch            # Tests d'architecture (Dependency Cruiser)
    ```
 
 **Fichiers Créés/Modifiés:**
@@ -369,7 +369,7 @@ b449259 Task 1.1.5: Implement Zod environment validation
    - Story 1.3: Domain entities (Convention, Documentation)
    - Story 1.4: Drizzle schemas & migrations
    - Story 1.5: Dependency Injection & Bootstrap
-   - Story 1.6: ts-arch tests
+   - Story 1.6: Dependency Cruiser tests
 
 3. **Validation Continue**
    - Vérifier story independence pendant génération Just-In-Time

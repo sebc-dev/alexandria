@@ -3,8 +3,8 @@
 ## Table des matières
 
 - [Vue d'ensemble](#vue-densemble)
-- [Tier 1: ts-arch - Hard Enforcement](#tier-1-ts-arch---hard-enforcement-build-breaking)
-- [Tier 2: ESLint - Real-Time IDE Feedback](#tier-2-eslint---real-time-ide-feedback)
+- [Tier 1: Dependency Cruiser - Hard Enforcement](#tier-1-dependency-cruiser---hard-enforcement-build-breaking-cicd)
+- [Tier 2: ESLint Plugin Boundaries - Real-Time IDE Feedback](#tier-2-eslint--eslint-plugin-boundaries---real-time-ide-feedback)
 - [Tier 3: CodeRabbit - AI-Powered Contextual Review](#tier-3-coderabbit---ai-powered-contextual-review)
 - [Configuration CodeRabbit](#configuration-coderabbit-pour-alexandria)
 - [AST-grep Custom Rules](#ast-grep-custom-rules)
@@ -18,163 +18,204 @@
 
 Alexandria utilise une approche **complémentaire à 3 tiers** pour garantir la qualité du code et le respect de l'architecture hexagonale:
 
-**Philosophie:** Approche préventive multi-couches combinant enforcement déterministe (ts-arch, ESLint) et intelligence contextuelle (CodeRabbit AI).
+**Philosophie:** Approche préventive multi-couches combinant enforcement déterministe (Dependency Cruiser en CI/CD, ESLint Plugin Boundaries en local) et intelligence contextuelle (CodeRabbit AI).
 
 **Objectif:** Garantir que chaque commit respecte l'architecture hexagonale, les conventions TypeScript strictes, et maintient une qualité de code élevée, tout en **facilitant les reviews** avec un objectif de ≤2 commentaires par commit.
 
 ---
 
-## Tier 1: ts-arch - Hard Enforcement (Build-Breaking)
+## Tier 1: Dependency Cruiser - Hard Enforcement (Build-Breaking CI/CD)
 
-**Rôle:** Validation déterministe des règles architecturales **non-négociables**.
+**Rôle:** Validation déterministe des règles architecturales **non-négociables** en CI/CD.
 
-**Exécution:** Tests unitaires dans CI pipeline - échec du build si violations.
+**Exécution:** CI pipeline (GitHub Actions) - échec du build si violations.
 
-**Exemples de règles critiques:**
-
-```typescript
-// architecture.spec.ts
-import "tsarch/dist/jest"
-import { filesOfProject } from "tsarch"
-
-describe("Hexagonal Architecture - Alexandria", () => {
-  it("domain must not depend on adapters", async () => {
-    const rule = filesOfProject()
-      .inFolder("domain")
-      .shouldNot()
-      .dependOnFiles()
-      .inFolder("adapters")
-    await expect(rule).toPassAsync()
-  })
-
-  it("domain must not depend on infrastructure", async () => {
-    const rule = filesOfProject()
-      .inFolder("domain")
-      .shouldNot()
-      .dependOnFiles()
-      .inFolder("infrastructure")
-    await expect(rule).toPassAsync()
-  })
-
-  it("domain must not import Zod", async () => {
-    const rule = filesOfProject()
-      .inFolder("domain")
-      .shouldNot()
-      .dependOnFiles()
-      .matchingPattern(".*zod.*")
-    await expect(rule).toPassAsync()
-  })
-
-  it("domain must not import Drizzle ORM", async () => {
-    const rule = filesOfProject()
-      .inFolder("domain")
-      .shouldNot()
-      .dependOnFiles()
-      .matchingPattern(".*drizzle-orm.*")
-    await expect(rule).toPassAsync()
-  })
-
-  it("domain must not import Hono", async () => {
-    const rule = filesOfProject()
-      .inFolder("domain")
-      .shouldNot()
-      .dependOnFiles()
-      .matchingPattern(".*hono.*")
-    await expect(rule).toPassAsync()
-  })
-
-  it("ports must not depend on adapters", async () => {
-    const rule = filesOfProject()
-      .inFolder("ports")
-      .shouldNot()
-      .dependOnFiles()
-      .inFolder("adapters")
-    await expect(rule).toPassAsync()
-  })
-})
-```
-
-**Bénéfice:** Garantie absolue que l'architecture hexagonale est respectée - le build échoue si violations.
-
----
-
-## Tier 2: ESLint - Real-Time IDE Feedback
-
-**Rôle:** Feedback immédiat dans l'IDE pendant l'écriture du code.
-
-**Exécution:** Pre-commit hook + IDE integration.
-
-**Configuration ESLint pour Alexandria:**
+**Configuration .dependency-cruiser.js - Règles critiques Alexandria:**
 
 ```javascript
-// .eslintrc.js
+/** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaVersion: 2022,
-    sourceType: 'module',
-    project: './tsconfig.json',
-  },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:import/recommended',
-    'plugin:import/typescript',
-  ],
-  plugins: ['@typescript-eslint', 'import'],
-  rules: {
-    // Import restrictions pour architecture hexagonale
-    'import/no-restricted-paths': ['error', {
-      zones: [
-        {
-          target: './src/domain',
-          from: './src/adapters',
-          message: 'Domain cannot import from adapters (hexagonal architecture violation)'
-        },
-        {
-          target: './src/domain',
-          from: './src/infrastructure',
-          message: 'Domain cannot import from infrastructure (hexagonal architecture violation)'
-        },
-        {
-          target: './src/ports',
-          from: './src/adapters',
-          message: 'Ports cannot import from adapters (hexagonal architecture violation)'
-        },
-        {
-          target: './src/ports',
-          from: './src/infrastructure',
-          message: 'Ports cannot import from infrastructure (hexagonal architecture violation)'
-        }
-      ]
-    }],
-
-    // TypeScript strict rules
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    '@typescript-eslint/no-floating-promises': 'error',
-    '@typescript-eslint/await-thenable': 'error',
-    '@typescript-eslint/no-misused-promises': 'error',
-
-    // Code quality
-    'no-console': 'warn',
-    'prefer-const': 'error',
-    'no-var': 'error',
-  },
-  settings: {
-    'import/resolver': {
-      typescript: {
-        alwaysTryTypes: true,
-        project: './tsconfig.json',
-      },
+  forbidden: [
+    {
+      name: 'no-circular',
+      severity: 'error',
+      comment: 'Dépendances circulaires détectées',
+      from: {},
+      to: { circular: true }
     },
-  },
+    {
+      name: 'no-domain-to-adapters',
+      severity: 'error',
+      comment: 'VIOLATION ARCHITECTURE: Domain ne doit JAMAIS accéder Adapters',
+      from: { path: '^src/domain' },
+      to: { path: '^src/adapters' }
+    },
+    {
+      name: 'no-domain-to-ports',
+      severity: 'error',
+      comment: 'Domain ne doit pas dépendre de Ports (inversion de dépendance)',
+      from: { path: '^src/domain' },
+      to: { path: '^src/ports' }
+    },
+    {
+      name: 'no-domain-external-libs',
+      severity: 'error',
+      comment: 'Domain ne peut pas importer Zod/Drizzle/Hono',
+      from: { path: '^src/domain' },
+      to: { path: '(zod|drizzle-orm|hono)' }
+    },
+    {
+      name: 'no-ports-to-adapters',
+      severity: 'error',
+      comment: 'Ports ne doivent pas accéder Adapters',
+      from: { path: '^src/ports' },
+      to: { path: '^src/adapters' }
+    },
+    {
+      name: 'not-to-test',
+      severity: 'error',
+      comment: 'Code prod ne doit pas importer tests',
+      from: { pathNot: '^(test|spec)' },
+      to: { path: '^(test|spec)' }
+    }
+  ],
+  options: {
+    doNotFollow: {
+      path: 'node_modules'
+    },
+    tsPreCompilationDeps: true,
+    tsConfig: {
+      fileName: './tsconfig.json'
+    },
+    moduleSystems: ['es6', 'cjs', 'ts'],
+    cache: true
+  }
+};
+```
+
+**Scripts package.json:**
+
+```json
+{
+  "scripts": {
+    "arch:check": "depcruise src --include-only '^src' --config .dependency-cruiser.js",
+    "arch:graph": "depcruise src --include-only '^src' --output-type dot | dot -T svg > dependency-graph.svg",
+    "arch:html": "depcruise src --include-only '^src' --output-type err-html --output-to dependency-report.html"
+  }
 }
 ```
 
-**Bénéfice:** Détection immédiate des violations pendant l'écriture - économise des cycles de review.
+**Bénéfice:** Garantie absolue que l'architecture hexagonale est respectée - le build échoue si violations. Génération de graphes de dépendances pour debugging.
+
+---
+
+## Tier 2: ESLint + ESLint Plugin Boundaries - Real-Time IDE Feedback
+
+**Rôle:** Feedback immédiat dans l'IDE pendant l'écriture du code avec validation architecture hexagonale.
+
+**Exécution:** Pre-commit hook + IDE integration + VS Code auto-fix.
+
+**Installation:**
+
+```bash
+bun add -d eslint eslint-plugin-boundaries @typescript-eslint/parser @typescript-eslint/eslint-plugin
+```
+
+**Configuration eslint.config.js (Flat Config) pour Alexandria:**
+
+```javascript
+import boundaries from 'eslint-plugin-boundaries';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import parser from '@typescript-eslint/parser';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser: parser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: './tsconfig.json'
+      }
+    },
+    plugins: {
+      boundaries,
+      '@typescript-eslint': typescriptEslint
+    },
+    settings: {
+      'boundaries/elements': [
+        { type: 'domain', pattern: 'src/domain/**/*', mode: 'full' },
+        { type: 'ports', pattern: 'src/ports/**/*', mode: 'full' },
+        { type: 'adapters-primary', pattern: 'src/adapters/primary/**/*', mode: 'full' },
+        { type: 'adapters-secondary', pattern: 'src/adapters/secondary/**/*', mode: 'full' },
+        { type: 'config', pattern: 'src/config/**/*', mode: 'full' },
+        { type: 'shared', pattern: 'src/shared/**/*', mode: 'full' }
+      ]
+    },
+    rules: {
+      // Règles Boundaries - Architecture Hexagonale Alexandria
+      'boundaries/element-types': ['error', {
+        default: 'disallow',
+        rules: [
+          { from: ['domain'], disallow: ['*'] },  // Domain pure, aucune dépendance
+          { from: ['ports'], allow: ['domain'] },
+          { from: ['adapters-primary'], allow: ['ports', 'domain', 'shared'] },
+          { from: ['adapters-secondary'], allow: ['ports', 'domain', 'shared'] },
+          { from: ['config'], allow: ['*'] },
+          { from: ['shared'], disallow: ['domain', 'ports', 'adapters-primary', 'adapters-secondary'] }
+        ]
+      }],
+      'boundaries/no-private': ['error', { allowUncles: false }],
+      'boundaries/external': ['error', {
+        default: 'allow',
+        rules: [
+          { from: ['domain'], disallow: ['zod', 'drizzle-orm', 'hono', 'axios'] }
+        ]
+      }],
+
+      // TypeScript strict rules
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+
+      // Code quality
+      'no-console': 'warn',
+      'prefer-const': 'error',
+      'no-var': 'error'
+    }
+  }
+];
+```
+
+**Configuration VS Code (.vscode/settings.json):**
+
+```json
+{
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}
+```
+
+**Scripts package.json:**
+
+```json
+{
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:watch": "esw . --ext .ts,.tsx --watch --color"
+  }
+}
+```
+
+**Bénéfice:** Détection immédiate des violations pendant l'écriture (<1s dans IDE) - économise des cycles de review. Debug mode disponible: `ESLINT_PLUGIN_BOUNDARIES_DEBUG=1 bun run lint`
 
 ---
 
@@ -479,14 +520,16 @@ CodeRabbit lit automatiquement `CLAUDE.md` pour contexte. Créer dans la racine 
 # Installer dépendances
 bun install
 
-# Installer ts-arch pour tests architecture
-bun add -D tsarch
+# Installer Dependency Cruiser pour validation architecture CI/CD
+bun add -D dependency-cruiser
 
-# Installer ESLint + plugins
-bun add -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-import eslint-import-resolver-typescript
+# Installer ESLint + ESLint Plugin Boundaries
+bun add -D eslint eslint-plugin-boundaries @typescript-eslint/parser @typescript-eslint/eslint-plugin
 
 # Configurer pre-commit hooks
-# (Husky ou lefthook pour lancer ESLint avant commit)
+bun add -D husky
+bunx husky init
+# Éditer .husky/pre-commit pour ajouter: bun run validate
 ```
 
 ### 2. Installation CodeRabbit
@@ -504,15 +547,16 @@ bun add -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin esl
 git checkout -b feature/mon-feature
 
 # Développer code
-# ESLint fournit feedback temps réel dans IDE
+# ESLint Plugin Boundaries fournit feedback temps réel dans IDE (<1s)
 
-# Lancer tests (incluant tests architecture ts-arch)
+# Lancer tests + validation architecture locale
 bun test
+bun run lint
 
 # Commit
 git add .
 git commit -m "feat: ajout feature X"
-# Pre-commit hook lance ESLint automatiquement
+# Pre-commit hook lance: bun run validate (lint + arch:check locale)
 
 # Push et créer PR
 git push origin feature/mon-feature
@@ -523,8 +567,8 @@ git push origin feature/mon-feature
 
 **Validation Multi-Tiers:**
 
-1. **Pre-commit** (ESLint): Violations détectées avant commit
-2. **CI Pipeline** (ts-arch): Build échoue si violations architecture
+1. **Pre-commit** (ESLint Boundaries + Dependency Cruiser): Violations détectées avant commit
+2. **CI Pipeline** (Dependency Cruiser): Build échoue si violations architecture
 3. **Pull Request** (CodeRabbit): Review contextuelle avec ≤2 commentaires
 
 **Si CodeRabbit signale faux positif:**
@@ -549,9 +593,9 @@ git push origin feature/mon-feature
 ## Bénéfices Mesurables
 
 **Qualité Code:**
-- **100% enforcement architecture** via ts-arch (build-breaking)
+- **100% enforcement architecture** via Dependency Cruiser (build-breaking CI/CD)
 - **0 violations architecture** passent en production
-- **Feedback <1s** via ESLint dans IDE
+- **Feedback <1s** via ESLint Plugin Boundaries dans IDE
 
 **Efficacité Reviews:**
 - **≤2 commentaires/commit** via CodeRabbit configuré "chill"
@@ -586,19 +630,22 @@ git push origin feature/mon-feature
 ## Prochaines Étapes
 
 **Setup Immédiat:**
-1. ✅ Créer `.coderabbit.yaml` avec configuration ci-dessus
-2. ✅ Créer `.coderabbit/rules/` avec AST-grep rules
-3. ✅ Créer `CLAUDE.md` avec documentation architecture
-4. ✅ Créer tests architecture `architecture.spec.ts` avec ts-arch
-5. ✅ Configurer ESLint avec `import/no-restricted-paths`
-6. ✅ Installer CodeRabbit depuis GitHub Marketplace
-7. ✅ Ouvrir test PR pour valider configuration
+1. ✅ Créer `.dependency-cruiser.js` avec règles architecture Alexandria
+2. ✅ Créer `eslint.config.js` (flat config) avec ESLint Plugin Boundaries
+3. ✅ Créer `.vscode/settings.json` pour ESLint auto-fix
+4. ✅ Créer `.coderabbit.yaml` avec configuration ci-dessus
+5. ✅ Créer `.coderabbit/rules/` avec AST-grep rules
+6. ✅ Créer `CLAUDE.md` avec documentation architecture
+7. ✅ Configurer `.github/workflows/architecture.yml` avec Dependency Cruiser
+8. ✅ Configurer Husky pre-commit hook (`bun run validate`)
+9. ✅ Installer CodeRabbit depuis GitHub Marketplace
+10. ✅ Ouvrir test PR pour valider configuration
 
 **Validation:**
 - Créer PR test violant intentionnellement architecture hexagonale
 - Vérifier que:
-  - ESLint détecte violations (IDE + pre-commit)
-  - ts-arch échoue le build (CI)
+  - ESLint Plugin Boundaries détecte violations (IDE <1s + pre-commit)
+  - Dependency Cruiser échoue le build (CI GitHub Actions)
   - CodeRabbit signale violations avec contexte
 
 **Itération:**
