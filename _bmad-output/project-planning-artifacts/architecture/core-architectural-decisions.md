@@ -430,9 +430,16 @@ module.exports = {
       to: { path: 'node_modules', pathNot: 'node_modules/typescript' }
     },
     {
-      name: 'adapters-must-use-ports',
+      name: 'forbid-adapters-to-domain',
+      severity: 'error',
+      comment: 'Adapters must use Ports to communicate with Domain',
+      from: { path: '^src/adapters' },
+      to: { path: '^src/domain' }
+    },
+    {
+      name: 'forbid-adapters-to-adapters',
       severity: 'warn',
-      comment: 'Adapters should implement Ports',
+      comment: 'Adapters should not import other Adapter modules (use Ports instead)',
       from: { path: '^src/adapters' },
       to: { path: '^src/adapters', pathNot: '^src/ports' }
     }
