@@ -180,7 +180,7 @@ A test **FAILS** when:
 
 ### Example Output Interpretation
 
-```
+```text
 📊 Performance Metrics:
    • P50 Latency:    450ms ✅ (Target: <500ms)
    • P95 Latency:    920ms ✅ (Target: <1000ms)
