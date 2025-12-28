@@ -31,10 +31,8 @@ export const options = {
     { duration: '30s', target: 0 },   // Ramp down
   ],
   thresholds: {
-    // NFR2: Vector search ≤1s (95%)
-    'layer1_search_latency': ['p(95)<1000'],
-    // Additional thresholds for performance analysis
-    'layer1_search_latency': ['p(50)<500', 'p(99)<2000'],
+    // NFR2: Vector search ≤1s (95%), plus additional percentiles
+    'layer1_search_latency': ['p(95)<1000', 'p(50)<500', 'p(99)<2000'],
     'layer1_errors': ['rate<0.01'], // <1% error rate
     'http_req_duration': ['p(95)<1000'],
   },
