@@ -27,7 +27,6 @@
     "@typescript-eslint/parser": "^8.19.1",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
-    "tsarch": "^5.4.1",
     "typescript": "5.9.3"
   },
   "engines": {
