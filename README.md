@@ -103,6 +103,7 @@ curl -fsSL https://bun.sh/install | bash
 ```
 
 Vérifier l'installation :
+
 ```bash
 bun --version  # Doit afficher 1.3.5 ou supérieur
 ```
@@ -110,18 +111,21 @@ bun --version  # Doit afficher 1.3.5 ou supérieur
 ### 2. Installation de PostgreSQL + pgvector
 
 #### macOS (Homebrew)
+
 ```bash
 brew install postgresql@17
 brew install pgvector
 ```
 
 #### Linux (Ubuntu/Debian)
+
 ```bash
 sudo apt install postgresql-17
 sudo apt install postgresql-17-pgvector
 ```
 
 #### Docker (Recommandé pour développement)
+
 ```bash
 # Sera configuré dans Story 1.2 avec docker-compose.yml
 ```
