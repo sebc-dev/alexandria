@@ -225,7 +225,7 @@ ${allPass ? '✅ ALL PERFORMANCE NFRS PASS' : '❌ PERFORMANCE ISSUES DETECTED'}
    5. Set up continuous performance monitoring in CI/CD
 
 📊 Baseline Documentation Template:
-   ## Performance Baseline - $(date +%Y-%m-%d)
+   ## Performance Baseline - ${new Date().toISOString().slice(0,10)}
    - Environment: ${__ENV.ALEXANDRIA_ENV || 'local'}
    - Embeddings: ${__ENV.ALEXANDRIA_EMBEDDING_COUNT || 'TBD'}
    - P50: ${e2eP50.toFixed(2)}ms
