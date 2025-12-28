@@ -6,9 +6,9 @@ export class InfrastructureError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly cause?: Error
+    cause?: Error
   ) {
-    super(message)
+    super(message, { cause })
     this.name = 'InfrastructureError'
     Object.setPrototypeOf(this, InfrastructureError.prototype)
   }
