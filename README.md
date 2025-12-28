@@ -41,6 +41,49 @@ Cette stratification empêche l'agent de "choisir" entre approches contradictoir
 - **LLM**: Claude Haiku 4.5 (reformulation)
 - **Embeddings**: OpenAI text-embedding-3-small/large
 
+## Dépendances - Stratégie de Versioning
+
+Alexandria utilise une stratégie mixte de versioning pour équilibrer stabilité et flexibilité:
+
+### Versions Exactes (Pinned) - Stabilité Critique
+
+Ces dépendances sont essentielles à l'architecture du projet. Les versions exactes garantissent la reproductibilité et préviennent les breaking changes involontaires:
+
+- **drizzle-orm 0.36.4** - ORM database (contrats persistance)
+- **hono 4.11.1** - Web framework (contrats API)
+- **zod 4.2.1** - Validation (contrats boundaries)
+- **typescript 5.9.3** - Langage strict
+
+**Mise à jour:** Nécessite test complet (unit + integration + architecture) et approbation senior
+
+### Versions Flexibles (Caret ^) - Évolution Sécurisée
+
+Ces dépendances peuvent évoluer avec des mises à jour mineures/patch sans impacter la couche métier:
+
+- **@anthropic-ai/sdk ^0.32.1** - Client API Anthropic (minor/patch safe)
+- **openai ^4.77.3** - Client API OpenAI (minor/patch safe)
+- **DevDependencies** - Outils de développement (flexibility recommandée)
+
+**Mise à jour:** Exécuter `bun update [package]` avec tests, reporter les breaking changes
+
+### Processus de Mise à Jour des Dépendances
+
+1. **Exact versions (critical):**
+   - Créer PR avec justification technique
+   - Vérifier: `bun run typecheck && bun run lint && bun test`
+   - Tests d'architecture et intégration obligatoires
+   - Approbation requise
+
+2. **Flexible versions (API clients):**
+   - Mettre à jour avec `bun update [package]`
+   - Vérifier compatibilité API (changelog)
+   - Tests recommandés
+   - Self-merge si tests passent
+
+3. **DevDependencies:**
+   - Flex - mises à jour recommandées régulièrement
+   - Juste vérifier que lint/format/typecheck restent opérationnels
+
 ## Installation
 
 ### Prérequis
