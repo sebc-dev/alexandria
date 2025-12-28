@@ -146,7 +146,9 @@ cp .env.example .env
 
 ### 4. Configuration de l'Environnement
 
-Éditer `.env` avec vos valeurs :
+#### Local Development (.env)
+
+Copier `.env.example` et éditer avec vos valeurs **locales** (développement uniquement):
 
 ```bash
 # Database
@@ -158,6 +160,99 @@ OPENAI_API_KEY=sk-...  # Votre clé API OpenAI
 # Logging (optionnel)
 LOG_LEVEL=INFO
 LOG_RETENTION_DAYS=30
+```
+
+#### .env.example - Non-Sensitive Placeholders
+
+Un fichier `.env.example` DOIT être committable au repository avec des valeurs de placeholder non-sensibles:
+
+```bash
+# Database - Update with your local PostgreSQL connection
+ALEXANDRIA_DB_URL=postgresql://alexandria:password@localhost:5432/alexandria
+
+# External Services - Required for OpenAI embeddings
+OPENAI_API_KEY=sk-placeholder-key
+
+# Logging (optionnel)
+LOG_LEVEL=INFO
+LOG_RETENTION_DAYS=30
+```
+
+**Important**: Commit `.env.example` to git, NEVER commit `.env`
+
+#### .gitignore Security Checklist
+
+Before deploying, verify that `.gitignore` contains `.env` to prevent accidental secret exposure:
+
+```bash
+# Verify .env is excluded
+grep "^\.env$" .gitignore
+
+# Expected output:
+# .env
+```
+
+If `.env` is not listed in `.gitignore`:
+```bash
+# Add it
+echo ".env" >> .gitignore
+```
+
+Also ensure these sensitive files are excluded:
+- `.env` - Local development secrets
+- `.env.local` - Machine-specific secrets
+- `*.key` - Private keys
+- `secrets/` - Any secrets directory
+
+#### Cloudflare Deployment - Secret Management
+
+When deploying to **Cloudflare Workers** or **Cloudflare Pages**, sensitive values MUST be stored as **Cloudflare Secrets**, NOT in `.env` files:
+
+**Sensitive values requiring Cloudflare Secrets:**
+- `OPENAI_API_KEY` - External API credentials
+- `ALEXANDRIA_DB_URL` - Database credentials
+- Any database passwords, API tokens, or authentication credentials
+
+**How to set Cloudflare Secrets:**
+
+```bash
+# Using Wrangler CLI
+wrangler secret put OPENAI_API_KEY
+wrangler secret put ALEXANDRIA_DB_URL
+```
+
+See [Cloudflare Workers - Managing Secrets](https://developers.cloudflare.com/workers/platform/deployment-triggers/git-integration/) for detailed instructions.
+
+#### Deployment Target Configuration
+
+**Confirm your deployment target before deployment:**
+
+1. **Cloudflare Workers** (Serverless function):
+   - Requires Node.js compatibility
+   - Set `nodejs_compat` in `wrangler.toml`
+   - Use Cloudflare Secrets for all sensitive values
+   - See [Cloudflare Workers Node.js Compatibility](https://developers.cloudflare.com/workers/runtime-apis/nodejs/)
+
+2. **Cloudflare Pages** (Static + Functions):
+   - Functions support Node.js APIs with `nodejs_compat`
+   - Environment variables available at build time only
+   - Use Cloudflare Secrets for production credentials
+   - See [Cloudflare Pages Environment Variables](https://developers.cloudflare.com/pages/platform/build-configuration/)
+
+3. **Node.js/Self-Hosted** (Traditional server):
+   - `.env` files are appropriate for local development
+   - Use environment variables or secret management for production
+   - Use `.env.example` for documentation of required variables
+
+**Required wrangler.toml configuration for Workers:**
+
+```toml
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[env.production.routes]]
+pattern = "*"
+zone_name = "example.com"
 ```
 
 ### 5. Vérification de l'Installation
