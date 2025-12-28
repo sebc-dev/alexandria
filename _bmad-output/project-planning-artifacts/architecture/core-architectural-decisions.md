@@ -423,11 +423,16 @@ module.exports = {
       to: { path: '^src/adapters' }
     },
     {
-      name: 'no-domain-external-libs',
+      name: 'forbid-domain-external-libs',
       severity: 'error',
-      comment: 'Domain should not import external libraries except TypeScript',
+      comment: 'Domain must not import infrastructure/framework libraries (use Ports instead)',
       from: { path: '^src/domain' },
-      to: { path: 'node_modules', pathNot: 'node_modules/typescript' }
+      to: [
+        { path: 'node_modules/zod' },
+        { path: 'node_modules/drizzle-orm' },
+        { path: 'node_modules/hono' },
+        { path: 'node_modules/axios' }
+      ]
     },
     {
       name: 'forbid-adapters-to-domain',
