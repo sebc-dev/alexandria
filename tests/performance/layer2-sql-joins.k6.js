@@ -30,7 +30,7 @@ export const options = {
     { duration: '30s', target: 60 },  // Spike to 60 concurrent
     { duration: '1m', target: 60 },   // Sustain spike
     { duration: '30s', target: 0 },   // Ramp down
-  },
+  ],
   thresholds: {
     // NFR3: Layer 2 ≤500ms (p95)
     'layer2_join_latency': ['p(95)<500'],
