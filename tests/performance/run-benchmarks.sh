@@ -68,8 +68,36 @@ check_prerequisites() {
     print_success "k6 installed: $(k6 version --no-color | head -n 1)"
 
     # Check if Alexandria is running
-    if ! curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/health" | grep -q "200"; then
-        print_warning "Alexandria MCP server may not be running at ${BASE_URL}"
+    local health_check_response
+    local http_status
+    local curl_exit_code
+
+    # Capture both HTTP status and response body
+    health_check_response=$(curl -s -w "\n%{http_code}" "${BASE_URL}/health" 2>&1)
+    curl_exit_code=$?
+
+    # Extract HTTP status code (last line) and response body (all but last line)
+    http_status=$(echo "$health_check_response" | tail -n 1)
+    response_body=$(echo "$health_check_response" | sed '$d')
+
+    # Check curl execution status
+    if [ $curl_exit_code -ne 0 ]; then
+        print_warning "Alexandria MCP server health check failed at ${BASE_URL}/health"
+        print_error "curl error (exit code: $curl_exit_code)"
+        if [ -n "$response_body" ]; then
+            print_info "Error details: $response_body"
+        fi
+        print_info "Start Alexandria with: bun run dev"
+        read -p "Continue anyway? (y/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    elif [ "$http_status" != "200" ]; then
+        print_warning "Alexandria MCP server returned HTTP $http_status at ${BASE_URL}/health"
+        if [ -n "$response_body" ]; then
+            print_info "Response: $response_body"
+        fi
         print_info "Start Alexandria with: bun run dev"
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo
