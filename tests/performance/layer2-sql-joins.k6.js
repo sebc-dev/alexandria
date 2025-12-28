@@ -32,10 +32,8 @@ export const options = {
     { duration: '30s', target: 0 },   // Ramp down
   ],
   thresholds: {
-    // NFR3: Layer 2 ≤500ms (p95)
-    'layer2_join_latency': ['p(95)<500'],
-    // Additional thresholds
-    'layer2_join_latency': ['p(50)<250', 'p(99)<1000'],
+    // NFR3: Layer 2 ≤500ms (p95), plus additional percentiles
+    'layer2_join_latency': ['p(95)<500', 'p(50)<250', 'p(99)<1000'],
     'layer2_errors': ['rate<0.01'], // <1% error rate
     'http_req_duration': ['p(95)<500'],
   },
