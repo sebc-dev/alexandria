@@ -251,7 +251,7 @@ Epic 1 (Foundation)
 **2. Architecture Hexagonale (Contrainte NON-NÉGOCIABLE):**
 - Séparation stricte Domain/Ports/Adapters
 - Domain layer ne dépend JAMAIS d'Adapters (vérifiable par Dependency Cruiser)
-- Domain layer ne peut importer Zod, Drizzle, Hono
+- Domain layer ne peut importer Zod, Drizzle, Hono, axios
 - Tous les use-cases injectent Ports (pas implémentations concrètes)
 - Structure dossiers: `src/domain/`, `src/ports/`, `src/adapters/`
 - Validation via Dependency Cruiser rules CI/CD + ESLint Plugin Boundaries en local (tests automatisés)
@@ -402,8 +402,21 @@ Epic 1 (Foundation)
 3. TypeScript 5.9.7 configuré en strict mode (tsconfig.json)
 4. Configuration .env avec variables requises (ALEXANDRIA_DB_URL, OPENAI_API_KEY, LOG_LEVEL)
 5. Validation Zod de la configuration au démarrage (fail-fast si invalide)
-6. Naming conventions documentées et appliquées (camelCase DB, PascalCase files, suffix "Port")
-7. README.md avec instructions d'installation
+6. Naming conventions documented in `CONVENTIONS.md` and linked from README:
+   - Database names: camelCase (e.g., `userSessions`, `vectorIndexes`)
+   - Filenames: PascalCase (e.g., `UserRepository.ts`, `ConventionPort.ts`)
+   - Port suffix rule: All ports must end with "Port" (e.g., `DatabasePort`, `LoggerPort`)
+   - README section "Naming Conventions" linking to CONVENTIONS.md
+7. README.md with complete project setup documentation:
+   - **Installation**: Steps for Bun, PostgreSQL, pgvector setup
+   - **Quick Start**: Commands to clone, install deps, run migrations, start dev server
+   - **Architecture Overview**: Brief description of hexagonal structure with src/ diagram
+   - **Environment Variables**: Table listing ALEXANDRIA_DB_URL, OPENAI_API_KEY, LOG_LEVEL with examples
+8. Configuration files present and committed with verification:
+   - `.dependency-cruiser.js` (src/): Enforce architectural constraints
+   - `eslint.config.js` (root): Code quality and style rules
+   - `.coderabbit.yaml` (root): PR review guidelines
+   - Verification checklist: Confirm each file exists, is non-empty, and is in PR diff
 
 **Exigences couvertes:** Architecture #1, #7, #8, #10, NFR7, NFR21, NFR24
 
