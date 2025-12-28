@@ -198,7 +198,7 @@ alexandria/
     "@types/bun": "latest",
     "prettier": "latest",
     "eslint": "latest",
-    "Dependency Cruiser": "latest"
+    "dependency-cruiser": "latest"
   }
 }
 ```
