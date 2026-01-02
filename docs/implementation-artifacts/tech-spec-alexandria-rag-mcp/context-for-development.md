@@ -55,5 +55,5 @@
 | Validation        | Zod                                          | Requis par MCP SDK, réutilisé partout        |
 | Ingestion         | Manuelle (CLI + MCP tool)                    | Contrôle total, simplicité MVP               |
 | Logging           | Pino (structured JSON)                       | Observabilité, performance                   |
-| CLI Parser        | Bun native (Bun.argv + parseArgs)            | Zero deps, suffisant pour MVP                |
+| CLI Parser        | Bun native (process.argv.slice(2) + parseArgs) | Zero deps, POSIX exit codes, allowNegative   |
 | Transaction       | READ COMMITTED isolation                     | Standard PostgreSQL, bon compromis           |

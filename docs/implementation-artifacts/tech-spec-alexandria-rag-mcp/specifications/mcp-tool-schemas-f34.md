@@ -4,10 +4,11 @@
 ```typescript
 const SearchInputSchema = z.object({
   query: z.string().min(1).max(1000),
-  threshold: z.number().min(0).max(1).default(0.5),
-  limit: z.number().int().min(1).max(100).default(10),
+  threshold: z.number().min(0).max(1).default(0.82),  // ⚠️ Calibré pour E5 (scores compressés)
+  limit: z.number().int().min(1).max(60).default(10),  // max=60 contraint par ef_search
   tags: z.array(z.string()).default([]),
 });
+// Note: E5 retourne des scores 0.75-0.85 même pour textes non-reliés. Voir F33 pour détails.
 ```
 
 **Ingest Tool:**
@@ -17,7 +18,7 @@ const IngestInputSchema = z.object({
   title: z.string().max(200).optional(),  // F36
   content: z.string().min(1),  // Full file content
   chunks: z.array(z.object({
-    content: z.string().min(1).max(8000),
+    content: z.string().min(1).max(2000),  // Hard limit: E5 tronque au-delà de ~512 tokens
     chunk_index: z.number().int().min(0),
     metadata: z.object({
       heading: z.string().optional(),
@@ -28,6 +29,7 @@ const IngestInputSchema = z.object({
   version: z.string().optional(),
   upsert: z.boolean().default(true),
 });
+// Note: Warning logged si chunk > 1500 chars (approche limite tokens)
 ```
 
 **Delete Tool:**

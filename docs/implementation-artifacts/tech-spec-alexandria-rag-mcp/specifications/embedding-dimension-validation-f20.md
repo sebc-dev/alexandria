@@ -16,4 +16,4 @@ function validateEmbedding(embedding: number[]): void {
 
 **Points de validation:**
 1. Après génération par Transformers.js, avant stockage
-2. Erreur code: -32007 EMBEDDING_DIMENSION_MISMATCH
+2. Erreur code: -31007 EMBEDDING_DIMENSION_MISMATCH
