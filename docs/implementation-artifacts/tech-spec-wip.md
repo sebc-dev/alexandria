@@ -6,9 +6,10 @@ status: 'in-progress'
 stepsCompleted: [1, 2]
 tech_stack:
   - Java 25
-  - Spring Boot 3.4+
-  - Spring AI MCP SDK (transport SSE uniquement)
-  - Langchain4j 1.0.1 (pipeline RAG complet)
+  - Spring Boot 4.0.1
+  - Spring AI MCP SDK (Streamable HTTP transport)
+  - Langchain4j 1.0.0 (pipeline RAG complet)
+  - spring-retry (gestion des retries)
   - PostgreSQL 18
   - pgvector 0.8.1
   - RunPod/Infinity (BGE-M3)
@@ -17,10 +18,11 @@ files_to_modify: []
 code_patterns:
   - Architecture flat simplifiée (core/ + adapters/ + config/)
   - Virtual Threads for concurrency
-  - Spring AI @Tool annotations for MCP tools
+  - Spring AI @McpTool annotations for MCP tools
   - Langchain4j EmbeddingStore + ContentRetriever
-  - Langchain4j DocumentSplitter (markdown-aware)
-  - WebMVC SSE transport
+  - Custom AlexandriaMarkdownSplitter (markdown-aware)
+  - Streamable HTTP transport
+  - spring-retry @Retryable for resilience
 test_patterns:
   - JUnit 5
   - Testcontainers for PostgreSQL
@@ -40,18 +42,19 @@ Claude Code n'a pas accès à la documentation technique à jour ni aux conventi
 ### Solution
 
 Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
-- **Transport MCP** : Spring Boot + Spring AI MCP SDK (SSE)
+- **Transport MCP** : Spring Boot 4.0.1 + Spring AI MCP SDK (Streamable HTTP)
 - **Pipeline RAG** : Langchain4j (embeddings, retrieval, reranking)
 - **Embeddings** : BGE-M3 sur RunPod/Infinity
+- **Retry** : spring-retry avec @Retryable (exponential backoff)
 - **Architecture** : Flat et simplifiée (YAGNI) - pas d'hexagonal, pas de DDD
 
 ### Scope
 
 **In Scope:**
-- Serveur MCP Java 25 avec Spring AI MCP SDK
+- Serveur MCP Java 25 avec Spring AI MCP SDK (Streamable HTTP)
 - Skills Claude Code pour recherche sémantique
 - Ingestion de documents (markdown, texte, llms.txt)
-- PostgreSQL 18 + pgvector 0.8.1 (halfvec 1024D)
+- PostgreSQL 18 + pgvector 0.8.1 (vector 1024D)
 - Embeddings via RunPod/Infinity (BGE-M3)
 - Reranking (bge-reranker-v2-m3)
 - Usage mono-utilisateur
@@ -67,45 +70,51 @@ Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
 ### Codebase Patterns
 
 - **Runtime**: Java 25 avec Virtual Threads (Project Loom) pour concurrence légère
-- **Framework**: Spring Boot 3.4+ (web, DI, config)
-- **MCP Transport**: Spring AI MCP SDK - WebMVC SSE uniquement
-- **RAG Pipeline**: Langchain4j 1.0.1 (chunking, embeddings, retrieval, reranking)
-- **Vector Storage**: pgvector 0.8.1 avec halfvec via Langchain4j EmbeddingStore
+- **Framework**: Spring Boot 4.0.1 (web, DI, config)
+- **MCP Transport**: Spring AI MCP SDK - Streamable HTTP (endpoint unique `/mcp`)
+- **RAG Pipeline**: Langchain4j 1.0.0 (embeddings, retrieval, reranking)
+- **Chunking**: Custom AlexandriaMarkdownSplitter (préservation code blocks, breadcrumbs)
+- **Vector Storage**: pgvector 0.8.1 avec vector(1024) via Langchain4j EmbeddingStore
 - **Embedding Model**: BGE-M3 (1024 dimensions, 8K tokens context)
-- **Reranker**: bge-reranker-v2-m3 via même endpoint Infinity
+- **Reranker**: bge-reranker-v2-m3 via même endpoint Infinity (512 tokens max/paire)
+- **Retry**: spring-retry avec @Retryable (exponential backoff 1s→2s→4s, jitter)
 
 ### Architecture Decisions
 
 | Decision | Choix | Justification |
 |----------|-------|---------------|
-| Runtime | Java 25 | Virtual threads matures, stabilité, typage fort, pattern matching |
-| Framework | Spring Boot 3.4+ | Écosystème mature, Spring AI MCP SDK officiel |
-| MCP Transport | WebMVC SSE | Simplicité, Virtual Threads suffisent pour mono-utilisateur |
-| RAG Library | Langchain4j | Pipeline RAG mature (chunking, retrieval, reranking intégrés) |
-| MCP SDK | Spring AI MCP | Transport SSE uniquement, pas pour le RAG |
-| Database | PostgreSQL 18 + pgvector 0.8.1 | Robuste, SQL standard, halfvec support natif |
-| Embeddings | BGE-M3 via Infinity | 1024D, même famille que reranker, API OpenAI-compatible |
-| Reranker | bge-reranker-v2-m3 | État de l'art, multilingue, même endpoint Infinity |
-| Vector type | halfvec | 50% économie mémoire (2KB vs 4KB par vecteur 1024D) |
-| Architecture | Flat simplifiée | YAGNI - pas d'hexagonal ni DDD pour un serveur mono-utilisateur |
+| Runtime | Java 25 LTS | Virtual threads matures (JEP 491), stabilité, typage fort |
+| Framework | Spring Boot 4.0.1 | Spring Framework 7.0, support Java 25 natif |
+| MCP Transport | Streamable HTTP | Endpoint unique `/mcp`, remplace SSE deprecated |
+| RAG Library | Langchain4j 1.0.0 | Pipeline RAG mature, EmbeddingStore pgvector natif |
+| MCP SDK | Spring AI MCP | @McpTool annotations, auto-discovery |
+| Database | PostgreSQL 18 + pgvector 0.8.1 | Robuste, SQL standard, HNSW index |
+| Embeddings | BGE-M3 via Infinity | 1024D, API OpenAI-compatible |
+| Reranker | bge-reranker-v2-m3 | État de l'art, multilingue, 512 tokens max |
+| Vector type | vector(1024) | Langchain4j natif, simplicité |
+| Retry | spring-retry @Retryable | Déclaratif, exponential backoff + jitter |
+| Architecture | Flat simplifiée | YAGNI - pas d'hexagonal ni DDD |
 
 ### Project Structure
 
 ```
 src/main/java/dev/alexandria/
 ├── core/
-│   ├── Document.java                # POJO simple
-│   ├── DocumentChunk.java           # Chunk avec metadata
-│   └── RetrievalService.java        # Logique métier RAG
+│   ├── Document.java                    # POJO simple
+│   ├── DocumentChunk.java               # Chunk avec metadata
+│   ├── RetrievalService.java            # Logique métier RAG
+│   ├── AlexandriaMarkdownSplitter.java  # Custom DocumentSplitter
+│   └── LlmsTxtParser.java               # Parser llms.txt format
 │
 ├── adapters/
-│   ├── InfinityEmbeddingClient.java # Client Infinity (embeddings + rerank)
-│   ├── PgVectorRepository.java      # Langchain4j EmbeddingStore wrapper
-│   └── McpTools.java                # @Tool annotations Spring AI
+│   ├── InfinityEmbeddingClient.java     # Client Infinity (embeddings + rerank)
+│   ├── PgVectorRepository.java          # Langchain4j EmbeddingStore wrapper
+│   └── McpTools.java                    # @McpTool annotations Spring AI
 │
 ├── config/
-│   ├── LangchainConfig.java         # Beans Langchain4j
-│   └── McpConfig.java               # Config MCP transport
+│   ├── LangchainConfig.java             # Beans Langchain4j
+│   ├── McpConfig.java                   # Config MCP Streamable HTTP
+│   └── RetryConfig.java                 # @EnableRetry + config
 │
 └── AlexandriaApplication.java
 ```
@@ -113,22 +122,23 @@ src/main/java/dev/alexandria/
 **Principes :**
 - Pas d'interfaces/ports abstraits - adapters directs
 - Pas de DDD aggregates - simples POJOs
-- Retry simple sur erreur Infinity - pas de circuit breaker
+- @Retryable sur InfinityEmbeddingClient - pas de circuit breaker
 - Virtual Threads gérés par Spring Boot - pas de config manuelle
 
 ### pgvector Configuration (from research)
 
 ```sql
--- Table structure
-CREATE TABLE documents (
-    id bigserial PRIMARY KEY,
-    content text,
-    embedding halfvec(1024)
+-- Table structure (Langchain4j crée automatiquement avec createTable=true)
+CREATE TABLE document_embeddings (
+    embedding_id UUID PRIMARY KEY,
+    embedding vector(1024),
+    text TEXT,
+    metadata JSONB
 );
 
--- HNSW index optimized for 1024D
-CREATE INDEX ON documents USING hnsw (embedding halfvec_cosine_ops)
-WITH (m = 24, ef_construction = 100);
+-- HNSW index optimized for 1024D cosine similarity
+CREATE INDEX ON document_embeddings USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 128);
 
 -- Runtime query setting
 SET hnsw.ef_search = 100;
@@ -137,7 +147,7 @@ SET hnsw.ef_search = 100;
 PostgreSQL config for 24GB RAM single-user:
 - `shared_buffers = 6GB`
 - `effective_cache_size = 18GB`
-- `work_mem = 256MB`
+- `work_mem = 64MB`
 - `maintenance_work_mem = 2GB`
 
 ### Chunking Strategy (from research)
@@ -170,10 +180,16 @@ curl -X POST http://<runpod>/rerank \
 
 | File | Purpose |
 | ---- | ------- |
-| `docs/research/resultats/PostgreSQL 18 and pgvector configuration.md` | Config pgvector détaillée |
-| `docs/research/resultats/Stratégies de chunking pour RAG sur documentation markdown technique.md` | Stratégie chunking |
-| `docs/research/resultats/Infinity Embedding Server.md` | API Infinity/RunPod |
-| `docs/research/resultats/BGE-M3 vs Qwen3-Embedding-0.6B.md` | Comparatif embeddings |
+| `docs/research/resultats/java/Spring AI MCP SDK - Complete @Tool annotation guide for SSE transport.md` | Guide @McpTool annotations |
+| `docs/research/resultats/java/Spring AI MCP Server WebMVC SSE.md` | Config MCP endpoints |
+| `docs/research/resultats/java/Langchain4j 1.0.1 DocumentSplitter capabilities for Alexandria RAG.md` | Custom splitter pattern |
+| `docs/research/resultats/java/Langchain4j works seamlessly with Infinity embedding server.md` | Intégration Infinity |
+| `docs/research/resultats/java/API de reranking Infinity - guide technique complet.md` | API reranking détaillée |
+| `docs/research/resultats/java/Pattern Retry HTTP en Java moderne sans dépendances lourdes.md` | Pattern spring-retry |
+| `docs/research/resultats/java/Schéma PostgreSQL optimal pour RAG avec pgvector.md` | Schéma DB complet |
+| `docs/research/resultats/java/Testcontainers avec PostgreSQL 18 et pgvector 0.8.1.md` | Config tests |
+| `docs/research/resultats/java/llms.txt Standard - Complete Specification for Java Parser Implementation.md` | Spec llms.txt parser |
+| `docs/research/resultats/java/Claude Code MCP configuration for SSE transport servers.md` | Config client Claude Code |
 
 ### Hardware Cible (Self-hosted)
 
@@ -197,34 +213,73 @@ curl -X POST http://<runpod>/rerank \
 
 **Maven dependencies (principales):**
 ```xml
-<!-- Spring AI MCP SDK (transport SSE uniquement) -->
+<!-- Spring Boot 4.0.1 Parent -->
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.1</version>
+</parent>
+
+<!-- Spring AI MCP SDK (Streamable HTTP transport) -->
 <dependency>
     <groupId>org.springframework.ai</groupId>
-    <artifactId>spring-ai-mcp-server-webmvc-spring-boot-starter</artifactId>
+    <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+</dependency>
+
+<!-- Spring Retry -->
+<dependency>
+    <groupId>org.springframework.retry</groupId>
+    <artifactId>spring-retry</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
 </dependency>
 
 <!-- Langchain4j (pipeline RAG complet) -->
 <dependency>
     <groupId>dev.langchain4j</groupId>
     <artifactId>langchain4j</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.0</version>
 </dependency>
 <dependency>
     <groupId>dev.langchain4j</groupId>
     <artifactId>langchain4j-pgvector</artifactId>
-    <version>1.0.1</version>
-</dependency>
-<dependency>
-    <groupId>dev.langchain4j</groupId>
-    <artifactId>langchain4j-document-parser-apache-tika</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.0</version>
 </dependency>
 <dependency>
     <groupId>dev.langchain4j</groupId>
     <artifactId>langchain4j-open-ai</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.0</version>
+</dependency>
+
+<!-- PostgreSQL -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
+
+<!-- Test dependencies -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-testcontainers</artifactId>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.wiremock</groupId>
+    <artifactId>wiremock-standalone</artifactId>
+    <version>3.10.0</version>
+    <scope>test</scope>
 </dependency>
 ```
+
+**Image Docker pour tests :** `pgvector/pgvector:0.8.1-pg18`
 
 ### Testing Strategy
 
