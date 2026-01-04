@@ -6,10 +6,10 @@ status: 'in-progress'
 stepsCompleted: [1, 2]
 tech_stack:
   - Java 25 LTS (25.0.1)
-  - Spring Boot 4.0.1 + Spring Framework 7.0.2
-  - Spring AI MCP SDK 2.0.0-M1 (Streamable HTTP transport)
+  - Spring Boot 3.5.9 + Spring Framework 6.2.x
+  - Spring AI MCP SDK 1.1.2 GA (SSE transport)
   - Langchain4j 1.10.0 (GA) + langchain4j-pgvector 1.10.0-beta18
-  - Spring Framework 7 @Retryable natif (remplace spring-retry)
+  - spring-retry 2.0.11 avec @EnableRetry
   - PostgreSQL 18.1
   - pgvector 0.8.1
   - RunPod/Infinity (BGE-M3)
@@ -22,8 +22,8 @@ code_patterns:
   - Spring AI @McpTool annotations for MCP tools
   - Langchain4j EmbeddingStore + ContentRetriever
   - Custom AlexandriaMarkdownSplitter (markdown-aware)
-  - Streamable HTTP transport
-  - Spring Framework 7 @EnableResilientMethods + @Retryable natif
+  - SSE transport (/sse + /mcp/message)
+  - spring-retry @EnableRetry + @Retryable
 test_patterns:
   - JUnit 5
   - Testcontainers for PostgreSQL
@@ -43,16 +43,16 @@ Claude Code n'a pas accès à la documentation technique à jour ni aux conventi
 ### Solution
 
 Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
-- **Transport MCP** : Spring Boot 4.0.1 + Spring AI MCP SDK (Streamable HTTP)
+- **Transport MCP** : Spring Boot 3.5.9 + Spring AI MCP SDK 1.1.2 (SSE via `/sse` + `/mcp/message`)
 - **Pipeline RAG** : Langchain4j (embeddings, retrieval, reranking)
 - **Embeddings** : BGE-M3 sur RunPod/Infinity
-- **Retry** : spring-retry avec @Retryable (exponential backoff)
+- **Retry** : spring-retry 2.0.11 avec @Retryable (exponential backoff)
 - **Architecture** : Flat et simplifiée (YAGNI) - pas d'hexagonal, pas de DDD
 
 ### Scope
 
 **In Scope:**
-- Serveur MCP Java 25 avec Spring AI MCP SDK (Streamable HTTP)
+- Serveur MCP Java 25 avec Spring AI MCP SDK 1.1.2 (SSE transport)
 - Skills Claude Code pour recherche sémantique
 - Ingestion de documents (markdown, texte, llms.txt)
 - PostgreSQL 18 + pgvector 0.8.1 (vector 1024D)
@@ -71,29 +71,29 @@ Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
 ### Codebase Patterns
 
 - **Runtime**: Java 25 LTS (25.0.1) avec Virtual Threads (JEP 491 - no pinning)
-- **Framework**: Spring Boot 4.0.1 + Spring Framework 7.0.2
-- **MCP Transport**: Spring AI MCP SDK 2.0.0-M1 - Streamable HTTP (endpoint unique `/mcp`)
+- **Framework**: Spring Boot 3.5.9 + Spring Framework 6.2.x
+- **MCP Transport**: Spring AI MCP SDK 1.1.2 GA - SSE (`/sse` + `/mcp/message`)
 - **RAG Pipeline**: Langchain4j 1.10.0 (embeddings, retrieval) + client HTTP custom pour reranking
 - **Chunking**: Custom AlexandriaMarkdownSplitter (préservation code blocks, breadcrumbs)
 - **Vector Storage**: pgvector 0.8.1 avec vector(1024) via Langchain4j EmbeddingStore
 - **Embedding Model**: BGE-M3 (1024 dimensions, 8K tokens context) via langchain4j-open-ai
 - **Reranker**: bge-reranker-v2-m3 via endpoint Infinity `/rerank` (format Cohere, non-OpenAI)
-- **Retry**: Spring Framework 7 natif avec @EnableResilientMethods + @Retryable (exponential backoff 1s→2s→4s, jitter=100ms)
+- **Retry**: spring-retry 2.0.11 avec @EnableRetry + @Retryable (exponential backoff 1s→2s→4s, jitter=100ms)
 
 ### Architecture Decisions
 
 | Decision | Choix | Justification |
 |----------|-------|---------------|
 | Runtime | Java 25 LTS (25.0.1) | Virtual threads matures (JEP 491), support jusqu'en 2030 |
-| Framework | Spring Boot 4.0.1 + Framework 7.0.2 | Support Java 25 natif, Jakarta EE 11 |
-| MCP Transport | Streamable HTTP | Endpoint unique `/mcp`, remplace SSE deprecated |
+| Framework | Spring Boot 3.5.9 + Framework 6.2.x | Compatibilité Langchain4j, Jakarta EE 10, support OSS jusqu'en juin 2026 |
+| MCP Transport | SSE | Endpoints `/sse` + `/mcp/message`, stable avec Spring AI 1.1.2 GA |
 | RAG Library | Langchain4j 1.10.0 | GA stable, EmbeddingStore pgvector (beta18) |
-| MCP SDK | Spring AI 2.0.0-M1 | @McpTool annotations, milestone pour Boot 4.x |
+| MCP SDK | Spring AI 1.1.2 GA | @McpTool annotations, version stable pour Boot 3.x |
 | Database | PostgreSQL 18.1 + pgvector 0.8.1 | Robuste, SQL standard, HNSW index |
 | Embeddings | BGE-M3 via langchain4j-open-ai | 1024D, baseUrl custom vers Infinity |
 | Reranker | bge-reranker-v2-m3 | Client HTTP custom (format Cohere, non-OpenAI) |
 | Vector type | vector(1024) | Langchain4j natif, halfvec non supporté |
-| Retry | Spring Framework 7 natif | @EnableResilientMethods, zéro dépendance, Virtual Threads optimisé |
+| Retry | spring-retry 2.0.11 | @EnableRetry + @Retryable, intégration Spring mature |
 | Architecture | Flat simplifiée | YAGNI - pas d'hexagonal ni DDD |
 
 ### Project Structure
@@ -115,8 +115,8 @@ src/main/java/dev/alexandria/
 │
 ├── config/
 │   ├── LangchainConfig.java             # Beans Langchain4j
-│   ├── McpConfig.java                   # Config MCP Streamable HTTP
-│   └── ResilienceConfig.java            # @EnableResilientMethods
+│   ├── McpConfig.java                   # Config MCP SSE
+│   └── RetryConfig.java                 # @EnableRetry
 │
 └── AlexandriaApplication.java
 ```
@@ -124,8 +124,7 @@ src/main/java/dev/alexandria/
 **Principes :**
 - Pas d'interfaces/ports abstraits - adapters directs
 - Pas de DDD aggregates - simples POJOs
-- @Retryable natif Spring 7 sur les clients HTTP (pas de circuit breaker)
-- @ConcurrencyLimit optionnel pour throttling vers RunPod
+- @Retryable spring-retry sur les clients HTTP (pas de circuit breaker)
 - Virtual Threads gérés par Spring Boot - pas de config manuelle
 
 ### pgvector Configuration (from research)
@@ -203,25 +202,21 @@ curl -X POST http://<runpod>/rerank \
 }
 ```
 
-### Retry Pattern (Spring Framework 7 natif)
+### Retry Pattern (spring-retry 2.0.11)
 
 ```java
 @Configuration
-@EnableResilientMethods  // Remplace @EnableRetry de spring-retry
-public class ResilienceConfig { }
+@EnableRetry
+public class RetryConfig { }
 
 @Service
 public class InfinityRerankClient {
 
     @Retryable(
-        includes = {HttpServerErrorException.class, SocketTimeoutException.class},
-        maxAttempts = 3,     // 3 retries = 4 tentatives totales
-        delay = 1000,        // 1s initial
-        multiplier = 2,      // 1s → 2s → 4s
-        jitter = 100,        // ±100ms randomisation
-        maxDelay = 4000
+        retryFor = {HttpServerErrorException.class, SocketTimeoutException.class},
+        maxAttempts = 4,     // 4 tentatives totales (1 initial + 3 retries)
+        backoff = @Backoff(delay = 1000, multiplier = 2, maxDelay = 4000)
     )
-    @ConcurrencyLimit(10)    // Optionnel: max 10 appels simultanés vers RunPod
     public RerankResult rerank(String query, List<String> documents) {
         return restClient.post()
             .uri(infinityEndpoint + "/rerank")
@@ -232,18 +227,18 @@ public class InfinityRerankClient {
 }
 ```
 
-**Différence critique avec spring-retry:** `maxAttempts` compte uniquement les retries (3 retries = 4 tentatives totales), alors que spring-retry comptait l'appel initial.
+**Note:** `maxAttempts` inclut l'appel initial (4 = 1 initial + 3 retries). Backoff: 1s → 2s → 4s.
 
 ### Files to Reference
 
 | File | Purpose |
 | ---- | ------- |
 | `docs/research/resultats/java/Spring AI MCP SDK - Complete @Tool annotation guide for SSE transport.md` | Guide @McpTool annotations |
-| `docs/research/resultats/java/Spring AI MCP Server WebMVC SSE.md` | Config MCP endpoints |
+| `docs/research/resultats/java/Spring AI MCP Server WebMVC SSE.md` | Config MCP SSE endpoints |
+| `docs/research/resultats/java/Langchain4j et Java 25 - compatibilité Spring Boot en janvier 2026.md` | Compatibilité Langchain4j/Boot 3.5 |
 | `docs/research/resultats/java/Langchain4j 1.0.1 DocumentSplitter capabilities for Alexandria RAG.md` | Custom splitter pattern |
 | `docs/research/resultats/java/Langchain4j works seamlessly with Infinity embedding server.md` | Intégration Infinity |
 | `docs/research/resultats/java/API de reranking Infinity - guide technique complet.md` | API reranking détaillée |
-| `docs/research/resultats/java/Spring-retry en 2026 - migrer vers Spring Framework 7 natif.md` | Migration vers Spring 7 @Retryable natif |
 | `docs/research/resultats/java/Schéma PostgreSQL optimal pour RAG avec pgvector.md` | Schéma DB complet |
 | `docs/research/resultats/java/Testcontainers avec PostgreSQL 18 et pgvector 0.8.1.md` | Config tests |
 | `docs/research/resultats/java/llms.txt Standard - Complete Specification for Java Parser Implementation.md` | Spec llms.txt parser |
@@ -271,17 +266,18 @@ public class InfinityRerankClient {
 
 **Maven dependencies (validées janvier 2026):**
 ```xml
-<!-- Spring Boot 4.0.1 Parent -->
+<!-- Spring Boot 3.5.9 Parent -->
 <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.1</version>
+    <version>3.5.9</version>
 </parent>
 
 <properties>
     <java.version>25</java.version>
-    <spring-ai.version>2.0.0-M1</spring-ai.version>
+    <spring-ai.version>1.1.2</spring-ai.version>
     <langchain4j.version>1.10.0</langchain4j.version>
+    <langchain4j-spring.version>1.10.0-beta18</langchain4j-spring.version>
 </properties>
 
 <dependencyManagement>
@@ -306,27 +302,40 @@ public class InfinityRerankClient {
 </dependencyManagement>
 
 <dependencies>
-    <!-- Spring AI MCP SDK (Streamable HTTP transport) - MILESTONE -->
+    <!-- Spring Boot Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring AI MCP SDK (SSE transport) - GA -->
     <dependency>
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
     </dependency>
 
-    <!-- AOP pour @EnableResilientMethods (Spring Framework 7 natif) -->
+    <!-- spring-retry pour @Retryable -->
+    <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
-    <!-- Note: spring-retry supprimé - utiliser @Retryable natif Spring 7 -->
 
-    <!-- Langchain4j (GA modules) -->
+    <!-- Langchain4j Spring Integration -->
     <dependency>
         <groupId>dev.langchain4j</groupId>
-        <artifactId>langchain4j</artifactId>
+        <artifactId>langchain4j-spring-boot-starter</artifactId>
+        <version>${langchain4j-spring.version}</version>
     </dependency>
+
+    <!-- Langchain4j OpenAI (baseUrl custom pour Infinity) -->
     <dependency>
         <groupId>dev.langchain4j</groupId>
-        <artifactId>langchain4j-open-ai</artifactId>
+        <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
+        <version>${langchain4j-spring.version}</version>
     </dependency>
 
     <!-- Langchain4j pgvector (BETA - 1.10.0-beta18) -->
@@ -360,24 +369,16 @@ public class InfinityRerankClient {
         <scope>test</scope>
     </dependency>
 </dependencies>
-
-<!-- Repository pour Spring AI Milestones -->
-<repositories>
-    <repository>
-        <id>spring-milestones</id>
-        <url>https://repo.spring.io/milestone</url>
-        <snapshots><enabled>false</enabled></snapshots>
-    </repository>
-</repositories>
 ```
 
 **Image Docker pour tests :** `pgvector/pgvector:0.8.1-pg18`
 
 **Note versions:**
-- Spring AI 2.0.0-M1 = Milestone (non-GA) pour Boot 4.x
+- Spring Boot 3.5.9 = Dernière version 3.x, support OSS jusqu'en juin 2026
+- Spring AI 1.1.2 = GA, stable pour Boot 3.x
 - langchain4j-pgvector = Beta (API stable depuis 0.31.0)
-- Spring Framework 7 @Retryable = Natif, remplace spring-retry (maintenance mode)
-- Alternative stable : Spring Boot 3.5.x + Spring AI 1.0.x GA
+- langchain4j-spring-boot-starter = Beta, nécessite version explicite
+- spring-retry 2.0.11 = Géré par Spring Boot, @EnableRetry + @Retryable
 
 ### Testing Strategy
 
@@ -400,25 +401,28 @@ public class InfinityRerankClient {
 | Composant | Version | Statut | Notes |
 |-----------|---------|--------|-------|
 | Java | 25 LTS (25.0.1) | ✅ GA | Support jusqu'en 2030, JEP 491 inclus |
-| Spring Boot | 4.0.1 | ✅ GA | Depuis 18 déc. 2025 |
-| Spring Framework | 7.0.2 | ✅ GA | Depuis 11 déc. 2025 |
-| Spring AI MCP SDK | 2.0.0-M1 | ⚠️ Milestone | Seule option pour Boot 4.x |
+| Spring Boot | 3.5.9 | ✅ GA | Dernière 3.x, support OSS jusqu'en juin 2026 |
+| Spring Framework | 6.2.x | ✅ GA | Compatible Langchain4j, Jakarta EE 10 |
+| Spring AI MCP SDK | 1.1.2 | ✅ GA | SSE transport, @McpTool annotations |
 | Langchain4j core | 1.10.0 | ✅ GA | BOM recommandé |
 | langchain4j-pgvector | 1.10.0-beta18 | ⚠️ Beta | API stable depuis 0.31.0 |
 | langchain4j-open-ai | 1.10.0 | ✅ GA | baseUrl custom supporté |
+| langchain4j-spring-boot-starter | 1.10.0-beta18 | ⚠️ Beta | Compatible Boot 3.x uniquement |
 | PostgreSQL | 18.1 | ✅ GA | Depuis 25 sept. 2025 |
 | pgvector | 0.8.1 | ✅ GA | Compatible PG13-18 |
-| Spring 7 @Retryable | natif | ✅ GA | Remplace spring-retry, Virtual Threads optimisé |
+| spring-retry | 2.0.11 | ✅ GA | @EnableRetry + @Retryable |
 | Testcontainers | 2.0.2 | ✅ GA | Java 17+ |
 | WireMock | 3.10.0 | ✅ GA | Java 11+ |
 
 **Risques identifiés:**
-1. Spring AI 2.0.0-M1 en milestone - surveiller la GA
-2. langchain4j-pgvector en beta - API stable mais possible breaking changes
+1. langchain4j-pgvector en beta - API stable mais possible breaking changes
+2. langchain4j-spring-boot-starter en beta - nécessite version explicite
 
-**Mitigations appliquées:**
-- spring-retry remplacé par Spring Framework 7 natif (zéro dépendance, Virtual Threads optimisé)
-- @ConcurrencyLimit disponible pour throttling si nécessaire
+**Pourquoi Spring Boot 3.5.x (pas 4.x):**
+- Langchain4j 1.10.0 incompatible avec Boot 4.0 (Jackson 3, Jakarta EE 11)
+- Spring AI 1.1.2 GA stable pour Boot 3.x
+- Seed4J a désactivé ses modules Langchain4j pour Boot 4.x
 
-**Alternative stable (si besoin):**
-- Spring Boot 3.5.x + Spring AI 1.0.x GA + Langchain4j 1.0.0
+**Migration future vers Boot 4.x:**
+- Attendre Langchain4j compatible Jackson 3 + Jakarta EE 11
+- Suivre github.com/langchain4j/langchain4j-spring pour annonces
