@@ -7,17 +7,19 @@ stepsCompleted: [1, 2]
 tech_stack:
   - Java 25
   - Spring Boot 3.4+
-  - Spring AI 1.1.0-M2 (MCP SDK)
-  - Langchain4j 1.7.1
+  - Spring AI MCP SDK (transport SSE uniquement)
+  - Langchain4j 1.0.1 (pipeline RAG complet)
   - PostgreSQL 18
   - pgvector 0.8.1
   - RunPod/Infinity (BGE-M3)
   - bge-reranker-v2-m3
 files_to_modify: []
 code_patterns:
+  - Architecture flat simplifiée (core/ + adapters/ + config/)
   - Virtual Threads for concurrency
-  - Spring AI @Tool annotations for MCP
-  - Langchain4j EmbeddingStore pattern
+  - Spring AI @Tool annotations for MCP tools
+  - Langchain4j EmbeddingStore + ContentRetriever
+  - Langchain4j DocumentSplitter (markdown-aware)
   - WebMVC SSE transport
 test_patterns:
   - JUnit 5
@@ -37,7 +39,11 @@ Claude Code n'a pas accès à la documentation technique à jour ni aux conventi
 
 ### Solution
 
-Serveur MCP en Java 25 (Spring Boot + Spring AI MCP SDK) exposant un RAG basé sur pgvector. Embeddings via BGE-M3 sur RunPod/Infinity. Skills Claude Code pour intégration fluide. Architecture s'appuyant sur Langchain4j pour l'orchestration RAG.
+Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
+- **Transport MCP** : Spring Boot + Spring AI MCP SDK (SSE)
+- **Pipeline RAG** : Langchain4j (embeddings, retrieval, reranking)
+- **Embeddings** : BGE-M3 sur RunPod/Infinity
+- **Architecture** : Flat et simplifiée (YAGNI) - pas d'hexagonal, pas de DDD
 
 ### Scope
 
@@ -61,10 +67,10 @@ Serveur MCP en Java 25 (Spring Boot + Spring AI MCP SDK) exposant un RAG basé s
 ### Codebase Patterns
 
 - **Runtime**: Java 25 avec Virtual Threads (Project Loom) pour concurrence légère
-- **Framework**: Spring Boot 3.4+ avec Spring AI 1.1.0-M2 (MCP SDK)
-- **RAG Orchestration**: Langchain4j 1.7.1 pour pipeline RAG (chunking, retrieval, reranking)
-- **MCP Transport**: WebMVC SSE (synchrone, Virtual Threads gèrent la concurrence)
-- **Vector Storage**: pgvector 0.8.1 avec halfvec pour réduire l'empreinte mémoire
+- **Framework**: Spring Boot 3.4+ (web, DI, config)
+- **MCP Transport**: Spring AI MCP SDK - WebMVC SSE uniquement
+- **RAG Pipeline**: Langchain4j 1.0.1 (chunking, embeddings, retrieval, reranking)
+- **Vector Storage**: pgvector 0.8.1 avec halfvec via Langchain4j EmbeddingStore
 - **Embedding Model**: BGE-M3 (1024 dimensions, 8K tokens context)
 - **Reranker**: bge-reranker-v2-m3 via même endpoint Infinity
 
@@ -76,10 +82,39 @@ Serveur MCP en Java 25 (Spring Boot + Spring AI MCP SDK) exposant un RAG basé s
 | Framework | Spring Boot 3.4+ | Écosystème mature, Spring AI MCP SDK officiel |
 | MCP Transport | WebMVC SSE | Simplicité, Virtual Threads suffisent pour mono-utilisateur |
 | RAG Library | Langchain4j | Pipeline RAG mature (chunking, retrieval, reranking intégrés) |
+| MCP SDK | Spring AI MCP | Transport SSE uniquement, pas pour le RAG |
 | Database | PostgreSQL 18 + pgvector 0.8.1 | Robuste, SQL standard, halfvec support natif |
 | Embeddings | BGE-M3 via Infinity | 1024D, même famille que reranker, API OpenAI-compatible |
 | Reranker | bge-reranker-v2-m3 | État de l'art, multilingue, même endpoint Infinity |
 | Vector type | halfvec | 50% économie mémoire (2KB vs 4KB par vecteur 1024D) |
+| Architecture | Flat simplifiée | YAGNI - pas d'hexagonal ni DDD pour un serveur mono-utilisateur |
+
+### Project Structure
+
+```
+src/main/java/dev/alexandria/
+├── core/
+│   ├── Document.java                # POJO simple
+│   ├── DocumentChunk.java           # Chunk avec metadata
+│   └── RetrievalService.java        # Logique métier RAG
+│
+├── adapters/
+│   ├── InfinityEmbeddingClient.java # Client Infinity (embeddings + rerank)
+│   ├── PgVectorRepository.java      # Langchain4j EmbeddingStore wrapper
+│   └── McpTools.java                # @Tool annotations Spring AI
+│
+├── config/
+│   ├── LangchainConfig.java         # Beans Langchain4j
+│   └── McpConfig.java               # Config MCP transport
+│
+└── AlexandriaApplication.java
+```
+
+**Principes :**
+- Pas d'interfaces/ports abstraits - adapters directs
+- Pas de DDD aggregates - simples POJOs
+- Retry simple sur erreur Infinity - pas de circuit breaker
+- Virtual Threads gérés par Spring Boot - pas de config manuelle
 
 ### pgvector Configuration (from research)
 
@@ -162,22 +197,32 @@ curl -X POST http://<runpod>/rerank \
 
 **Maven dependencies (principales):**
 ```xml
-<!-- Spring AI MCP -->
+<!-- Spring AI MCP SDK (transport SSE uniquement) -->
 <dependency>
     <groupId>org.springframework.ai</groupId>
     <artifactId>spring-ai-mcp-server-webmvc-spring-boot-starter</artifactId>
 </dependency>
 
-<!-- Langchain4j -->
+<!-- Langchain4j (pipeline RAG complet) -->
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j</artifactId>
+    <version>1.0.1</version>
+</dependency>
 <dependency>
     <groupId>dev.langchain4j</groupId>
     <artifactId>langchain4j-pgvector</artifactId>
-    <version>1.7.1</version>
+    <version>1.0.1</version>
 </dependency>
 <dependency>
     <groupId>dev.langchain4j</groupId>
     <artifactId>langchain4j-document-parser-apache-tika</artifactId>
-    <version>1.7.1</version>
+    <version>1.0.1</version>
+</dependency>
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j-open-ai</artifactId>
+    <version>1.0.1</version>
 </dependency>
 ```
 
