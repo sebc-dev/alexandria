@@ -5,11 +5,11 @@ created: '2026-01-04'
 updated: '2026-01-05'
 status: 'in-progress'
 stepsCompleted: [1, 2]
-specProgress: '73%'
+specProgress: '75%'
 tech_stack:
   - Java 25 LTS (25.0.1)
   - Spring Boot 3.5.9 + Spring Framework 6.2.x
-  - Spring AI MCP SDK 1.1.1 GA (HTTP Streamable transport)
+  - Spring AI MCP SDK 1.1.2 GA (HTTP Streamable transport)
   - Langchain4j 1.10.0 (GA) + langchain4j-pgvector 1.10.0-beta18
   - Resilience4j 2.3.0 (Retry + decorators)
   - PostgreSQL 18.1
@@ -45,7 +45,7 @@ Claude Code n'a pas accès à la documentation technique à jour ni aux conventi
 ### Solution
 
 Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
-- **Transport MCP** : Spring Boot 3.5.9 + Spring AI MCP SDK 1.1.1 (HTTP Streamable via `/mcp`)
+- **Transport MCP** : Spring Boot 3.5.9 + Spring AI MCP SDK 1.1.2 (HTTP Streamable via `/mcp`)
 - **Pipeline RAG** : Langchain4j (embeddings, retrieval, reranking)
 - **Embeddings** : BGE-M3 sur RunPod/Infinity
 - **Retry** : Resilience4j 2.3.0 avec @Retry (exponential backoff)
@@ -54,7 +54,7 @@ Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
 ### Scope
 
 **In Scope:**
-- Serveur MCP Java 25 avec Spring AI MCP SDK 1.1.1 (HTTP Streamable transport)
+- Serveur MCP Java 25 avec Spring AI MCP SDK 1.1.2 (HTTP Streamable transport)
 - Skills Claude Code pour recherche sémantique
 - Ingestion de documents (markdown, texte, llms.txt)
 - PostgreSQL 18 + pgvector 0.8.1 (vector 1024D)
@@ -74,7 +74,7 @@ Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
 
 - **Runtime**: Java 25 LTS (25.0.1) avec Virtual Threads (JEP 491 - no pinning)
 - **Framework**: Spring Boot 3.5.9 + Spring Framework 6.2.x
-- **MCP Transport**: Spring AI MCP SDK 1.1.1 GA - HTTP Streamable (`/mcp` endpoint unique)
+- **MCP Transport**: Spring AI MCP SDK 1.1.2 GA - HTTP Streamable (`/mcp` endpoint unique)
 - **RAG Pipeline**: Langchain4j 1.10.0 (embeddings, retrieval) + client HTTP custom pour reranking
 - **Chunking**: Custom AlexandriaMarkdownSplitter (préservation code blocks, breadcrumbs)
 - **Vector Storage**: pgvector 0.8.1 avec vector(1024) via Langchain4j EmbeddingStore
@@ -90,7 +90,7 @@ Serveur MCP en Java 25 exposant un RAG basé sur pgvector :
 | Framework | Spring Boot 3.5.9 + Framework 6.2.x | Compatibilité Langchain4j, Jakarta EE 10, support OSS jusqu'en juin 2026 |
 | MCP Transport | HTTP Streamable | Endpoint unique `/mcp`, recommandé depuis MCP 2025-03-26 |
 | RAG Library | Langchain4j 1.10.0 | GA stable, EmbeddingStore pgvector (beta18) |
-| MCP SDK | Spring AI 1.1.1 GA | @McpTool annotations, version stable pour Boot 3.x |
+| MCP SDK | Spring AI 1.1.2 GA | @McpTool annotations, version stable pour Boot 3.x |
 | Database | PostgreSQL 18.1 + pgvector 0.8.1 | Robuste, SQL standard, HNSW index |
 | Embeddings | BGE-M3 via langchain4j-open-ai | 1024D, baseUrl custom vers Infinity |
 | Reranker | bge-reranker-v2-m3 | Client HTTP custom (format Cohere, non-OpenAI) |
@@ -117,7 +117,6 @@ src/main/java/dev/alexandria/
 │   └── ErrorCategory.java               # Enum catégories d'erreurs
 │
 ├── adapters/
-│   ├── InfinityEmbeddingModel.java      # OpenAiEmbeddingModel avec baseUrl custom
 │   ├── InfinityRerankClient.java        # Client HTTP pour /rerank (format Cohere)
 │   ├── PgVectorRepository.java          # Langchain4j EmbeddingStore wrapper
 │   ├── McpTools.java                    # @McpTool annotations Spring AI
@@ -153,11 +152,12 @@ src/test/java/dev/alexandria/test/
 
 ```sql
 -- Table structure (Langchain4j crée automatiquement avec createTable=true)
+-- Note: Langchain4j utilise ces noms de colonnes par défaut
 CREATE TABLE document_embeddings (
-    embedding_id UUID PRIMARY KEY,
-    embedding vector(1024),
-    text TEXT,
-    metadata JSONB
+    embedding_id UUID PRIMARY KEY,  -- Langchain4j: configurable via idColumn()
+    embedding vector(1024),         -- Langchain4j: configurable via embeddingColumn()
+    text TEXT,                      -- Langchain4j: configurable via textColumn()
+    metadata JSONB                  -- Langchain4j: configurable via metadataColumn()
 );
 
 -- HNSW index optimized for 1024D cosine similarity
@@ -397,9 +397,10 @@ Endpoint unique RunPod exposant deux APIs avec formats différents:
 - BGE-M3 produit des vecteurs 1024 dimensions
 
 ```java
-// Via Langchain4j OpenAI module
+// Via Langchain4j OpenAI module (pas de wrapper custom nécessaire)
+// Configuré comme bean dans LangchainConfig.java
 EmbeddingModel model = OpenAiEmbeddingModel.builder()
-    .baseUrl("http://localhost:7997/v1")
+    .baseUrl("http://localhost:7997/v1")  // Infinity endpoint
     .apiKey("EMPTY")  // Si pas d'auth configurée
     .modelName("BAAI/bge-m3")
     .build();
@@ -490,7 +491,8 @@ public class InfinityRerankClient {
     // Fallback: mêmes paramètres + Exception en dernier
     private RerankResult rerankFallback(String query, List<String> documents, Exception ex) {
         log.warn("Infinity rerank unavailable after retries: {}", ex.getMessage());
-        throw new ServiceUnavailableException("Reranking service temporarily unavailable");
+        throw new AlexandriaException(ErrorCategory.SERVICE_UNAVAILABLE,
+            "Reranking service temporarily unavailable", ex);
     }
 }
 ```
@@ -572,14 +574,17 @@ public class HttpClientConfig {
     }
 
     /**
-     * JDK HttpClient factory (pas Apache) pour Virtual Threads.
+     * JDK HttpClient factory avec read timeout.
+     * Note: JdkClientHttpRequestFactory supporte readTimeout depuis Spring 6.1.
      */
     private ClientHttpRequestFactory createJdkClientFactory(
             Duration connectTimeout, Duration readTimeout) {
         var httpClient = java.net.http.HttpClient.newBuilder()
             .connectTimeout(connectTimeout)
             .build();
-        return new JdkClientHttpRequestFactory(httpClient);
+        var factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(readTimeout);  // Spring 6.1+ - timeout par requête
+        return factory;
     }
 }
 ```
@@ -868,8 +873,8 @@ public class RetrievalService {
 ```java
 package dev.alexandria.adapters;
 
-import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
+import org.springframework.ai.mcp.spec.McpSchema.CallToolResult;
+import org.springframework.ai.mcp.spec.McpSchema.TextContent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -1226,26 +1231,36 @@ public CallToolResult ingestDocument(
 
 | Format | Parser | Extensions |
 |--------|--------|------------|
-| Markdown | CommonMark-java 0.27.0 + GFM | `.md` |
+| Markdown | TextDocumentParser + AlexandriaMarkdownSplitter | `.md` |
 | Text | TextDocumentParser (Langchain4j) | `.txt` |
 | llms.txt | LlmsTxtParser (custom) | `llms.txt`, `llms-full.txt` |
 | HTML | JsoupDocumentParser (Langchain4j) | `.html`, `.htm` |
 
+**Note:** CommonMark-java 0.27.0 + GFM est utilisé par `AlexandriaMarkdownSplitter` pour le parsing structurel (headers, code blocks, tables), pas comme DocumentParser Langchain4j.
+
 ```java
 /**
  * Détection format par extension (simple switch, pas SPI).
+ * Note: Langchain4j n'a pas de MarkdownDocumentParser - on utilise TextDocumentParser
+ * puis AlexandriaMarkdownSplitter pour le chunking markdown-aware.
+ *
+ * ATTENTION: llms.txt utilise LlmsTxtParser (classe standalone, pas DocumentParser).
+ * Traitement séparé dans IngestionService.ingestLlmsTxt().
  */
 public DocumentParser getParser(Path file) {
     String name = file.getFileName().toString().toLowerCase();
 
     if (name.endsWith(".md")) {
-        return new MarkdownDocumentParser();  // CommonMark
-    } else if (name.equals("llms.txt") || name.equals("llms-full.txt")) {
-        return new LlmsTxtParser();
+        return new TextDocumentParser();  // Parsing brut, chunking via AlexandriaMarkdownSplitter
     } else if (name.endsWith(".html") || name.endsWith(".htm")) {
-        return new JsoupDocumentParser();
-    } else if (name.endsWith(".txt")) {
-        return new TextDocumentParser();
+        return new JsoupDocumentParser(); // Langchain4j natif
+    } else if (name.endsWith(".txt") && !name.startsWith("llms")) {
+        return new TextDocumentParser();  // Langchain4j natif
+    }
+
+    // llms.txt / llms-full.txt → traitement séparé (pas DocumentParser)
+    if (name.equals("llms.txt") || name.equals("llms-full.txt")) {
+        return null;  // Signal pour IngestionService d'utiliser LlmsTxtParser
     }
 
     throw new IngestionException("Unsupported format: " + name, null);
@@ -1261,8 +1276,10 @@ import java.util.regex.*;
 
 /**
  * Parser pour le format llms.txt (spec llmstxt.org).
+ * NOTE: Classe standalone, pas un DocumentParser Langchain4j.
+ * Retourne LlmsTxtDocument (structure riche) pour traitement custom dans IngestionService.
  */
-public class LlmsTxtParser implements DocumentParser {
+public class LlmsTxtParser {
 
     private static final Pattern TITLE_PATTERN =
         Pattern.compile("^#\\s+(.+)$", Pattern.MULTILINE);
@@ -1470,17 +1487,17 @@ public class DocumentUpdateService {
 
 | File | Purpose |
 | ---- | ------- |
-| `docs/research/resultats/java/Spring AI MCP SDK - Complete @Tool annotation guide for SSE transport.md` | Guide @McpTool annotations |
-| `docs/research/resultats/consolidation/Support complet dans Spring AI MCP SDK 1.1.2.md` | Config MCP HTTP Streamable |
-| `docs/research/resultats/java/Langchain4j et Java 25 - compatibilité Spring Boot en janvier 2026.md` | Compatibilité Langchain4j/Boot 3.5 |
-| `docs/research/resultats/java/Langchain4j 1.0.1 DocumentSplitter capabilities for Alexandria RAG.md` | Custom splitter pattern |
-| `docs/research/resultats/java/Langchain4j works seamlessly with Infinity embedding server.md` | Intégration Infinity |
-| `docs/research/resultats/java/API de reranking Infinity - guide technique complet.md` | API reranking détaillée |
-| `docs/research/resultats/java/Schéma PostgreSQL optimal pour RAG avec pgvector.md` | Schéma DB complet |
-| `docs/research/resultats/java/Testcontainers avec PostgreSQL 18 et pgvector 0.8.1.md` | Config tests |
-| `docs/research/resultats/java/llms.txt Standard - Complete Specification for Java Parser Implementation.md` | Spec llms.txt parser |
-| `docs/research/resultats/java/Claude Code MCP configuration for SSE transport servers.md` | Config client Claude Code (à adapter pour HTTP Streamable) |
-| `docs/research/resultats/consolidation/Validation exhaustive de la stack Alexandria RAG Server.md` | Validation complète stack janvier 2026 |
+| `docs/research/02-mcp/spring-ai-mcp-tool-annotations.md` | Guide @McpTool annotations |
+| `docs/research/02-mcp/spring-ai-mcp-sdk-1.1.2-guide.md` | Config MCP HTTP Streamable |
+| `docs/research/01-stack-validation/langchain4j-spring-boot-compatibility.md` | Compatibilité Langchain4j/Boot 3.5 |
+| `docs/research/03-rag-pipeline/langchain4j-document-splitter.md` | Custom splitter pattern |
+| `docs/research/03-rag-pipeline/langchain4j-infinity-integration.md` | Intégration Infinity |
+| `docs/research/03-rag-pipeline/infinity-reranking-api.md` | API reranking détaillée |
+| `docs/research/04-database/postgresql-pgvector-schema.md` | Schéma DB complet |
+| `docs/research/07-testing/testcontainers-pgvector.md` | Config tests |
+| `docs/research/05-ingestion/llms-txt-specification.md` | Spec llms.txt parser |
+| `docs/research/02-mcp/claude-code-mcp-configuration.md` | Config client Claude Code (à adapter pour HTTP Streamable) |
+| `docs/research/01-stack-validation/comprehensive-stack-validation.md` | Validation complète stack janvier 2026 |
 
 ### Hardware Cible (Self-hosted)
 
@@ -1513,7 +1530,7 @@ public class DocumentUpdateService {
 
 <properties>
     <java.version>25</java.version>
-    <spring-ai.version>1.1.1</spring-ai.version>
+    <spring-ai.version>1.1.2</spring-ai.version>
     <resilience4j.version>2.3.0</resilience4j.version>
     <langchain4j.version>1.10.0</langchain4j.version>
     <langchain4j-spring.version>1.10.0-beta18</langchain4j-spring.version>
@@ -1596,10 +1613,11 @@ public class DocumentUpdateService {
         <version>${langchain4j-spring.version}</version>
     </dependency>
 
-    <!-- Langchain4j pgvector (BETA - 1.10.0-beta18) -->
+    <!-- Langchain4j pgvector (BETA - version explicite requise, pas dans BOM GA) -->
     <dependency>
         <groupId>dev.langchain4j</groupId>
         <artifactId>langchain4j-pgvector</artifactId>
+        <version>${langchain4j-spring.version}</version>
     </dependency>
 
     <!-- PostgreSQL -->
@@ -1659,7 +1677,7 @@ public class DocumentUpdateService {
 
 **Note versions:**
 - Spring Boot 3.5.9 = Dernière version 3.x, support OSS jusqu'en juin 2026
-- Spring AI 1.1.1 = GA, stable pour Boot 3.x (1.1.2 n'existe pas encore)
+- Spring AI 1.1.2 = GA, stable pour Boot 3.x
 - langchain4j-pgvector = Beta (API stable depuis 0.31.0)
 - langchain4j-spring-boot-starter = Beta, nécessite version explicite
 - Resilience4j 2.3.0 = Compatible Virtual Threads, @Retry annotations
@@ -1689,7 +1707,8 @@ package dev.alexandria.test;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.PostgreSQLContainer;
+// NOTE: Testcontainers 2.x - package changé (plus org.testcontainers.containers.*)
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * Configuration réutilisable pour tests avec pgvector.
@@ -1889,7 +1908,7 @@ class McpToolsE2ETest {
 
     @Test
     @DisplayName("Should search documents via MCP")
-    void shouldSearchViaVcp() {
+    void shouldSearchViaMcp() {
         McpSyncClient client = McpTestSupport.createClient(port);
 
         try {
@@ -1914,20 +1933,22 @@ class McpToolsE2ETest {
 }
 
 /**
- * Helper pour créer un client MCP de test.
+ * Helper pour créer un client MCP de test (HTTP Streamable).
+ * Utilise MCP Java SDK 0.17.0 (inclus via Spring AI 1.1.2).
  */
 public class McpTestSupport {
 
     public static McpSyncClient createClient(int port) {
-        WebClient webClient = WebClient.builder()
-            .baseUrl("http://localhost:" + port)
+        // HTTP Streamable transport - classe du MCP Java SDK
+        // Package: io.modelcontextprotocol.client.transport
+        var transport = HttpClientStreamableHttpTransport
+            .builder("http://localhost:" + port)
+            .endpoint("/mcp")
             .build();
-
-        // Note: Adapter pour HTTP Streamable si SSE déprécié
-        var transport = WebFluxSseClientTransport.builder(webClient).build();
 
         return McpClient.sync(transport)
             .requestTimeout(Duration.ofSeconds(30))
+            .clientInfo(new McpSchema.Implementation("alexandria-test", "1.0.0"))
             .build();
     }
 }
@@ -2206,7 +2227,7 @@ logging:
 - Format llms.txt: Standard défini sur https://llmstxt.org/
 - Usage prévu: mono-utilisateur, développeur utilisant Claude Code quotidiennement
 - Centaines de documents (taille typique de documentation technique)
-- Recherches existantes dans `docs/research/resultats/` réutilisables
+- Recherches existantes dans `docs/research/` réutilisables (organisées par thème)
 - Spring AI MCP reference: https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html
 - Langchain4j pgvector: https://docs.langchain4j.dev/integrations/embedding-stores/pgvector/
 
@@ -2217,7 +2238,7 @@ logging:
 | Java | 25 LTS (25.0.1) | ✅ GA | Support jusqu'en 2030, JEP 491 inclus. **25.0.2 prévu 20 jan 2026** |
 | Spring Boot | 3.5.9 | ✅ GA | Dernière 3.x, support OSS jusqu'en juin 2026 |
 | Spring Framework | 6.2.15 | ✅ GA | Inclus dans Boot 3.5.9, compatible Langchain4j |
-| Spring AI MCP SDK | 1.1.1 | ✅ GA | HTTP Streamable transport, @McpTool annotations |
+| Spring AI MCP SDK | 1.1.2 | ✅ GA | HTTP Streamable transport, @McpTool annotations |
 | Resilience4j | 2.3.0 | ✅ GA | @Retry, compatible Virtual Threads, metrics Micrometer |
 | Langchain4j core | 1.10.0 | ✅ GA | BOM recommandé |
 | langchain4j-pgvector | 1.10.0-beta18 | ⚠️ Beta | API stable depuis 0.31.0, crée IVFFlat par défaut |
