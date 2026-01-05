@@ -514,6 +514,53 @@ Propose cette checklist au format markdown.
 
 ---
 
+## 13. Validation Tech-Spec (R-TS)
+
+### 13.1 Testcontainers 2.x - Artifact ID PostgreSQL (R-TS.1)
+
+```
+Recherche l'artifact ID correct pour le module PostgreSQL dans Testcontainers 2.0.3.
+
+Contexte:
+- La tech-spec Alexandria utilise `testcontainers-postgresql` comme artifact ID
+- Testcontainers 2.x a changé la structure des modules depuis la version 1.x
+- Le document mentionne "préfixes modules changés depuis 1.x"
+
+Questions:
+1. Quel est l'artifact ID exact pour PostgreSQL dans Testcontainers 2.0.3?
+2. Le groupId reste-t-il `org.testcontainers`?
+3. Y a-t-il un BOM Testcontainers 2.x à utiliser?
+4. Quels autres modules ont changé de nom entre 1.x et 2.x?
+
+Propose la dépendance Maven correcte avec version explicite.
+
+Référence: https://java.testcontainers.org/ ou Maven Central
+```
+
+### 13.2 Spring AI MCP SDK - Client HTTP Streamable (R-TS.2)
+
+```
+Recherche le nom exact de la classe pour créer un client MCP HTTP Streamable dans Spring AI MCP SDK 1.1.2.
+
+Contexte:
+- La tech-spec Alexandria utilise `StreamableHttpMcpTransport.builder()` dans McpTestSupport.java
+- Ce nom semble hypothétique et non vérifié
+- Le transport HTTP Streamable est recommandé depuis MCP spec 2025-03-26
+
+Questions:
+1. Quelle est la classe exacte pour créer un client MCP HTTP Streamable dans Spring AI 1.1.2?
+2. Quel est le package complet? (`org.springframework.ai.mcp.client.*`?)
+3. Comment instancier ce transport pour les tests?
+4. Y a-t-il des exemples dans la documentation Spring AI ou le repo GitHub?
+
+Propose un snippet de code correct pour McpTestSupport.java avec les imports exacts.
+
+Référence: https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html
+GitHub: https://github.com/spring-projects/spring-ai
+```
+
+---
+
 ## Usage
 
 1. Ouvrir Claude Desktop avec le projet Alexandria
@@ -528,3 +575,4 @@ Propose cette checklist au format markdown.
 2. **Important** : 1.2, 1.3, 2.2, 2.3, 3.2, 5.1, 9.1, 9.2
 3. **Complémentaire** : 4.1, 6.2, 7.1, 8.1, 10.1, 11.1, 11.2
 4. **Validation** : 12.1, 12.2
+5. **Validation Tech-Spec** : 13.1 (R-TS.1), 13.2 (R-TS.2)

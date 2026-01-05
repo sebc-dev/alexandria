@@ -1,7 +1,7 @@
 # Recherches Complémentaires - Analyse des Recommandations
 
 **Créé:** 2026-01-05
-**Mis à jour:** 2026-01-05 (ajout R22.1-R22.3 Sécurité)
+**Mis à jour:** 2026-01-05 (ajout R-TS.1-R-TS.3 Validation Cohérence)
 **Objectif:** Centraliser les points nécessitant des investigations supplémentaires avant implémentation
 
 ---
@@ -197,7 +197,8 @@
 | MCP SDK | R4.1, R4.2 | 2/2 ✅ | - |
 | MCP Tools | R5.1, R5.2, R7.1, R7.2 | 4/4 ✅ | - |
 | Sécurité | R22.1, R22.2, R22.3 | 3/3 ✅ | - |
-| **TOTAL** | **15** | **15/15 ✅** | **0** |
+| **Validation Tech-Spec** | R-TS.1, R-TS.2, R-TS.3 | 3/3 ✅ | - |
+| **TOTAL** | **18** | **18/18 ✅** | **0** |
 
 ### Décisions architecturales clés
 
@@ -207,7 +208,7 @@
 4. **Context MCP:** `McpSyncRequestContext` (pas deprecated `McpSyncServerExchange`)
 5. **Dotenv:** spring-dotenv 5.1.0 pour support complet `.env`
 6. **PGDATA:** Volume mount à `/var/lib/postgresql` pour PostgreSQL 18
-7. **Spring AI:** Version **1.1.1** (pas 1.1.2 qui n'existe pas!)
+7. **Spring AI:** Version **1.1.2** GA (9 décembre 2025)
 8. **Sécurité MVP:** Pas d'auth (localhost). Si LAN: filtre custom `OncePerRequestFilter`
 
 ---
@@ -251,6 +252,48 @@
   - **Positionnement:** Avant `AnonymousAuthenticationFilter`
   - Code exemple complet fourni avec `SecurityFilterChain` Spring Security 6.x
 - **Décision Alexandria:** Filtre custom pour MVP si auth LAN nécessaire
+
+---
+
+## Fichier Tech-Spec: Validation de Cohérence (2026-01-05)
+
+### R-TS.1 - Testcontainers 2.x artifact ID PostgreSQL
+- **Priorité:** 🟠 IMPORTANT
+- **Question:** Quel est l'artifact ID correct pour PostgreSQL dans Testcontainers 2.0.3 ? La tech-spec utilise `testcontainers-postgresql` mais Testcontainers 2.x a changé la structure des modules.
+- **Contexte:** Ligne ~1656 de tech-spec-wip.md
+- **Statut:** [x] ✅ RÉSOLU
+- **Recherche:** `Testcontainers 2.0.3 PostgreSQL artifact is testcontainers-postgresql.md`
+- **Résolution:**
+  - **`testcontainers-postgresql` est CORRECT** pour Testcontainers 2.x
+  - Inversion de ce qu'on pensait: **1.x** utilisait `postgresql`, **2.x** utilise `testcontainers-postgresql`
+  - **Package Java changé:** `org.testcontainers.postgresql.PostgreSQLContainer` (plus `org.testcontainers.containers.*`)
+  - BOM disponible: `testcontainers-bom:2.0.3`
+- **Action tech-spec:** Aucune correction artifact. Ajouter note sur import Java modifié
+
+### R-TS.2 - Spring AI MCP SDK 1.1.x - Classe transport HTTP Streamable client
+- **Priorité:** 🟠 IMPORTANT
+- **Question:** Quel est le nom exact de la classe pour créer un client MCP HTTP Streamable côté test ? La tech-spec utilise `StreamableHttpMcpTransport.builder()` mais ce nom semble hypothétique.
+- **Contexte:** Ligne ~1931 de tech-spec-wip.md (McpTestSupport)
+- **Statut:** [x] ✅ RÉSOLU
+- **Recherche:** `MCP HTTP Streamable Client Transport in Spring AI 1.1.2.md`
+- **Résolution:**
+  - **`StreamableHttpMcpTransport` N'EXISTE PAS** — classe hypothétique
+  - **Classe correcte:** `HttpClientStreamableHttpTransport`
+  - **Package:** `io.modelcontextprotocol.client.transport`
+  - **Builder:** `HttpClientStreamableHttpTransport.builder("http://localhost:8080").endpoint("/mcp").build()`
+  - **Alternative WebFlux:** `WebClientStreamableHttpTransport` (applications réactives)
+  - **SDK:** MCP Java SDK `io.modelcontextprotocol.sdk:mcp:0.17.0` (inclus via Spring AI)
+- **Action tech-spec:** Corriger le snippet McpTestSupport.java avec la bonne classe et imports
+
+### R-TS.3 - Spring AI version: 1.1.1 vs 1.1.2
+- **Priorité:** 🔴 BLOQUANT
+- **Question:** La tech-spec utilise Spring AI 1.1.2 partout, mais R22.2 a établi que 1.1.2 n'existe pas (version actuelle: 1.1.1). Faut-il corriger toute la tech-spec ?
+- **Contexte:** Frontmatter + multiples références dans tech-spec-wip.md
+- **Statut:** [x] ✅ RÉSOLU
+- **Résolution:**
+  - **Spring AI 1.1.2 GA** publiée le **9 décembre 2025**
+  - La tech-spec utilise la bonne version — aucune correction requise
+  - R22.2 était basée sur des données du 5 décembre (avant la release)
 
 ---
 

@@ -23,7 +23,7 @@ Alexandria est un serveur RAG (Retrieval-Augmented Generation) exposé via MCP (
 |-----------|-------|--------|---------------|
 | Runtime | Java 25 LTS (25.0.1) | ✅ GA | Virtual Threads matures (JEP 491), support jusqu'en 2030. **25.0.2 prévu 20 jan 2026** |
 | Framework | Spring Boot 3.5.9 + Spring Framework 6.2.x | ✅ GA | Compatibilité Langchain4j, Jakarta EE 10, support OSS jusqu'en juin 2026 |
-| MCP Transport | Spring AI MCP SDK 1.1.1 GA | ✅ GA | HTTP Streamable via /mcp, recommandé depuis MCP 2025-03-26 |
+| MCP Transport | Spring AI MCP SDK 1.1.2 GA | ✅ GA | HTTP Streamable via /mcp, recommandé depuis MCP 2025-03-26 |
 | RAG Pipeline | Langchain4j 1.10.0 | ✅ GA | Pipeline RAG mature (embeddings, retrieval), BOM recommandé |
 | langchain4j-pgvector | 1.10.0-beta18 | ⚠️ Beta | API stable depuis 0.31.0, crée IVFFlat par défaut |
 | langchain4j-spring-boot-starter | 1.10.0-beta18 | ⚠️ Beta | Compatible Boot 3.x uniquement |
@@ -45,9 +45,10 @@ src/main/java/dev/alexandria/
 ├── core/
 │   ├── Document.java                    # POJO simple
 │   ├── DocumentChunk.java               # Chunk avec metadata
-│   ├── ChunkMetadata.java               # Record metadata (7 champs)
+│   ├── ChunkMetadata.java               # Record metadata (8 champs + document_hash)
 │   ├── RetrievalService.java            # Logique métier RAG + tiered response
 │   ├── IngestionService.java            # Orchestration ingestion
+│   ├── DocumentUpdateService.java       # Detection changements + DELETE/INSERT
 │   ├── QueryValidator.java              # Validation requêtes avant recherche
 │   ├── McpSearchResponse.java           # Response schema avec SearchMetadata
 │   ├── AlexandriaMarkdownSplitter.java  # Custom DocumentSplitter (code blocks, tables)
@@ -56,7 +57,6 @@ src/main/java/dev/alexandria/
 │   └── ErrorCategory.java               # Enum catégories d'erreurs
 │
 ├── adapters/
-│   ├── InfinityEmbeddingModel.java      # OpenAiEmbeddingModel avec baseUrl custom
 │   ├── InfinityRerankClient.java        # Client HTTP pour /rerank (format Cohere)
 │   ├── PgVectorRepository.java          # Langchain4j EmbeddingStore wrapper
 │   ├── McpTools.java                    # @McpTool annotations Spring AI
@@ -91,7 +91,7 @@ src/test/java/dev/alexandria/test/
 ## Points Clés Techniques
 
 ### MCP Transport
-- Spring AI MCP SDK 1.1.1 GA - HTTP Streamable via `/mcp` (endpoint unique)
+- Spring AI MCP SDK 1.1.2 GA - HTTP Streamable via `/mcp` (endpoint unique)
 - Annotations: `@McpTool` de `org.springaicommunity.mcp.annotation`
 - Context: `McpSyncRequestContext` (pas deprecated `McpSyncServerExchange`)
 - Progress notifications: `context.progress(double, String)`
@@ -162,23 +162,35 @@ src/test/java/dev/alexandria/test/
 
 ```sql
 -- Table structure (Langchain4j crée automatiquement avec createTable=true)
+-- Note: Langchain4j utilise ces noms de colonnes par défaut
 CREATE TABLE document_embeddings (
-    embedding_id UUID PRIMARY KEY,
-    embedding vector(1024),
-    text TEXT,
-    metadata JSONB
+    embedding_id UUID PRIMARY KEY,  -- Langchain4j: configurable via idColumn()
+    embedding vector(1024),         -- Langchain4j: configurable via embeddingColumn()
+    text TEXT,                      -- Langchain4j: configurable via textColumn()
+    metadata JSONB                  -- Langchain4j: configurable via metadataColumn()
 );
 
 -- HNSW index optimized for 1024D cosine similarity
-CREATE INDEX ON document_embeddings USING hnsw (embedding vector_cosine_ops)
+CREATE INDEX idx_embeddings_hnsw ON document_embeddings
+USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 128);
+
+-- B-tree indexes pour opérations de mise à jour (DELETE par document)
+CREATE INDEX idx_doc_source_uri ON document_embeddings ((metadata->>'sourceUri'));
+CREATE INDEX idx_doc_hash ON document_embeddings ((metadata->>'documentHash'));
+
+-- Index GIN pour requêtes flexibles sur métadonnées (optionnel)
+CREATE INDEX idx_metadata_gin ON document_embeddings USING GIN (metadata jsonb_path_ops);
 
 -- Runtime query settings
 SET hnsw.ef_search = 100;
 SET hnsw.iterative_scan = on;  -- Nouveau 0.8.x pour filtres JSONB
 ```
 
-**Note:** Langchain4j crée un index **IVFFlat** par défaut, pas HNSW. Créer l'index HNSW manuellement pour de meilleures performances.
+**Notes:**
+- Langchain4j crée un index **IVFFlat** par défaut, pas HNSW. Créer l'index HNSW manuellement.
+- `idx_doc_source_uri`: Lookup rapide pour DELETE par document lors des mises à jour
+- `idx_doc_hash`: Détection de doublons par contenu et vérification de changement
 
 ## Configuration MCP HTTP Streamable
 
@@ -313,7 +325,7 @@ management:
 
 <properties>
     <java.version>25</java.version>
-    <spring-ai.version>1.1.1</spring-ai.version>
+    <spring-ai.version>1.1.2</spring-ai.version>
     <resilience4j.version>2.3.0</resilience4j.version>
     <langchain4j.version>1.10.0</langchain4j.version>
     <langchain4j-spring.version>1.10.0-beta18</langchain4j-spring.version>
@@ -396,10 +408,11 @@ management:
         <version>${langchain4j-spring.version}</version>
     </dependency>
 
-    <!-- Langchain4j pgvector (BETA - 1.10.0-beta18) -->
+    <!-- Langchain4j pgvector (BETA - version explicite requise, pas dans BOM GA) -->
     <dependency>
         <groupId>dev.langchain4j</groupId>
         <artifactId>langchain4j-pgvector</artifactId>
+        <version>${langchain4j-spring.version}</version>
     </dependency>
 
     <!-- PostgreSQL -->
@@ -549,16 +562,16 @@ curl -X POST http://<runpod>/rerank \
 
 | Fichier | Contenu |
 |---------|---------|
-| `docs/research/resultats/java/Spring AI MCP SDK - Complete @Tool annotation guide for SSE transport.md` | Guide @McpTool annotations |
+| `docs/research/resultats/exploration_java/Spring AI MCP SDK - Complete @Tool annotation guide for SSE transport.md` | Guide @McpTool annotations |
 | `docs/research/resultats/consolidation/Support complet dans Spring AI MCP SDK 1.1.2.md` | Config MCP HTTP Streamable |
-| `docs/research/resultats/java/Langchain4j et Java 25 - compatibilité Spring Boot en janvier 2026.md` | Compatibilité Langchain4j/Boot 3.5 |
-| `docs/research/resultats/java/Langchain4j 1.0.1 DocumentSplitter capabilities for Alexandria RAG.md` | Custom splitter pattern |
-| `docs/research/resultats/java/Langchain4j works seamlessly with Infinity embedding server.md` | Intégration Infinity |
-| `docs/research/resultats/java/API de reranking Infinity - guide technique complet.md` | API reranking détaillée |
-| `docs/research/resultats/java/Schéma PostgreSQL optimal pour RAG avec pgvector.md` | Schéma DB complet |
-| `docs/research/resultats/java/Testcontainers avec PostgreSQL 18 et pgvector 0.8.1.md` | Config tests |
-| `docs/research/resultats/java/llms.txt Standard - Complete Specification for Java Parser Implementation.md` | Spec llms.txt parser |
-| `docs/research/resultats/java/Claude Code MCP configuration for SSE transport servers.md` | Config client Claude Code (legacy SSE) |
+| `docs/research/resultats/exploration_java/Langchain4j et Java 25 - compatibilité Spring Boot en janvier 2026.md` | Compatibilité Langchain4j/Boot 3.5 |
+| `docs/research/resultats/exploration_java/Langchain4j 1.0.1 DocumentSplitter capabilities for Alexandria RAG.md` | Custom splitter pattern |
+| `docs/research/resultats/exploration_java/Langchain4j works seamlessly with Infinity embedding server.md` | Intégration Infinity |
+| `docs/research/resultats/exploration_java/API de reranking Infinity - guide technique complet.md` | API reranking détaillée |
+| `docs/research/resultats/exploration_java/Schéma PostgreSQL optimal pour RAG avec pgvector.md` | Schéma DB complet |
+| `docs/research/resultats/exploration_java/Testcontainers avec PostgreSQL 18 et pgvector 0.8.1.md` | Config tests |
+| `docs/research/resultats/exploration_java/llms.txt Standard - Complete Specification for Java Parser Implementation.md` | Spec llms.txt parser |
+| `docs/research/resultats/exploration_java/Claude Code MCP configuration for SSE transport servers.md` | Config client Claude Code (legacy SSE) |
 | `docs/research/resultats/consolidation/Validation exhaustive de la stack Alexandria RAG Server.md` | Validation complète stack janvier 2026 |
 | `docs/research/resultats/consolidation/Resilience4j remporte le match pour Java 25 Virtual Threads.md` | Comparaison Resilience4j vs spring-retry |
 
@@ -634,6 +647,6 @@ Pour chaque recherche, structure ta réponse ainsi:
 Toutes les recherches sécurité ont été complétées le 2026-01-05. Voir `recherches-complementaires.md` pour les résultats.
 
 **Décisions clés:**
-- **Spring AI:** Version **1.1.1** (pas 1.1.2 qui n'existe pas!)
+- **Spring AI:** Version **1.1.2** GA (9 décembre 2025)
 - **mcp-server-security 0.0.5:** NOT production-ready (alpha), bug auth dans tools
 - **Sécurité MVP:** Pas d'auth (localhost). Si LAN: filtre custom `OncePerRequestFilter`
