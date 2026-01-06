@@ -1,0 +1,33 @@
+# Phase 6: Markdown Processing (TDD)
+
+- [ ] **Task 21: Create AlexandriaMarkdownSplitter** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/AlexandriaMarkdownSplitterTest.java`
+    - Test cases:
+      - `shouldExtractYamlFrontMatter()` - parse and remove YAML header
+      - `shouldPreserveCodeBlocksIntact()` - no splitting inside code blocks
+      - `shouldPreserveTablesIntact()` - no splitting inside tables
+      - `shouldSplitByHeaders()` - h1, h2, h3 boundaries
+      - `shouldGenerateBreadcrumbs()` - "H1 > H2 > H3" format
+      - `shouldRespectMaxChunkTokens()` - enforce 500 token limit
+      - `shouldApplyOverlap()` - 75 token overlap between chunks
+      - `shouldHandleOversizedContent()` - graceful degradation up to 1500 tokens
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/AlexandriaMarkdownSplitter.java`
+    - Action: Implements DocumentSplitter. Extracts YAML, protects code/tables with placeholders, splits by headers, restores protected content, adds breadcrumb metadata
+  - Notes: MAX_CHUNK_TOKENS=500, OVERLAP_TOKENS=75, MAX_OVERSIZED_TOKENS=1500, BREADCRUMB_DEPTH=3. Uses CommonMark-java
+
+- [ ] **Task 22: Create LlmsTxtParser** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/LlmsTxtParserTest.java`
+    - Test cases:
+      - `shouldParseTitleFromFirstLine()` - "# Title" format
+      - `shouldParseDescriptionFromBlockquote()` - "> description" format
+      - `shouldParseSectionsFromH2()` - "## Section" format
+      - `shouldParseLinksWithDescription()` - "[text](url): description" format
+      - `shouldParseLinksWithoutDescription()` - "[text](url)" format
+      - `shouldHandleMultipleSections()` - complex llms.txt
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/LlmsTxtParser.java`
+    - Action: Standalone parser for llms.txt format. Returns LlmsTxtDocument record with nested records
+  - Notes: Format spec at llmstxt.org. Regex patterns for parsing

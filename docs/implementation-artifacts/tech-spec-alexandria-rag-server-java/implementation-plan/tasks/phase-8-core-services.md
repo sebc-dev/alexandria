@@ -1,0 +1,47 @@
+# Phase 8: Core Services (TDD)
+
+- [ ] **Task 24: Create IngestionService** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/IngestionServiceTest.java`
+    - Test cases:
+      - `shouldIngestMarkdownDocument()` - happy path with mock splitter
+      - `shouldIngestTxtDocument()` - plain text handling
+      - `shouldIngestLlmsTxtDocument()` - llms.txt special handling
+      - `shouldRejectUnsupportedFormat()` - throw IngestionException
+      - `shouldBatchProcessMultipleFiles()` - batch with partition
+      - `shouldReportProgressForBatch()` - progress callback
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/IngestionService.java`
+    - Action: @Service orchestrating ingestion: validate, parse (router by extension), split, embedAndStore
+  - Notes: Router returns null for llms.txt (signal to use LlmsTxtParser). Guava Lists.partition for batches
+
+- [ ] **Task 25: Create DocumentUpdateService** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/DocumentUpdateServiceTest.java`
+    - Test cases:
+      - `shouldReturnNoChangeWhenUnmodified()` - same mtime+size+hash → NO_CHANGE
+      - `shouldReturnCreatedWhenNew()` - no existing → CREATED
+      - `shouldReturnUpdatedWhenModified()` - different hash → UPDATED
+      - `shouldUseFastPathForMtimeAndSize()` - F4 remediation: skip hash if mtime+size unchanged
+      - `shouldDeleteOldChunksBeforeInsert()` - atomic update pattern
+      - `shouldBeTransactional()` - F1 remediation: @Transactional test
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/DocumentUpdateService.java`
+    - Action: @Service with @Transactional. Two-phase change detection. DELETE+INSERT pattern
+  - Notes: F1 + F4 Remediations. metadataKey("sourceUri").isEqualTo() filter
+
+- [ ] **Task 26: Create RetrievalService** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/RetrievalServiceTest.java`
+    - Test cases:
+      - `shouldReturnHighConfidenceResults()` - score >= 0.7 → HIGH
+      - `shouldReturnPartialWhenMixedConfidence()` - some HIGH, some MEDIUM
+      - `shouldReturnNoResultsWhenEmptyDb()` - empty database case
+      - `shouldReturnNoResultsWhenBelowThreshold()` - all scores < 0.2
+      - `shouldSkipRerankWhenBudgetExhausted()` - graceful degradation
+      - `shouldFallbackToVectorWhenRerankTooAggressive()` - safety net
+      - `shouldValidateQueryFirst()` - invalid query → QueryValidationException
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/RetrievalService.java`
+    - Action: @Service with search method implementing tiered response. Vector search → rerank → threshold → response
+  - Notes: HIGH=0.7, MEDIUM=0.4, LOW=0.2. JdbcTemplate for COUNT(*). Budget-aware reranking

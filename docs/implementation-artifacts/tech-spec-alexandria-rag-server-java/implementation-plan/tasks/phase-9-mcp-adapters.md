@@ -1,0 +1,32 @@
+# Phase 9: MCP Adapters (TDD)
+
+- [ ] **Task 27: Create McpResponseFormatter** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/adapters/McpResponseFormatterTest.java`
+    - Test cases:
+      - `shouldFormatSearchResultsAsJson()` - JSON structure
+      - `shouldFormatSearchResultsAsMarkdown()` - Markdown structure
+      - `shouldIncludeDualFormat()` - both JSON and Markdown in response
+      - `shouldTruncateAtTokenBudget()` - MAX_TOKENS=8000
+      - `shouldShowTruncationMessage()` - "X more results truncated"
+      - `shouldFormatErrorResult()` - error structure
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/adapters/McpResponseFormatter.java`
+    - Action: Static helper class with formatSearchResults and errorResult methods
+  - Notes: Uses CallToolResult.builder(). Token budget management
+
+- [ ] **Task 28: Create McpTools** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/adapters/McpToolsTest.java`
+    - Test cases:
+      - `searchDocumentsShouldCallRetrievalService()` - delegation test
+      - `searchDocumentsShouldFormatResponse()` - uses formatter
+      - `searchDocumentsShouldHandleAlexandriaException()` - → errorResult
+      - `searchDocumentsShouldHandleUnexpectedException()` - → generic error
+      - `ingestDocumentShouldAcceptSingleFile()` - file ingestion
+      - `ingestDocumentShouldLimitDirectoryTo5Files()` - 5-file limit
+      - `ingestDocumentShouldReportProgress()` - progress via McpSyncRequestContext
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/adapters/McpTools.java`
+    - Action: @Service with @McpTool methods: search_documents, ingest_document
+  - Notes: @McpToolParam for descriptions. Exception handling → errorResult

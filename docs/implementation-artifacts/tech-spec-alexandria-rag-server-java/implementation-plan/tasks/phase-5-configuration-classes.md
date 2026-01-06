@@ -1,0 +1,83 @@
+# Phase 5: Configuration Classes (TDD)
+
+- [ ] **Task 14: Create RagProperties** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/RagPropertiesTest.java`
+    - Test cases:
+      - `shouldBindFromYaml()` - @SpringBootTest with test yaml
+      - `shouldValidateTopKInitialMin()` - @Min constraint
+      - `shouldValidateMinScoreRange()` - @DecimalMin/@DecimalMax
+      - `shouldHaveDefaultValues()` - verify sensible defaults
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/RagProperties.java`
+    - Action: @ConfigurationProperties(prefix="rag") with nested RetrievalConfig and RerankingConfig
+  - Notes: Include Jakarta validation annotations
+
+- [ ] **Task 15: Create TimeoutProperties** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/TimeoutPropertiesTest.java`
+    - Test cases:
+      - `shouldParseDurationFromYaml()` - Duration parsing
+      - `shouldHaveSensibleDefaults()` - verify default values
+      - `globalColdStartShouldBeGreaterThanWarm()` - business rule
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/TimeoutProperties.java`
+    - Action: @ConfigurationProperties(prefix="alexandria.timeouts") with Duration fields
+  - Notes: Use Duration type for timeouts
+
+- [ ] **Task 16: Create HttpClientConfig** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/HttpClientConfigTest.java`
+    - Test cases:
+      - `shouldCreateEmbeddingRestClient()` - bean exists
+      - `shouldCreateRerankRestClient()` - bean exists
+      - `shouldApplyTimeouts()` - verify timeout configuration
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/HttpClientConfig.java`
+    - Action: @Configuration with two RestClient beans using JdkClientHttpRequestFactory
+  - Notes: JDK HttpClient for Virtual Threads compatibility
+
+- [ ] **Task 17: Create ResilienceConfig** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/ResilienceConfigTest.java`
+    - Test cases:
+      - `shouldConfigureExponentialBackoff()` - verify retry config
+      - `shouldConfigureRateLimiter()` - F2 remediation
+      - `shouldConfigureBulkhead()` - F2 remediation
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/ResilienceConfig.java`
+    - Action: @Configuration with RetryConfigCustomizer, RateLimiterConfigCustomizer, BulkheadConfigCustomizer beans
+  - Notes: F2 Remediation - Add RateLimiter + Bulkhead
+
+- [ ] **Task 18: Create LangchainConfig** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/LangchainConfigTest.java`
+    - Test cases:
+      - `shouldCreateTokenizer()` - bean exists
+      - `shouldCreateSplitter()` - bean exists
+      - `shouldConfigureEmbeddingModelWithInfinityUrl()` - verify baseUrl override
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/LangchainConfig.java`
+    - Action: @Configuration with Tokenizer, AlexandriaMarkdownSplitter, EmbeddingModel, PgVectorEmbeddingStore beans
+  - Notes: EmbeddingModel uses langchain4j-open-ai with Infinity baseUrl
+
+- [ ] **Task 19: Create McpConfig** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/McpConfigTest.java`
+    - Test cases:
+      - `shouldEnableMcpEndpoint()` - /mcp endpoint accessible
+      - `shouldUseHttpStreamableTransport()` - verify transport type
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/McpConfig.java`
+    - Action: @Configuration for MCP server (mostly auto-config via spring-ai-starter-mcp-server-webmvc)
+  - Notes: Minimal config needed with Spring AI 1.1.2
+
+- [ ] **Task 20: Create VirtualThreadConfig** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/config/VirtualThreadConfigTest.java`
+    - Test cases:
+      - `shouldPropagateMdcAcrossVirtualThreads()` - correlationId survives thread switch
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/config/VirtualThreadConfig.java`
+    - Action: @Configuration with TaskDecorator bean for MDC propagation
+  - Notes: Critical for correlation ID in async contexts

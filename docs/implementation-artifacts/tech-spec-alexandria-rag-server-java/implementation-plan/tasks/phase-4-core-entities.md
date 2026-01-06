@@ -1,0 +1,44 @@
+# Phase 4: Core Entities (TDD)
+
+- [ ] **Task 11: Create ChunkMetadata record** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/ChunkMetadataTest.java`
+    - Test cases:
+      - `shouldCreateWithAllFields()` - verify record with 10 fields
+      - `toLogicalUriShouldCombineSourceAndIndex()` - test helper method
+      - `computeHashShouldBeConsistentForSameContent()` - deterministic hash
+      - `computeHashShouldNormalizeUnicode()` - NFKC normalization
+      - `computeHashShouldDifferForDifferentContent()`
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/ChunkMetadata.java`
+    - Action: Record with 10 fields (sourceUri, documentHash, chunkIndex, breadcrumbs, documentTitle, contentHash, createdAt, documentType, fileSize, fileModifiedAt) + static helper methods
+  - Notes: computeHash uses NFKC normalization + SHA-256. F4 Remediation: fileSize + fileModifiedAt for two-phase change detection
+
+- [ ] **Task 12: Create QueryValidator** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/QueryValidatorTest.java`
+    - Test cases (parameterized):
+      - `shouldRejectTooShortQuery("ab")` → TOO_SHORT
+      - `shouldRejectTooShortQuery("a")` → TOO_SHORT
+      - `shouldRejectStopwordsOnlyEnglish("the a an")` → TOO_VAGUE
+      - `shouldRejectStopwordsOnlyFrench("le la les")` → TOO_VAGUE
+      - `shouldAcceptValidQuery("how to configure PostgreSQL")` → VALID
+      - `shouldAcceptMinimalValidQuery("PostgreSQL config")` → VALID
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/QueryValidator.java`
+    - Action: Validation class with MIN_CHARS=3, MIN_MEANINGFUL_TOKENS=2, STOPWORDS set (EN + FR). Returns ValidationResult record with QueryProblem enum
+  - Notes: F16 Remediation - Include French stopwords
+
+- [ ] **Task 13: Create McpSearchResponse** (TDD)
+  - **RED**:
+    - Test file: `src/test/java/dev/alexandria/core/McpSearchResponseTest.java`
+    - Test cases:
+      - `successShouldHaveOkStatus()` - verify factory method
+      - `partialShouldHavePartialStatus()` - verify PARTIAL status
+      - `noResultsShouldHaveNoResultsStatus()` - verify NO_RESULTS status
+      - `errorShouldHaveErrorStatus()` - verify ERROR status
+      - `shouldCalculateRelevanceLevelFromScore()` - HIGH/MEDIUM/LOW thresholds
+  - **GREEN**:
+    - File: `src/main/java/dev/alexandria/core/McpSearchResponse.java`
+    - Action: Record with results list + SearchMetadata. Include nested records: SearchResult, SearchMetadata. Enums: SearchStatus, RelevanceLevel. Factory methods: success, partial, noResults, error
+  - Notes: This is the contract for all search responses

@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Context for Development](#table-of-contents)
+  - [TDD Workflow](./tdd-workflow.md) **(MÉTHODOLOGIE)**
   - [Codebase Patterns](./codebase-patterns.md)
   - [Architecture Decisions](./architecture-decisions.md)
   - [Project Structure](./project-structure.md)
