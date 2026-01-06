@@ -4,9 +4,12 @@ slug: alexandria-rag-server-java
 created: 2026-01-06
 status: ready-for-dev
 stepsCompleted: [1, 2, 3, 4]
+methodology: TDD-strict
 ---
 
 # Tech-Spec: Alexandria RAG Server (Java)
+
+> **Méthodologie** : TDD Strict (Red-Green-Refactor) - voir [TDD Workflow](./context-for-development/tdd-workflow.md)
 
 ## Table of Contents
 
@@ -16,6 +19,7 @@ stepsCompleted: [1, 2, 3, 4]
     - [Solution](./overview.md#solution)
     - [Scope](./overview.md#scope)
   - [Context for Development](./context-for-development/index.md)
+    - [TDD Workflow](./context-for-development/tdd-workflow.md) **(NEW)**
     - [Codebase Patterns](./context-for-development/codebase-patterns.md)
     - [Architecture Decisions](./context-for-development/architecture-decisions.md)
     - [Project Structure](./context-for-development/project-structure.md)
@@ -32,9 +36,35 @@ stepsCompleted: [1, 2, 3, 4]
     - [Document Update Strategy (from research #12)](./context-for-development/document-update-strategy-from-research-12.md)
     - [Files to Reference](./context-for-development/files-to-reference.md)
     - [Hardware Cible (Self-hosted)](./context-for-development/hardware-cible-self-hosted.md)
-  - [Implementation Plan](./implementation-plan.md)
-    - [Tasks](./implementation-plan.md#tasks)
-    - [Acceptance Criteria](./implementation-plan.md#acceptance-criteria)
+  - [Implementation Plan (TDD)](./implementation-plan/index.md)
+    - [Tasks](./implementation-plan/tasks/index.md)
+      - [Phase 1: Project Foundation](./implementation-plan/tasks/phase-1-project-foundation.md) *(Scaffold)*
+      - [Phase 2: Test Infrastructure](./implementation-plan/tasks/phase-2-test-infrastructure.md) *(Prérequis TDD)*
+      - [Phase 3: Exception Hierarchy](./implementation-plan/tasks/phase-3-exception-hierarchy.md) *(TDD)*
+      - [Phase 4: Core Entities](./implementation-plan/tasks/phase-4-core-entities.md) *(TDD)*
+      - [Phase 5: Configuration Classes](./implementation-plan/tasks/phase-5-configuration-classes.md) *(TDD)*
+      - [Phase 6: Markdown Processing](./implementation-plan/tasks/phase-6-markdown-processing.md) *(TDD)*
+      - [Phase 7: HTTP Clients](./implementation-plan/tasks/phase-7-http-clients.md) *(TDD)*
+      - [Phase 8: Core Services](./implementation-plan/tasks/phase-8-core-services.md) *(TDD)*
+      - [Phase 9: MCP Adapters](./implementation-plan/tasks/phase-9-mcp-adapters.md) *(TDD)*
+      - [Phase 10: Infrastructure](./implementation-plan/tasks/phase-10-infrastructure.md) *(TDD)*
+      - [Phase 11: CLI](./implementation-plan/tasks/phase-11-cli.md) *(TDD)*
+      - [Phase 12: Database Schema](./implementation-plan/tasks/phase-12-database-schema.md) *(Integration)*
+      - [Phase 13: E2E Validation](./implementation-plan/tasks/phase-13-e2e-validation.md) *(Validation)*
+      - [Phase 14: Docker & Deployment](./implementation-plan/tasks/phase-14-docker-deployment.md) *(Infra)*
+    - [Acceptance Criteria](./implementation-plan/acceptance-criteria.md)
+      - [AC 1: MCP Server Startup](./implementation-plan/acceptance-criteria.md#ac-1-mcp-server-startup)
+      - [AC 2: Document Ingestion (CLI)](./implementation-plan/acceptance-criteria.md#ac-2-document-ingestion-cli)
+      - [AC 3: Document Ingestion (MCP)](./implementation-plan/acceptance-criteria.md#ac-3-document-ingestion-mcp)
+      - [AC 4: Semantic Search](./implementation-plan/acceptance-criteria.md#ac-4-semantic-search)
+      - [AC 5: Tiered Response](./implementation-plan/acceptance-criteria.md#ac-5-tiered-response)
+      - [AC 6: Query Validation](./implementation-plan/acceptance-criteria.md#ac-6-query-validation)
+      - [AC 7: Retry Resilience](./implementation-plan/acceptance-criteria.md#ac-7-retry-resilience)
+      - [AC 8: Timeout Budget](./implementation-plan/acceptance-criteria.md#ac-8-timeout-budget)
+      - [AC 9: Document Updates](./implementation-plan/acceptance-criteria.md#ac-9-document-updates)
+      - [AC 10: Health Checks](./implementation-plan/acceptance-criteria.md#ac-10-health-checks)
+      - [AC 11: Error Handling](./implementation-plan/acceptance-criteria.md#ac-11-error-handling)
+      - [AC 12: Observability](./implementation-plan/acceptance-criteria.md#ac-12-observability)
   - [Additional Context](./additional-context/index.md)
     - [Dependencies](./additional-context/dependencies.md)
     - [Testing Strategy (from research #21-22)](./additional-context/testing-strategy-from-research-21-22.md)
