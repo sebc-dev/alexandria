@@ -186,8 +186,11 @@ public class LangchainConfig {
 
 ```java
 /**
- * Métadonnées par chunk - 8 champs pour tracking complet.
+ * Métadonnées par chunk - 10 champs pour tracking complet.
  * Contrainte Langchain4j: types primitifs (String, int, long, double, boolean).
+ *
+ * F4 Remediation: Ajout de fileSize et fileModifiedAt pour le fast-path
+ * de détection de changements (mtime+size avant SHA-256).
  */
 public record ChunkMetadata(
     String sourceUri,        // URI logique (pas filesystem path) - identifiant document
@@ -197,7 +200,9 @@ public record ChunkMetadata(
     String documentTitle,    // Titre du document (du front matter ou H1)
     String contentHash,      // SHA-256 du chunk - déduplication fine
     long createdAt,          // Epoch millis
-    String documentType      // "markdown", "llmstxt", "text"
+    String documentType,     // "markdown", "llmstxt", "text"
+    long fileSize,           // Taille fichier en bytes - fast-path change detection
+    long fileModifiedAt      // Epoch millis du fichier source - fast-path change detection
 ) {
     /**
      * Convertit path filesystem en URI logique sécurisé.
@@ -236,3 +241,33 @@ public record ChunkMetadata(
 **Champs clés pour update strategy:**
 - `sourceUri` = identifiant stable du document (chemin logique)
 - `documentHash` = détection de changements (si différent → re-ingestion)
+
+---
+
+## Stratégie llms.txt *(F9 Remediation)*
+
+Le format llms.txt (https://llmstxt.org/) utilise une structure H2-based. La stratégie de chunking est:
+
+**Règle:** Un chunk par section H2
+
+| Élément | Comportement |
+|---------|--------------|
+| Titre (H1) | Metadata `documentTitle`, pas un chunk séparé |
+| Description (blockquote) | Metadata `description`, pas un chunk séparé |
+| Section H2 | Boundary de chunk |
+| Liens dans section | Inclus dans le chunk de la section |
+
+**Exemple:**
+```
+# Title → metadata.documentTitle
+> Description → metadata.description
+
+## Getting Started     ← Chunk 1
+- [Link 1](url1)
+- [Link 2](url2)
+
+## API Reference       ← Chunk 2
+- [Endpoint 1](url3)
+```
+
+**Justification:** Les sections H2 dans llms.txt représentent des catégories logiques cohérentes. Splitter plus finement perdrait le contexte de la catégorie.

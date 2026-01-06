@@ -1,3 +1,11 @@
+---
+title: Alexandria RAG Server (Java)
+slug: alexandria-rag-server-java
+created: 2026-01-06
+status: ready-for-dev
+stepsCompleted: [1, 2, 3, 4]
+---
+
 # Tech-Spec: Alexandria RAG Server (Java)
 
 ## Table of Contents
