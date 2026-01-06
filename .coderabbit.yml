@@ -1,0 +1,478 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# ==============================================================================
+# CodeRabbit Configuration - Alexandria RAG Server
+# ==============================================================================
+# Serveur RAG exposé via MCP pour Claude Code
+# Stack: Java 25 LTS, Spring Boot 3.5.9, Langchain4j 1.10.0, PostgreSQL 18 + pgvector
+# ==============================================================================
+
+language: "fr-FR"
+early_access: false
+
+# ==============================================================================
+# Reviews Configuration
+# ==============================================================================
+reviews:
+  # Profile de review: "chill" pour moins de bruit, "assertive" pour plus strict
+  profile: "assertive"
+
+  # Workflow de review
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+
+  # Génération de suggestions de code
+  apply_code_suggestions: true
+
+  # Affiche les instructions de codegen pour les agents AI
+  labeling_instructions: true
+
+  # Abort si PR fermée/mergée pendant la review
+  abort_on_close: true
+
+  # Désactive le cache pour forcer le téléchargement frais
+  disable_cache: false
+
+  # Auto-review configuration
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+      - "[SKIP CI]"
+    base_branches:
+      - "main"
+      - "develop"
+
+  # ===========================================================================
+  # Path Filters - Fichiers à ignorer
+  # ===========================================================================
+  path_filters:
+    # Build outputs
+    - "!**/target/**"
+    - "!**/build/**"
+    - "!**/.gradle/**"
+
+    # IDE configuration
+    - "!**/.idea/**"
+    - "!**/.vscode/**"
+    - "!**/*.iml"
+
+    # Dependencies
+    - "!**/node_modules/**"
+
+    # Generated files
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/generated/**"
+    - "!**/generated-sources/**"
+
+    # Logs and temp files
+    - "!**/*.log"
+    - "!**/logs/**"
+
+    # Package manager locks (review le pom.xml, pas les .lock)
+    - "!**/package-lock.json"
+    - "!**/pnpm-lock.yaml"
+    - "!**/yarn.lock"
+
+  # ===========================================================================
+  # Path Instructions - Instructions spécifiques par type de fichier
+  # ===========================================================================
+  path_instructions:
+    # -------------------------------------------------------------------------
+    # Code Java principal
+    # -------------------------------------------------------------------------
+    - path: "src/main/java/**/*.java"
+      instructions: |
+        ## Contexte Alexandria RAG Server
+        Ce projet est un serveur RAG (Retrieval-Augmented Generation) exposé via MCP (Model Context Protocol).
+        Stack: Java 25 LTS, Spring Boot 3.5.9, Langchain4j 1.10.0, PostgreSQL 18 + pgvector 0.8.1.
+
+        ## Standards de code Java
+        - Java 25 LTS avec Virtual Threads (JEP 491 - no pinning)
+        - Utiliser les records Java pour les DTOs immutables
+        - Préférer `var` pour les variables locales quand le type est évident
+        - Pas d'utilisation de `null` - utiliser `Optional` pour les retours optionnels
+        - Annotations `@Nullable` / `@NonNull` pour la documentation des nullabilités
+
+        ## Standards Spring Boot
+        - Utiliser `@ConfigurationProperties` avec records pour la configuration typée
+        - Injection par constructeur uniquement (pas de `@Autowired` sur les champs)
+        - Utiliser `RestClient` (pas RestTemplate deprecated)
+        - Profils Spring pour la configuration environnement (dev, test, prod)
+
+        ## Patterns RAG spécifiques
+        - Langchain4j EmbeddingModel et EmbeddingStore pour les embeddings
+        - Chunking: 450-500 tokens, overlap 50-75 tokens
+        - Reranking obligatoire avant retour des résultats
+        - Seuils de score: min 0.3, relatif 50% du meilleur score
+
+        ## Resilience
+        - Resilience4j @Retry pour les appels externes (embeddings, reranking)
+        - maxAttempts=4 (1 initial + 3 retries), backoff exponentiel avec jitter
+        - Pas de circuit breaker pour ce use case mono-utilisateur
+
+    # -------------------------------------------------------------------------
+    # Services Core
+    # -------------------------------------------------------------------------
+    - path: "src/main/java/**/core/**/*.java"
+      instructions: |
+        ## Core Domain
+        Ce package contient la logique métier RAG pure, sans dépendances framework.
+
+        Vérifier:
+        - Pas d'imports Spring/Jakarta dans les POJOs (Document, DocumentChunk, ChunkMetadata)
+        - Les services peuvent avoir des annotations Spring mais la logique doit être testable
+        - AlexandriaException avec ErrorCategory pour une gestion d'erreurs structurée
+        - Validation des queries avant recherche (QueryValidator)
+
+    # -------------------------------------------------------------------------
+    # Adapters (intégrations externes)
+    # -------------------------------------------------------------------------
+    - path: "src/main/java/**/adapters/**/*.java"
+      instructions: |
+        ## Adapters - Intégrations externes
+
+        Vérifier:
+        - InfinityEmbeddingModel: baseUrl custom pour Infinity/RunPod
+        - InfinityRerankClient: Format Cohere (POST /rerank), PAS OpenAI-compatible
+        - PgVectorRepository: Wrapper autour de Langchain4j EmbeddingStore
+        - McpTools: Annotations @McpTool de Spring AI MCP SDK 1.1.2
+        - @Retry Resilience4j sur tous les appels HTTP externes
+
+        Timeouts:
+        - Embedding/Reranking: 30s cold start, 5s warm
+        - pgvector search: 5s max
+
+    # -------------------------------------------------------------------------
+    # Configuration
+    # -------------------------------------------------------------------------
+    - path: "src/main/java/**/config/**/*.java"
+      instructions: |
+        ## Configuration Spring Boot
+
+        Standards:
+        - @ConfigurationProperties avec records (RagProperties, TimeoutProperties)
+        - Beans explicites pour Langchain4j (pas d'auto-configuration magique)
+        - HttpClientConfig avec RestClient.Builder et timeouts explicites
+        - ResilienceConfig avec RetryRegistry configuré via YAML
+
+        MCP Config:
+        - spring.ai.mcp.server.protocol: STREAMABLE (pas SSE deprecated)
+        - spring.ai.mcp.server.type: SYNC (compatible Virtual Threads)
+        - Endpoint unique: /mcp
+
+    # -------------------------------------------------------------------------
+    # CLI Picocli
+    # -------------------------------------------------------------------------
+    - path: "src/main/java/**/cli/**/*.java"
+      instructions: |
+        ## CLI Picocli pour ingestion bulk
+
+        Vérifier:
+        - @Command annotations Picocli correctes
+        - Batch size: 25 documents (optimal pour hardware 4 cores)
+        - Pas de timeout (illimité pour bulk ingestion)
+        - Gestion propre des erreurs avec codes de sortie
+
+    # -------------------------------------------------------------------------
+    # Tests
+    # -------------------------------------------------------------------------
+    - path: "src/test/java/**/*.java"
+      instructions: |
+        ## Standards de test Alexandria
+
+        Stack de test:
+        - JUnit 5 avec AssertJ pour les assertions fluides
+        - Mockito pour les mocks
+        - Testcontainers 2.0.3 pour PostgreSQL + pgvector (image: pgvector/pgvector:0.8.1-pg18)
+        - WireMock 3.13.2 pour les stubs API Infinity
+
+        Pyramide de tests: 70% unitaires / 20% intégration / 10% E2E
+
+        Vérifier:
+        - Tests unitaires: pas de Spring context, mocks Mockito
+        - Tests intégration: @SpringBootTest avec Testcontainers
+        - Stubs WireMock: stubEmbeddings(), stubRerank(), stubColdStart(), stubRetryScenario()
+        - Fixtures: EmbeddingFixtures pour générer des vecteurs 1024D cohérents
+
+        Note: Testcontainers et WireMock non certifiés Java 25 mais fonctionnels.
+
+    # -------------------------------------------------------------------------
+    # Resources et configuration YAML
+    # -------------------------------------------------------------------------
+    - path: "src/main/resources/**/*.yml"
+      instructions: |
+        ## Configuration YAML Spring Boot
+
+        Sections clés à vérifier:
+        - spring.ai.mcp.server: protocol STREAMABLE, type SYNC
+        - rag.retrieval: top-k-initial=50, top-n-final=5, min-score=0.3
+        - rag.reranking: enabled=true, normalize-scores=true (OBLIGATOIRE)
+        - resilience4j.retry: enableExponentialBackoff et enableRandomizedWait OBLIGATOIRES
+
+        Timeouts dual-tier:
+        - Cold start: 90s global, 30s embedding/reranking
+        - Warm: 30s global, 5s embedding/reranking
+
+    - path: "src/main/resources/**/*.yaml"
+      instructions: |
+        Mêmes règles que pour les fichiers .yml - voir instructions ci-dessus.
+
+    # -------------------------------------------------------------------------
+    # Maven POM
+    # -------------------------------------------------------------------------
+    - path: "**/pom.xml"
+      instructions: |
+        ## Configuration Maven Alexandria
+
+        Versions critiques à vérifier:
+        - Java: 25 (java.version property)
+        - Spring Boot: 3.5.9 (parent)
+        - Spring AI MCP SDK: 1.1.2 (GA)
+        - Langchain4j: 1.10.0 (via BOM)
+        - Langchain4j Spring: 1.10.0-beta18 (version explicite requise)
+        - Resilience4j: 2.3.0 (via BOM)
+        - PostgreSQL JDBC: 42.7.4
+        - Testcontainers: 2.0.3
+        - WireMock: 3.13.2
+
+        BOMs requis:
+        - resilience4j-bom
+        - langchain4j-bom
+        - spring-ai-bom
+
+        Dépendances obligatoires:
+        - spring-boot-starter-aop (pour @Retry Resilience4j)
+        - spring-boot-starter-actuator (pour métriques)
+
+    # -------------------------------------------------------------------------
+    # Documentation
+    # -------------------------------------------------------------------------
+    - path: "**/*.md"
+      instructions: |
+        ## Documentation Markdown
+
+        Vérifier:
+        - Structure claire avec headers hiérarchiques
+        - Exemples de code avec syntax highlighting (```java, ```yaml, etc.)
+        - Tables formatées correctement
+        - Liens relatifs valides
+        - Pas de TODO/FIXME orphelins
+
+    # -------------------------------------------------------------------------
+    # SQL et migrations
+    # -------------------------------------------------------------------------
+    - path: "**/*.sql"
+      instructions: |
+        ## Scripts SQL PostgreSQL + pgvector
+
+        Schéma pgvector attendu:
+        - Table: document_embeddings (embedding_id UUID, embedding vector(1024), text TEXT, metadata JSONB)
+        - Index HNSW manuel (Langchain4j crée IVFFlat par défaut)
+        - Paramètres HNSW: m=16, ef_construction=128, vector_cosine_ops
+
+        Runtime settings:
+        - SET hnsw.ef_search = 100
+        - SET hnsw.iterative_scan = on (nouveau pgvector 0.8.x)
+
+        Note: vector(1024) car BGE-M3, pas halfvec (non supporté par Langchain4j)
+
+    # -------------------------------------------------------------------------
+    # Docker
+    # -------------------------------------------------------------------------
+    - path: "**/Dockerfile*"
+      instructions: |
+        ## Dockerfile Java 25
+
+        Vérifier:
+        - Image de base: eclipse-temurin:25-jre ou similaire
+        - Multi-stage build recommandé
+        - Pas de secrets en dur
+        - Health check configuré
+        - User non-root
+
+    - path: "**/docker-compose*.yml"
+      instructions: |
+        ## Docker Compose
+
+        Services attendus:
+        - PostgreSQL 18 avec pgvector 0.8.1 (image: pgvector/pgvector:0.8.1-pg18)
+        - Configuration mémoire: shared_buffers=6GB, effective_cache_size=18GB
+
+  # ===========================================================================
+  # Tools Configuration
+  # ===========================================================================
+  tools:
+    # -------------------------------------------------------------------------
+    # Linters Java
+    # -------------------------------------------------------------------------
+    pmd:
+      enabled: true
+      # Requiert un fichier ruleset.xml dans le repo
+      # config_file: "ruleset.xml"
+
+    # -------------------------------------------------------------------------
+    # Security
+    # -------------------------------------------------------------------------
+    gitleaks:
+      enabled: true
+
+    # -------------------------------------------------------------------------
+    # YAML/Config
+    # -------------------------------------------------------------------------
+    yamllint:
+      enabled: true
+
+    # -------------------------------------------------------------------------
+    # GitHub Actions
+    # -------------------------------------------------------------------------
+    actionlint:
+      enabled: true
+
+    # -------------------------------------------------------------------------
+    # Docker
+    # -------------------------------------------------------------------------
+    hadolint:
+      enabled: true
+
+    # -------------------------------------------------------------------------
+    # Markdown
+    # -------------------------------------------------------------------------
+    markdownlint:
+      enabled: true
+
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: "picky"
+      enabled_rules: []
+      disabled_rules: []
+      enabled_categories: []
+      disabled_categories:
+        - "TYPOGRAPHY"
+      language: "fr-FR"
+
+    # -------------------------------------------------------------------------
+    # Shell scripts
+    # -------------------------------------------------------------------------
+    shellcheck:
+      enabled: true
+
+    # -------------------------------------------------------------------------
+    # AST-based analysis
+    # -------------------------------------------------------------------------
+    ast-grep:
+      essential_rules: true
+      packages: []
+
+    # -------------------------------------------------------------------------
+    # Désactivation des outils non pertinents
+    # -------------------------------------------------------------------------
+    # JavaScript/TypeScript (pas utilisé dans ce projet)
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+    oxc:
+      enabled: false
+
+    # Python (pas utilisé)
+    ruff:
+      enabled: false
+    pylint:
+      enabled: false
+    flake8:
+      enabled: false
+
+    # Go (pas utilisé)
+    golangci-lint:
+      enabled: false
+
+    # Ruby (pas utilisé)
+    rubocop:
+      enabled: false
+    brakeman:
+      enabled: false
+
+    # PHP (pas utilisé)
+    phpstan:
+      enabled: false
+    phpmd:
+      enabled: false
+    phpcs:
+      enabled: false
+
+    # Rust (pas utilisé)
+    clippy:
+      enabled: false
+
+    # Swift (pas utilisé)
+    swiftlint:
+      enabled: false
+
+    # Kotlin (pas utilisé - projet 100% Java)
+    detekt:
+      enabled: false
+
+# ==============================================================================
+# Chat Configuration
+# ==============================================================================
+chat:
+  auto_reply: true
+  # Désactive les ASCII art dans les réponses
+  art: false
+
+# ==============================================================================
+# Knowledge Base
+# ==============================================================================
+knowledge_base:
+  # Utilise les learnings des conversations précédentes
+  learnings:
+    scope: "auto"
+
+  # Fichiers de guidelines de code (auto-détectés)
+  code_guidelines:
+    enabled: true
+    auto_detection: true
+
+# ==============================================================================
+# Code Generation
+# ==============================================================================
+code_generation:
+  docstrings:
+    language: "en-US"
+    path_instructions:
+      - path: "src/main/java/**/*.java"
+        instructions: |
+          Utiliser le format Javadoc standard:
+          - @param pour chaque paramètre
+          - @return pour les valeurs de retour (sauf void)
+          - @throws pour les exceptions
+          - Description concise de la méthode en première ligne
+
+      - path: "src/test/java/**/*.java"
+        instructions: |
+          Docstrings optionnels pour les tests.
+          Si présents, décrire le scénario testé et le comportement attendu.
+
+  unit_tests:
+    path_instructions:
+      - path: "src/main/java/**/core/**/*.java"
+        instructions: |
+          Générer des tests unitaires avec JUnit 5 et AssertJ.
+          Mocker les dépendances avec Mockito.
+          Couvrir les cas nominaux et les cas d'erreur.
+
+      - path: "src/main/java/**/adapters/**/*.java"
+        instructions: |
+          Générer des tests d'intégration avec WireMock pour les clients HTTP.
+          Simuler les cold starts et les scénarios de retry.
