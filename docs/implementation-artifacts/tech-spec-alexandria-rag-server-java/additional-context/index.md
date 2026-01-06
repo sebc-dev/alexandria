@@ -9,3 +9,4 @@
   - [Notes](./notes.md)
   - [Stack Validation (2026-01-04)](./stack-validation-2026-01-04.md)
   - [Profiling Dev avec JFR (Optionnel)](./profiling-dev-avec-jfr-optionnel.md)
+  - [Backlog Post-MVP](./backlog-post-mvp.md)
