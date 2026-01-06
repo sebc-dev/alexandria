@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: alexandria
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/alexandria
+    username: alexandria
+    password: ${ALEXANDRIA_DB_PASSWORD:alexandria}
+    hikari:
+      auto-commit: false
+      connection-init-sql: |
+        SET hnsw.ef_search = 100;
+        SET hnsw.iterative_scan = relaxed_order;
+  mvc:
+    async:
+      request-timeout: 90000
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: 8080
+  shutdown: graceful
+
+# MCP Server Configuration
+spring.ai.mcp.server:
+  enabled: true
+  name: alexandria
+  version: 0.1.0
+
+# RAG Pipeline Configuration
+rag:
+  retrieval:
+    top-k-initial: 50
+    top-n-final: 5
+    min-score: 0.3
+    score-threshold-type: relative
+    relative-threshold-ratio: 0.5
+    min-results-guarantee: 2
+  reranking:
+    enabled: true
+    model: BAAI/bge-reranker-v2-m3
+    normalize-scores: true
+
+# Timeout Budget Configuration
+alexandria:
+  timeouts:
+    global-cold-start: 90s
+    global-warm: 30s
+    embedding: 30s
+    reranking: 30s
+    database: 5s
+    assembly: 1s
+  infinity:
+    base-url: ${INFINITY_BASE_URL:http://localhost:7997}
+
+# Resilience4j Retry Configuration
+resilience4j:
+  retry:
+    instances:
+      infinityApi:
+        maxAttempts: 4
+        waitDuration: 1s
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,retries,retryevents,metrics
+  health:
+    retries:
+      enabled: true
