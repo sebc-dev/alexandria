@@ -28,9 +28,6 @@ reviews:
   # Génération de suggestions de code
   apply_code_suggestions: true
 
-  # Affiche les instructions de codegen pour les agents AI
-  labeling_instructions: true
-
   # Abort si PR fermée/mergée pendant la review
   abort_on_close: true
 
