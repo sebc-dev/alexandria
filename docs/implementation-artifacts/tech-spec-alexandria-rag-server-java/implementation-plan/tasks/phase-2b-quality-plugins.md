@@ -646,6 +646,7 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
 | `mvn pmd:pmd` | Générer rapport PMD HTML |
 | `mvn spotbugs:gui` | Interface graphique SpotBugs |
 | `mvn pitest:mutationCoverage` | Mutation testing |
+| `mvn verify -Pci` | Build CI complet |
 
 ---
 
