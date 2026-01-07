@@ -1,4 +1,4 @@
-# Phase 7: HTTP Clients (TDD)
+# Phase 8: HTTP Clients (TDD)
 
 - [ ] **Task 23: Create InfinityRerankClient** (TDD)
   - **RED**:

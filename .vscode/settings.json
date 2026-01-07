@@ -1,0 +1,86 @@
+{
+    // ════════════════════════════════════════════════════════════════
+    // Java Settings
+    // ⚠️ OBSOLÈTE: L'URL eclipse-java-google-style.xml est marquée obsolète
+    // (GitHub Issue #687, non mise à jour depuis 4+ ans).
+    // Google recommande d'utiliser google-java-format directement.
+    // Conservée ici pour compatibilité VS Code, mais Spotless fait foi.
+    // ════════════════════════════════════════════════════════════════
+
+    // Formatage Google Java Style (fallback VS Code)
+    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+
+    // Format on save (cohérent avec Spotless)
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+
+    // Analyse null automatique
+    "java.compile.nullAnalysis.mode": "automatic",
+
+    // Mise à jour auto de la config build
+    "java.configuration.updateBuildConfiguration": "automatic",
+
+    // ════════════════════════════════════════════════════════════════
+    // Checkstyle
+    // ⚠️ Note: "/google_checks.xml" n'est PAS un chemin valide.
+    // Utiliser l'URL officielle ou le preset "Google's Check" via commande.
+    // ════════════════════════════════════════════════════════════════
+    "java.checkstyle.configuration": "https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml",
+    "java.checkstyle.version": "13.0.0",
+
+    // ════════════════════════════════════════════════════════════════
+    // SonarLint
+    // ════════════════════════════════════════════════════════════════
+    "sonarlint.rules": {
+        // Désactiver TODO warnings (trop de bruit)
+        "java:S1135": { "level": "off" },
+        // Désactiver "add serialVersionUID" (pas de serialization)
+        "java:S2057": { "level": "off" }
+    },
+    "sonarlint.output.showVerboseLogs": false,
+
+    // ════════════════════════════════════════════════════════════════
+    // Files
+    // ════════════════════════════════════════════════════════════════
+    "files.exclude": {
+        "**/target": true,
+        "**/.git": true,
+        "**/.idea": true,
+        "**/*.iml": true
+    },
+
+    "files.watcherExclude": {
+        "**/target/**": true
+    },
+
+    // ════════════════════════════════════════════════════════════════
+    // Editor
+    // ════════════════════════════════════════════════════════════════
+    "editor.rulers": [100],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+
+    // ════════════════════════════════════════════════════════════════
+    // Error Lens (affichage inline des erreurs)
+    // ════════════════════════════════════════════════════════════════
+    "errorLens.enabled": true,
+    "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+    "errorLens.messageMaxChars": 100,
+
+    // ════════════════════════════════════════════════════════════════
+    // Terminal
+    // ════════════════════════════════════════════════════════════════
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.scrollback": 10000,
+
+    // ════════════════════════════════════════════════════════════════
+    // Search
+    // ════════════════════════════════════════════════════════════════
+    "search.exclude": {
+        "**/target": true,
+        "**/node_modules": true,
+        "**/.git": true
+    }
+}

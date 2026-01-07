@@ -1,4 +1,4 @@
-# Phase 14: Docker & Deployment
+# Phase 15: Docker & Deployment
 
 > **Note**: Cette phase n'utilise pas de TDD. Les artefacts Docker sont validés manuellement ou via CI.
 

@@ -1,0 +1,419 @@
+name: Alexandria CI Pipeline
+
+on:
+  # Déclenchement manuel avec option de spécifier le SHA
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'SHA du commit pour le status check (auto-détecté si vide)'
+        required: false
+        type: string
+
+  # Déclenchement sur label "ready-for-ci" ou passage en ready_for_review
+  pull_request:
+    types: [labeled, ready_for_review]
+
+permissions:
+  contents: read
+  checks: write
+  security-events: write
+  pull-requests: write
+
+env:
+  JAVA_VERSION: '25'
+  JAVA_DISTRIBUTION: 'temurin'
+  MAVEN_OPTS: '-Xmx4096m'
+
+jobs:
+  # ============================================================
+  # Gate: Vérifier si le workflow doit s'exécuter
+  # ============================================================
+  should-run:
+    name: Check Trigger Conditions
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      effective_sha: ${{ steps.check.outputs.effective_sha }}
+    steps:
+      - name: Check if should run
+        id: check
+        run: |
+          SHOULD_RUN="false"
+          
+          # Cas 1: workflow_dispatch (toujours exécuter)
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            SHOULD_RUN="true"
+            SHA="${{ inputs.commit_sha || github.sha }}"
+          fi
+          
+          # Cas 2: Label "ready-for-ci" ajouté
+          if [ "${{ github.event.action }}" == "labeled" ] && \
+             [ "${{ github.event.label.name }}" == "ready-for-ci" ]; then
+            SHOULD_RUN="true"
+            SHA="${{ github.event.pull_request.head.sha }}"
+          fi
+          
+          # Cas 3: PR passée de draft à ready
+          if [ "${{ github.event.action }}" == "ready_for_review" ]; then
+            SHOULD_RUN="true"
+            SHA="${{ github.event.pull_request.head.sha }}"
+          fi
+          
+          echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
+          echo "effective_sha=${SHA:-${{ github.sha }}}" >> $GITHUB_OUTPUT
+          
+          echo "Decision: should_run=$SHOULD_RUN, sha=${SHA:-${{ github.sha }}}"
+
+  # ============================================================
+  # Initialisation du status check
+  # ============================================================
+  init-check:
+    name: Initialize Status Check
+    runs-on: ubuntu-latest
+    needs: should-run
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      check_run_id: ${{ steps.create-check.outputs.check_id }}
+    steps:
+      - name: Create check run
+        id: create-check
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          sha: ${{ needs.should-run.outputs.effective_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Alexandria CI Pipeline
+          status: in_progress
+          output: |
+            {"summary":"Pipeline en cours d'exécution..."}
+
+  # ============================================================
+  # Build + Tests unitaires
+  # ============================================================
+  build-and-test:
+    name: Build & Unit Tests
+    runs-on: ubuntu-latest
+    needs: [should-run, init-check]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      build_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+          check-latest: true
+
+      - name: Compile with Error Prone
+        run: mvn -B compile -Perror-prone
+
+      - name: Run unit tests with coverage
+        run: mvn -B test -Dtest='!**/*IT.java'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: |
+            **/target/surefire-reports/
+            **/target/jacoco.exec
+          retention-days: 7
+
+  # ============================================================
+  # Analyse statique (PMD + SpotBugs + Checkstyle)
+  # ============================================================
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    needs: [should-run, init-check]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      analysis_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run PMD
+        run: mvn -B pmd:check pmd:cpd-check
+
+      - name: Run SpotBugs
+        run: mvn -B compile spotbugs:check
+
+      - name: Run Checkstyle
+        run: mvn -B checkstyle:check
+
+      - name: Upload analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-reports
+          path: |
+            **/target/pmd.xml
+            **/target/cpd.xml
+            **/target/spotbugsXml.xml
+            **/target/checkstyle-result.xml
+          retention-days: 7
+
+  # ============================================================
+  # Tests d'intégration (Testcontainers)
+  # ============================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [should-run, build-and-test]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      test_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Pre-pull pgvector image
+        run: docker pull pgvector/pgvector:0.8.1-pg18
+
+      - name: Run integration tests
+        run: |
+          mvn -B verify \
+            -DskipUnitTests=true \
+            -Dtest='**/*IT.java' \
+            -Dfailsafe.timeout=600
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: **/target/failsafe-reports/
+          retention-days: 7
+
+  # ============================================================
+  # SonarCloud Analysis
+  # ============================================================
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: [should-run, build-and-test]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      sonar_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B verify sonar:sonar \
+            -Dsonar.projectKey=alexandria-mcp \
+            -Dsonar.organization=${{ github.repository_owner }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.java.source=25
+
+  # ============================================================
+  # Sécurité: CodeQL SAST
+  # ============================================================
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    needs: [should-run, init-check]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      codeql_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+          queries: security-and-quality
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build for CodeQL
+        run: mvn -B compile -DskipTests
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java"
+
+  # ============================================================
+  # Sécurité: Dépendances (OWASP + Trivy)
+  # ============================================================
+  dependency-security:
+    name: Dependency Security
+    runs-on: ubuntu-latest
+    needs: [should-run, init-check]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      security_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: OWASP Dependency-Check
+        run: |
+          mvn -B org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=8 \
+            -Dformat=ALL \
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+        continue-on-error: true
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'trivy-dependency-scan'
+
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-report
+          path: target/dependency-check-report.*
+          retention-days: 14
+
+  # ============================================================
+  # Validation format (Spotless)
+  # ============================================================
+  format-check:
+    name: Format Validation
+    runs-on: ubuntu-latest
+    needs: [should-run, init-check]
+    if: needs.should-run.outputs.should_run == 'true'
+    outputs:
+      format_status: ${{ job.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Java 25 LTS
+        uses: actions/setup-java@v5
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Check formatting
+        run: mvn -B spotless:check
+
+  # ============================================================
+  # Finalisation du status check
+  # ============================================================
+  finalize:
+    name: Finalize Status
+    runs-on: ubuntu-latest
+    needs:
+      - should-run
+      - init-check
+      - build-and-test
+      - static-analysis
+      - integration-tests
+      - sonarcloud
+      - codeql
+      - dependency-security
+      - format-check
+    if: always() && needs.should-run.outputs.should_run == 'true'
+    steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          # Jobs critiques (doivent réussir)
+          CRITICAL_JOBS="${{ needs.build-and-test.outputs.build_status }},${{ needs.integration-tests.outputs.test_status }},${{ needs.format-check.outputs.format_status }}"
+          
+          # Jobs importants (warning si échec)
+          IMPORTANT_JOBS="${{ needs.static-analysis.outputs.analysis_status }},${{ needs.sonarcloud.outputs.sonar_status }}"
+          
+          # Vérifier les jobs critiques
+          if echo "$CRITICAL_JOBS" | grep -q "failure"; then
+            echo "conclusion=failure" >> $GITHUB_OUTPUT
+            echo "summary=❌ Critical jobs failed: build, tests, or formatting" >> $GITHUB_OUTPUT
+          elif echo "$IMPORTANT_JOBS" | grep -q "failure"; then
+            echo "conclusion=failure" >> $GITHUB_OUTPUT
+            echo "summary=⚠️ Analysis jobs failed: static analysis or SonarCloud" >> $GITHUB_OUTPUT
+          else
+            echo "conclusion=success" >> $GITHUB_OUTPUT
+            echo "summary=✅ All checks passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update check run
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          sha: ${{ needs.should-run.outputs.effective_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Alexandria CI Pipeline
+          conclusion: ${{ steps.status.outputs.conclusion }}
+          output: |
+            {"summary":"${{ steps.status.outputs.summary }}","title":"Alexandria CI Results"}
+
+      - name: Remove ready-for-ci label on success
+        if: steps.status.outputs.conclusion == 'success' && github.event.action == 'labeled'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: 'ready-for-ci'
+              });
+            } catch (e) {
+              console.log('Label already removed or not found');
+            }

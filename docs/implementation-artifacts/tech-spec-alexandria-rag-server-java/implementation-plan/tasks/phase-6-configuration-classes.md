@@ -1,4 +1,4 @@
-# Phase 5: Configuration Classes (TDD)
+# Phase 6: Configuration Classes (TDD)
 
 - [ ] **Task 14: Create RagProperties** (TDD)
   - **RED**:

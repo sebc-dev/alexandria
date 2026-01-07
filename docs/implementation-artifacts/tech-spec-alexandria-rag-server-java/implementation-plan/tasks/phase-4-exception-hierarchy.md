@@ -1,4 +1,4 @@
-# Phase 3: Exception Hierarchy (TDD)
+# Phase 4: Exception Hierarchy (TDD)
 
 - [ ] **Task 8: Create ErrorCategory enum** (TDD)
   - **RED**:

@@ -1,0 +1,55 @@
+#!/bin/bash
+# hooks/pre-commit
+# Hook Git léger pour validation rapide avant commit
+# Installé automatiquement par le plugin Cosium ou manuellement
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}🔍 Pre-commit checks...${NC}"
+
+# Vérifier qu'on est dans un projet Maven
+if [ ! -f "pom.xml" ]; then
+    echo -e "${RED}❌ Not a Maven project (pom.xml not found)${NC}"
+    exit 1
+fi
+
+# 1. Formatage des fichiers staged
+echo "  → Formatting staged Java files..."
+
+# Récupérer les fichiers Java staged
+STAGED_JAVA=$(git diff --cached --name-only --diff-filter=ACM | grep '\.java$' || true)
+
+if [ -n "$STAGED_JAVA" ]; then
+    # Appliquer Spotless
+    if ! mvn spotless:apply -q 2>/dev/null; then
+        echo -e "${RED}❌ Spotless formatting failed${NC}"
+        exit 1
+    fi
+    
+    # Re-stage les fichiers modifiés par Spotless
+    echo "$STAGED_JAVA" | xargs -r git add
+    
+    echo -e "  ${GREEN}✓ Formatted${NC}"
+else
+    echo "  → No Java files staged, skipping format"
+fi
+
+# 2. Checkstyle rapide (uniquement si des fichiers Java sont staged)
+if [ -n "$STAGED_JAVA" ]; then
+    echo "  → Running Checkstyle..."
+    if ! mvn checkstyle:check -q 2>/dev/null; then
+        echo -e "${RED}❌ Checkstyle violations found${NC}"
+        echo ""
+        echo "Run 'mvn checkstyle:check' for details"
+        exit 1
+    fi
+    echo -e "  ${GREEN}✓ Checkstyle passed${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}✅ Pre-commit passed!${NC}"

@@ -1,4 +1,4 @@
-# Phase 12: Database Schema
+# Phase 13: Database Schema
 
 > **Note**: Cette phase n'utilise pas de TDD direct. Le schema SQL est validé indirectement via les tests d'intégration des phases précédentes (Testcontainers).
 

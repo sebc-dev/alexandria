@@ -1,4 +1,4 @@
-# Phase 4: Core Entities (TDD)
+# Phase 5: Core Entities (TDD)
 
 - [ ] **Task 11: Create ChunkMetadata record** (TDD)
   - **RED**:

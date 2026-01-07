@@ -1,4 +1,4 @@
-# Phase 8: Core Services (TDD)
+# Phase 9: Core Services (TDD)
 
 - [ ] **Task 24: Create IngestionService** (TDD)
   - **RED**:

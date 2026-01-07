@@ -1,4 +1,4 @@
-# Phase 6: Markdown Processing (TDD)
+# Phase 7: Markdown Processing (TDD)
 
 - [ ] **Task 21: Create AlexandriaMarkdownSplitter** (TDD)
   - **RED**:

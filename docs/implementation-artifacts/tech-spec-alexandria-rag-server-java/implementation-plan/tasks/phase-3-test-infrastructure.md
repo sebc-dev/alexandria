@@ -1,4 +1,4 @@
-# Phase 2: Test Infrastructure
+# Phase 3: Test Infrastructure
 
 > **Prérequis TDD** : Cette phase doit être complétée AVANT toute phase TDD. Elle fournit les fixtures et stubs nécessaires au cycle Red-Green-Refactor.
 

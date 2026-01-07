@@ -39,19 +39,22 @@ methodology: TDD-strict
   - [Implementation Plan (TDD)](./implementation-plan/index.md)
     - [Tasks](./implementation-plan/tasks/index.md)
       - [Phase 1: Project Foundation](./implementation-plan/tasks/phase-1-project-foundation.md) *(Scaffold)*
-      - [Phase 2: Test Infrastructure](./implementation-plan/tasks/phase-2-test-infrastructure.md) *(Prérequis TDD)*
-      - [Phase 3: Exception Hierarchy](./implementation-plan/tasks/phase-3-exception-hierarchy.md) *(TDD)*
-      - [Phase 4: Core Entities](./implementation-plan/tasks/phase-4-core-entities.md) *(TDD)*
-      - [Phase 5: Configuration Classes](./implementation-plan/tasks/phase-5-configuration-classes.md) *(TDD)*
-      - [Phase 6: Markdown Processing](./implementation-plan/tasks/phase-6-markdown-processing.md) *(TDD)*
-      - [Phase 7: HTTP Clients](./implementation-plan/tasks/phase-7-http-clients.md) *(TDD)*
-      - [Phase 8: Core Services](./implementation-plan/tasks/phase-8-core-services.md) *(TDD)*
-      - [Phase 9: MCP Adapters](./implementation-plan/tasks/phase-9-mcp-adapters.md) *(TDD)*
-      - [Phase 10: Infrastructure](./implementation-plan/tasks/phase-10-infrastructure.md) *(TDD)*
-      - [Phase 11: CLI](./implementation-plan/tasks/phase-11-cli.md) *(TDD)*
-      - [Phase 12: Database Schema](./implementation-plan/tasks/phase-12-database-schema.md) *(Integration)*
-      - [Phase 13: E2E Validation](./implementation-plan/tasks/phase-13-e2e-validation.md) *(Validation)*
-      - [Phase 14: Docker & Deployment](./implementation-plan/tasks/phase-14-docker-deployment.md) *(Infra)*
+      - [Phase 2A: Local Dev Tools](./implementation-plan/tasks/phase-2a-local-dev-tools.md) *(DevOps)*
+      - [Phase 2B: Quality Plugins](./implementation-plan/tasks/phase-2b-quality-plugins.md) *(DevOps)*
+      - [Phase 2C: CI/CD Pipeline](./implementation-plan/tasks/phase-2c-cicd-pipeline.md) *(DevOps)*
+      - [Phase 3: Test Infrastructure](./implementation-plan/tasks/phase-3-test-infrastructure.md) *(Prérequis TDD)*
+      - [Phase 4: Exception Hierarchy](./implementation-plan/tasks/phase-4-exception-hierarchy.md) *(TDD)*
+      - [Phase 5: Core Entities](./implementation-plan/tasks/phase-5-core-entities.md) *(TDD)*
+      - [Phase 6: Configuration Classes](./implementation-plan/tasks/phase-6-configuration-classes.md) *(TDD)*
+      - [Phase 7: Markdown Processing](./implementation-plan/tasks/phase-7-markdown-processing.md) *(TDD)*
+      - [Phase 8: HTTP Clients](./implementation-plan/tasks/phase-8-http-clients.md) *(TDD)*
+      - [Phase 9: Core Services](./implementation-plan/tasks/phase-9-core-services.md) *(TDD)*
+      - [Phase 10: MCP Adapters](./implementation-plan/tasks/phase-10-mcp-adapters.md) *(TDD)*
+      - [Phase 11: Infrastructure](./implementation-plan/tasks/phase-11-infrastructure.md) *(TDD)*
+      - [Phase 12: CLI](./implementation-plan/tasks/phase-12-cli.md) *(TDD)*
+      - [Phase 13: Database Schema](./implementation-plan/tasks/phase-13-database-schema.md) *(Integration)*
+      - [Phase 14: E2E Validation](./implementation-plan/tasks/phase-14-e2e-validation.md) *(Validation)*
+      - [Phase 15: Docker & Deployment](./implementation-plan/tasks/phase-15-docker-deployment.md) *(Infra)*
     - [Acceptance Criteria](./implementation-plan/acceptance-criteria.md)
       - [AC 1: MCP Server Startup](./implementation-plan/acceptance-criteria.md#ac-1-mcp-server-startup)
       - [AC 2: Document Ingestion (CLI)](./implementation-plan/acceptance-criteria.md#ac-2-document-ingestion-cli)
