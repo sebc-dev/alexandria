@@ -68,6 +68,9 @@ reviews:
      # Documentation (ajout)
     - "!docs/**"
 
+    # Claude Code specific files
+    - "!.claude/**"
+
     # Generated files
     - "!**/*.min.js"
     - "!**/*.min.css"
