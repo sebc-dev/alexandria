@@ -90,11 +90,9 @@ while read -r review; do
         while IFS='|' read -r filepath line_num description; do
             [ -z "$filepath" ] && continue
             # Générer un ID unique pour ces commentaires (review_id + hash du contenu)
-            HASH=$(echo "$filepath$line_num$description" | md5sum | cut -c1-8)
+            # Utilise shasum pour portabilité (disponible sur Linux et macOS)
+            HASH=$(echo -n "$filepath$line_num$description" | shasum -a 256 | cut -c1-8)
             COMMENT_ID="review-${REVIEW_ID}-${HASH}"
-
-            # Encoder la description en JSON-safe
-            DESC_JSON=$(echo "$description" | $JQ -Rs '.[:-1]')
 
             NEW_COMMENT=$($JQ -n \
                 --arg id "$COMMENT_ID" \
@@ -219,6 +217,15 @@ EOF
 
     echo "  - [$SEVERITY] $FILEPATH:$LINE - $TYPE" >&2
 done
+
+# Supprimer la ligne blanche finale générée par le heredoc (évite l'erreur YAMLlint)
+# Approche portable: crée un fichier temporaire sans les lignes vides finales
+if [[ -f "$TRACKING_FILE" ]]; then
+    # Supprime les lignes vides à la fin du fichier
+    while [[ $(tail -c 1 "$TRACKING_FILE" | wc -l) -eq 1 ]] && [[ $(tail -n 1 "$TRACKING_FILE") == "" ]]; do
+        head -n -1 "$TRACKING_FILE" > "${TRACKING_FILE}.tmp" && mv "${TRACKING_FILE}.tmp" "$TRACKING_FILE"
+    done
+fi
 
 echo "" >&2
 echo "=== Tracking file generated ===" >&2
