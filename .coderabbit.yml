@@ -65,6 +65,9 @@ reviews:
     # Dependencies
     - "!**/node_modules/**"
 
+     # Documentation (ajout)
+    - "!docs/**"
+
     # Generated files
     - "!**/*.min.js"
     - "!**/*.min.css"
