@@ -210,7 +210,7 @@ Error Prone de Google détecte les bugs au moment de la compilation avec un taux
 ```
 
 **Fichier `.mvn/jvm.config` requis** :
-```
+```properties
 --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
 --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
 --add-exports jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
