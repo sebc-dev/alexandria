@@ -1,4 +1,4 @@
-# Phase 9: MCP Adapters (TDD)
+# Phase 10: MCP Adapters (TDD)
 
 - [ ] **Task 27: Create McpResponseFormatter** (TDD)
   - **RED**:

@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "vscjava.vscode-java-pack",
+        "oracle.oracle-java",
+        "sonarsource.sonarlint-vscode",
+        "shengchen.vscode-checkstyle",
+        "usernamehw.errorlens"
+    ]
+}

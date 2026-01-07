@@ -1,0 +1,80 @@
+{
+    // ════════════════════════════════════════════════════════════════
+    // Java Settings
+    // ════════════════════════════════════════════════════════════════
+    
+    // Formatage Google Java Style
+    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    
+    // Format on save (cohérent avec Spotless)
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    
+    // Analyse null automatique
+    "java.compile.nullAnalysis.mode": "automatic",
+    
+    // Mise à jour auto de la config build
+    "java.configuration.updateBuildConfiguration": "automatic",
+    
+    // ════════════════════════════════════════════════════════════════
+    // Checkstyle
+    // ════════════════════════════════════════════════════════════════
+    "java.checkstyle.configuration": "/google_checks.xml",
+    "java.checkstyle.version": "12.3.1",
+    
+    // ════════════════════════════════════════════════════════════════
+    // SonarLint
+    // ════════════════════════════════════════════════════════════════
+    "sonarlint.rules": {
+        // Désactiver TODO warnings (trop de bruit)
+        "java:S1135": { "level": "off" },
+        // Désactiver "add serialVersionUID" (pas de serialization)
+        "java:S2057": { "level": "off" }
+    },
+    "sonarlint.output.showVerboseLogs": false,
+    
+    // ════════════════════════════════════════════════════════════════
+    // Files
+    // ════════════════════════════════════════════════════════════════
+    "files.exclude": {
+        "**/target": true,
+        "**/.git": true,
+        "**/.idea": true,
+        "**/*.iml": true
+    },
+    
+    "files.watcherExclude": {
+        "**/target/**": true
+    },
+    
+    // ════════════════════════════════════════════════════════════════
+    // Editor
+    // ════════════════════════════════════════════════════════════════
+    "editor.rulers": [100],
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    
+    // ════════════════════════════════════════════════════════════════
+    // Error Lens (affichage inline des erreurs)
+    // ════════════════════════════════════════════════════════════════
+    "errorLens.enabled": true,
+    "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+    "errorLens.messageMaxChars": 100,
+    
+    // ════════════════════════════════════════════════════════════════
+    // Terminal
+    // ════════════════════════════════════════════════════════════════
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.scrollback": 10000,
+    
+    // ════════════════════════════════════════════════════════════════
+    // Search
+    // ════════════════════════════════════════════════════════════════
+    "search.exclude": {
+        "**/target": true,
+        "**/node_modules": true,
+        "**/.git": true
+    }
+}

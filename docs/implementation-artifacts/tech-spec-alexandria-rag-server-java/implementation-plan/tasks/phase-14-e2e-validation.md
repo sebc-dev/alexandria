@@ -1,4 +1,4 @@
-# Phase 13: E2E Validation
+# Phase 14: E2E Validation
 
 > **Note**: Ces tests valident le système complet après l'implémentation de toutes les phases. Ils ne suivent pas le cycle TDD car ils testent l'intégration de tous les composants ensemble.
 
