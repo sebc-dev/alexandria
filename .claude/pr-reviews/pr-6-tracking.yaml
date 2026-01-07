@@ -1,240 +1,820 @@
 # Tracking Review PR #6
-# Generated: 2026-01-07T09:00:00+01:00
-# Analyzed: 2026-01-07T09:15:00+01:00
-# Applied: 2026-01-07T10:00:00+01:00
-# Re-synced: 2026-01-07T11:30:00+01:00
+# Generated: 2026-01-07T17:08:20+01:00
+# Script: fetch-coderabbit-comments.sh
 
 pr_number: 6
 pr_title: "Phase 2A: Local Dev Tools - VS Code, Makefile, Git hooks"
 branch: "feature/cicd-local-dev-tools"
 state: "OPEN"
-created_at: "2026-01-07T09:00:00+01:00"
-last_updated: "2026-01-07T11:30:00+01:00"
-status: applied
+created_at: "2026-01-07T17:08:20+01:00"
+last_updated: "2026-01-07T17:08:20+01:00"
+status: in_progress
 
 summary:
-  total_comments: 31  # 26 + 5 nouveaux
-  analyzed: 31
-  accepted: 22  # 17 + 5 nouveaux
-  rejected: 6
-  discussed: 1  # Résolu: supprimer 2>/dev/null
-  deferred: 2
-  applied: 23  # 18 + 5 nouveaux
+  total_comments: 42
+  analyzed: 2
+  accepted: 2
+  rejected: 0
+  discussed: 0
+  deferred: 0
+  applied: 2
 
-# ============================================================
-# APPLIED (23) - Corrections appliquées
-# ============================================================
-comments_applied:
-  # --- RE-SYNC 2026-01-07 (5 nouveaux) ---
-  - id: "2667594449"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
-    line: 77
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```text au bloc diagramme ASCII"
-    applied_at: "2026-01-07T11:30:00+01:00"
-
-  - id: "2667594456"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
-    line: 219
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```bash au bloc .mvn/jvm.config + ligne vide"
-    applied_at: "2026-01-07T11:30:00+01:00"
-
-  - id: "2667594461"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
-    line: 74
-    criticality: "MINOR"
-    fix_applied: "Ajouté lignes blanches autour du bloc XML (MD031)"
-    applied_at: "2026-01-07T11:30:00+01:00"
-
-  - id: "2667594466"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
-    line: 98
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```properties au bloc JVM config + lignes blanches"
-    applied_at: "2026-01-07T11:30:00+01:00"
-
-  - id: "2667594472"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
-    line: 339
-    criticality: "COSMETIC"
-    fix_applied: "URL formatée avec chevrons <https://...> (MD034)"
-    applied_at: "2026-01-07T11:30:00+01:00"
-
-  # --- IMPORTANT (4) ---
-  - id: "2667219223"
-    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
-    line: 413
-    criticality: "IMPORTANT"
-    fix_applied: "Supprimé 2>/dev/null, remplacé xargs -r par xargs"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  - id: "2667219267"
-    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
-    line: 207
-    criticality: "IMPORTANT"
-    fix_applied: 'path: "**/target/failsafe-reports/"'
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  - id: "2667219285"
-    file: "hooks/pre-commit"
-    line: 35
-    criticality: "IMPORTANT"
-    fix_applied: "Remplacé xargs -r par xargs"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  - id: "2667219291"
-    file: "hooks/pre-commit"
-    line: 45
-    criticality: "IMPORTANT"
-    fix_applied: "Supprimé 2>/dev/null"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  # --- DISCUSSED (résolu) ---
-  - id: "2667219280"
-    file: "hooks/pre-commit"
-    line: 29
-    criticality: "IMPORTANT"
-    fix_applied: "Supprimé 2>/dev/null (décision utilisateur: préférer traçabilité)"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  # --- MINOR (3) ---
+comments:
   - id: "2667219211"
+    source: "inline"
+    review_id: null
     file: ".mvn/jvm.config"
-    line: 10
-    criticality: "MINOR"
-    fix_applied: "Ajouté commentaires explicatifs pour Error Prone"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    line: 14
+    type: "bug"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter des commentaires explicatifs pour clarifier le contexte et la raison des exports."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
-  - id: "2667219261"
-    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
-    line: 1042
-    criticality: "MINOR"
-    fix_applied: "Ajouté ```text"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  - id: "2667219294"
-    file: "Makefile"
-    line: 4
-    criticality: "MINOR"
-    fix_applied: "Ajouté toutes les targets à .PHONY"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  # --- COSMETIC (10) ---
   - id: "2667219221"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/index.md"
     line: 31
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```text"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Bloc de code sans identificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219223"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 413
+    type: "bug"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Problèmes dans le script documenté."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219226"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 382
+    type: "documentation"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Note importante : Incompatibilité critique SonarCloud avec Java 25."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219229"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
-    line: 649
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté mvn verify -Pci au tableau"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    line: 654
+    type: "bug"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Tableau des commandes utiles bien structuré."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219230"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
     line: 361
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ligne vide après bloc YAML"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "security"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter des lignes blanches autour du bloc YAML."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219234"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
-    line: 376
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ligne vide avant tableau"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    line: 378
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter des lignes blanches autour du tableau."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219236"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
     line: 500
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```text"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter la spécification de langage au bloc de configuration."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219238"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/Outils de qualité de code Java pour agents IA : guide complet 2026.md"
     line: 223
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```properties"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "style"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Bloc de code sans spécificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219242"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/Outils de qualité de code Java pour agents IA : guide complet 2026.md"
     line: 561
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté newline final"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "style"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Fichier sans saut de ligne final."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219245"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
     line: 440
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```text"
-    applied_at: "2026-01-07T10:00:00+01:00"
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter la spécification de langage au bloc de code."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
-  - id: "2667219253"
-    file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
-    line: 668
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté newline final"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-  - id: "2667219255"
-    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
-    line: 29
-    criticality: "COSMETIC"
-    fix_applied: "Ajouté ```text"
-    applied_at: "2026-01-07T10:00:00+01:00"
-
-# ============================================================
-# REJECT (6) - Faux positifs ou non pertinents
-# ============================================================
-comments_reject:
   - id: "2667219249"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
     line: 553
-    reason: "Faux positif MD036: le bold est un callout d'emphase, pas une structure hiérarchique"
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Utiliser un heading au lieu de bold pour la recommandation."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219253"
+    source: "inline"
+    review_id: null
+    file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
+    line: 668
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Ajouter un newline final au fichier."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219255"
+    source: "inline"
+    review_id: null
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
+    line: 29
+    type: "style"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:33Z"
+    summary: "Bloc de code sans spécificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219261"
+    source: "inline"
+    review_id: null
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
+    line: 1042
+    type: "documentation"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Bloc de code sans spécificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219263"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
     line: 105
-    reason: "Faux positif: Java 25 EST une version LTS (cycle Oracle 2 ans depuis Java 17)"
+    type: "documentation"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Java 25 n'est pas une version LTS."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219267"
+    source: "inline"
+    review_id: null
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
+    line: 207
+    type: "bug"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Erreur de syntaxe YAML : le pattern glob doit être entre guillemets."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219272"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/workflow-local-cicd/Makefile"
     line: 4
-    reason: "Non pertinent: Makefile orienté sélection de targets, 'help' est le point d'entrée"
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Considérer l'ajout d'une target \"all\" conventionnelle."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219275"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/workflow-local-cicd/Makefile"
     line: 140
-    reason: "Faux positif: les lignes sont courtes et lisibles, style standard"
+    type: "documentation"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Target \"reports\" dépasse la longueur recommandée."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219277"
+    source: "inline"
+    review_id: null
     file: "docs/research/10-cicd-local-dev/workflow-local-cicd/pre-commit"
     line: 55
-    reason: "Duplication intentionnelle: fichier de recherche/documentation vs implémentation"
+    type: "bug"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Contenu dupliqué avec `hooks/pre-commit`."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219280"
+    source: "inline"
+    review_id: null
+    file: "hooks/pre-commit"
+    line: 29
+    type: "documentation"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Suppression d'erreurs problématique."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219285"
+    source: "inline"
+    review_id: null
+    file: "hooks/pre-commit"
+    line: 35
+    type: "bug"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Problème de portabilité : `xargs -r` est spécifique à GNU."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219291"
+    source: "inline"
+    review_id: null
+    file: "hooks/pre-commit"
+    line: 45
+    type: "bug"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Même problème de suppression d'erreurs."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667219294"
+    source: "inline"
+    review_id: null
+    file: "Makefile"
+    line: 4
+    type: "security"
+    severity: "nitpick"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Déclaration `.PHONY` incomplète."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
   - id: "2667219298"
+    source: "inline"
+    review_id: null
     file: "Makefile"
     line: 145
-    reason: "Faux positif: le fichier se termine correctement avec un newline"
+    type: "unknown"
+    severity: "potential-issue"
+    created_at: "2026-01-07T06:25:34Z"
+    summary: "Fichier sans saut de ligne final."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
-# ============================================================
-# DEFER (2) - Hors scope ou faible priorité
-# ============================================================
-comments_defer:
-  - id: "2667219226"
+  - id: "2667594449"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 77
+    type: "performance"
+    severity: "potential-issue"
+    created_at: "2026-01-07T09:00:32Z"
+    summary: "Le bloc de diagramme manque un identificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667594456"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 219
+    type: "documentation"
+    severity: "potential-issue"
+    created_at: "2026-01-07T09:00:32Z"
+    summary: "Le bloc .mvn/jvm.config manque un identificateur de langage."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667594461"
+    source: "inline"
+    review_id: null
     file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
-    line: 378
-    reason: "Hors scope: ajouter note SonarCloud au README - à faire lors création README"
+    line: 75
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T09:00:32Z"
+    summary: "Ajouter des lignes blanches autour du bloc XML."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
 
-  - id: "2667219258"
-    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
-    line: 34
-    reason: "Faible priorité: espacement titres MD022 - cosmétique documentation"
+  - id: "2667594466"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 98
+    type: "bug"
+    severity: "nitpick"
+    created_at: "2026-01-07T09:00:32Z"
+    summary: "Spécifier le langage du bloc de code et ajouter des lignes blanches."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "2667594472"
+    source: "inline"
+    review_id: null
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 339
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T09:00:32Z"
+    summary: "Formater l'URL correctement."
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-ef33a922"
+    source: "review_body"
+    review_id: 3633510335
+    file: ".mvn/jvm.config"
+    line: 1
+    type: "documentation"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "Ajoute un en-tête commenté tout en haut du fichier"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-390b6b38"
+    source: "review_body"
+    review_id: 3633510335
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
+    line: 105
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "The step name \"- name: Set up Java 25 LTS\" is incorrect because Java"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-647df4c3"
+    source: "review_body"
+    review_id: 3633510335
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/Makefile"
+    line: 133
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "The Makefile target \"reports\" exceeds the recommended"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-40dea2c3"
+    source: "review_body"
+    review_id: 3633510335
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/pre-commit"
+    line: 1
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "The copied pre-commit script is duplicate of"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-d24630ff"
+    source: "review_body"
+    review_id: 3633510335
+    file: "hooks/pre-commit"
+    line: 29
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "La redirection d'erreur dans la condition \"if ! mvn spotless:apply -q"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3633510335-42f7f910"
+    source: "review_body"
+    review_id: 3633510335
+    file: "Makefile"
+    line: 144
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T06:25:36Z"
+    summary: "The Makefile is missing a trailing newline at EOF; open"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3634568024-e65fc286"
+    source: "review_body"
+    review_id: 3634568024
+    file: ".claude/agents/coderabbit-comment-analyzer.md"
+    line: 100
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T12:05:40Z"
+    summary: "The code blocks at lines 100, 105, and 110 lack language"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3634568024-1da932af"
+    source: "review_body"
+    review_id: 3634568024
+    file: ".claude/commands/custom/review-coderabbit-pr.md"
+    line: 17
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T12:05:40Z"
+    summary: "The ASCII-art workflow diagram (the \"WORKFLOW PRINCIPAL\""
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3634568024-ad49cc59"
+    source: "review_body"
+    review_id: 3634568024
+    file: ".claude/pr-reviews/fetch-coderabbit-comments.sh"
+    line: 145
+    type: "style"
+    severity: "nitpick"
+    created_at: "2026-01-07T12:05:40Z"
+    summary: "The summary-by-severity and summary-by-type blocks use"
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      criticality: "MINOR"
+      effort: "LOW"
+      rationale: "Patterns grep fragiles remplacés par regex flexibles"
+      code_suggestion: null
+    status: applied
+    applied_at: "2026-01-07T18:30:00+01:00"
+
+  - id: "review-3634667377-2b46d794"
+    source: "review_body"
+    review_id: 3634667377
+    file: ".coderabbit.yml"
+    line: 68
+    type: "unknown"
+    severity: "unknown"
+    created_at: "2026-01-07T12:37:36Z"
+    summary: "Les patterns d'exclusion ajoutés (\"!docs/**\" et"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3634694331-9ad6feb7"
+    source: "review_body"
+    review_id: 3634694331
+    file: ".coderabbit.yml"
+    line: 72
+    type: "style"
+    severity: "unknown"
+    created_at: "2026-01-07T12:45:47Z"
+    summary: "The exclude pattern `!.claude/**/*.md` only skips Markdown files"
+    analysis:
+      decision: null
+      confidence: null
+      criticality: null
+      effort: null
+      rationale: null
+      code_suggestion: null
+    status: pending
+    applied_at: null
+
+  - id: "review-3635179878-d6512080"
+    source: "review_body"
+    review_id: 3635179878
+    file: ".claude/pr-reviews/fetch-coderabbit-comments.sh"
+    line: 228
+    type: "style"
+    severity: "potential-issue"
+    created_at: "2026-01-07T14:34:35Z"
+    summary: "Le résumé par sévérité/type est fragile car il se base"
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      criticality: "MINOR"
+      effort: "LOW"
+      rationale: "Regex flexibles avec \\s+ pour indentation variable, gestion guillemets robuste"
+      code_suggestion: null
+    status: applied
+    applied_at: "2026-01-07T18:30:00+01:00"
+

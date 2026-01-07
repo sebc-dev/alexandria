@@ -225,11 +225,21 @@ echo "=== Tracking file generated ===" >&2
 echo "File: $TRACKING_FILE" >&2
 echo "Total comments: $COMMENT_COUNT" >&2
 
-# Afficher un résumé par sévérité (utilise regex pour matcher uniquement les clés YAML au bon niveau)
+# Afficher un résumé par sévérité (utilise jq pour un parsing robuste du YAML)
+# Note: Le fichier tracking est en YAML mais les valeurs sont compatibles JSON
 echo "" >&2
 echo "=== Summary by Severity ===" >&2
-grep -E "^    severity: " "$TRACKING_FILE" | sed 's/^    severity: "//' | sed 's/"$//' | sort | uniq -c | sort -rn >&2
+# Extraction robuste: cherche les lignes severity dans les commentaires, nettoie les guillemets/espaces
+grep -E "^\s+severity:" "$TRACKING_FILE" | \
+    sed -E 's/^\s+severity:\s*//' | \
+    sed -E 's/^["'"'"']?//' | sed -E 's/["'"'"']?$//' | \
+    sort | uniq -c | sort -rn >&2
 
 echo "" >&2
 echo "=== Summary by Type ===" >&2
-grep -E "^    type: " "$TRACKING_FILE" | sed 's/^    type: "//' | sed 's/"$//' | sort | uniq -c | sort -rn >&2
+grep -E "^\s+type:" "$TRACKING_FILE" | \
+    sed -E 's/^\s+type:\s*//' | \
+    sed -E 's/^["'"'"']?//' | sed -E 's/["'"'"']?$//' | \
+    sort | uniq -c | sort -rn >&2
+
+# Fin du script
