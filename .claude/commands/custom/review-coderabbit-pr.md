@@ -58,11 +58,43 @@ gh pr view $PR_NUMBER --json title,body,state,headRefName,baseRefName
 
 ## Étape 2: Récupérer les Commentaires CodeRabbit
 
-```bash
-# Récupérer tous les review comments
-gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments --jq '.[] | select(.user.login | contains("coderabbit")) | {id: .id, path: .path, line: .line, body: .body, created_at: .created_at}'
+### 2.1 Commentaires inline (review comments API)
 
-# Récupérer les commentaires généraux de la PR
+```bash
+# Récupérer tous les review comments inline
+gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments --jq '.[] | select(.user.login | contains("coderabbit")) | {id: .id, path: .path, line: .line, body: .body, created_at: .created_at}'
+```
+
+### 2.2 Commentaires dans les review bodies (IMPORTANT!)
+
+Certains commentaires CodeRabbit sont "outside the diff" et apparaissent **uniquement dans le corps des reviews**, pas dans l'API comments. Ces commentaires sont formatés dans une section `<details>` avec `🤖 Fix all issues with AI agents`.
+
+```bash
+# Récupérer tous les review bodies de CodeRabbit
+gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/reviews --jq '
+  .[] | select(.user.login | contains("coderabbit")) |
+  select(.body != null and .body != "") |
+  {review_id: .id, state: .state, body: .body, submitted_at: .submitted_at}
+'
+```
+
+**Extraction des commentaires depuis le review body:**
+
+Le body contient des blocs formatés comme:
+```
+In @path/to/file.ext:
+- Around line X: Description du problème...
+- Line Y: Autre problème...
+```
+
+Parser avec regex ou manuellement pour extraire:
+- `path`: le chemin du fichier après `In @`
+- `line`: le numéro de ligne (Around line X, Line Y, lines X-Y)
+- `body`: la description du problème
+
+### 2.3 Récupérer les commentaires généraux de la PR
+
+```bash
 gh pr view $PR_NUMBER --comments --json comments
 ```
 
@@ -93,6 +125,8 @@ summary:
 comments: []
 # Structure de chaque comment:
 # - id: "comment_id"
+#   source: "inline | review_body"  # D'où vient le commentaire
+#   review_id: null                  # ID de la review si source=review_body
 #   file: "path/to/file.java"
 #   line: 42
 #   type: "bug | security | performance | style | best-practice"
