@@ -52,7 +52,7 @@ Configurer l'environnement de développement local pour un feedback instantané 
 
 ## Philosophie du workflow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                    FEEDBACK LOOP OPTIMIZATION                           │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -205,7 +205,8 @@ Configurer l'environnement de développement local pour un feedback instantané 
 - [ ] **Task 3: Configure JVM for Error Prone**
   - File: `.mvn/jvm.config`
   - Action: Ajouter les exports JVM requis pour Error Prone et google-java-format sur Java 25
-    ```
+
+    ```bash
     --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
     --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
     --add-exports jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED

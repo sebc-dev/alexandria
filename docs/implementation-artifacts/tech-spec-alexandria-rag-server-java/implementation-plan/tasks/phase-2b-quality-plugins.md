@@ -33,6 +33,7 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
   - File: `pom.xml`
   - Location: Section `<properties>`
   - Action: Ajouter les versions des plugins
+
     ```xml
     <properties>
         <!-- ... existing properties ... -->
@@ -72,6 +73,7 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     ```
+
   - Notes:
     - Spotless 3.1.0 : JRE 17+ requis pour exécuter Maven
     - google-java-format 1.33.0 : JDK 21+ requis pour exécuter le formateur
@@ -84,7 +86,8 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
 - [ ] **Task 1.5: Create .mvn/jvm.config (OBLIGATOIRE)**
   - File: `.mvn/jvm.config`
   - Action: Créer le fichier avec les exports JDK obligatoires pour Error Prone et google-java-format
-    ```
+
+    ```properties
     --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
     --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
     --add-exports jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
@@ -96,6 +99,7 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
     --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
     --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
     ```
+
   - Notes:
     - **CRITIQUE** : Sans ce fichier, Error Prone et google-java-format échoueront sur JDK 16+ (JEP 396)
     - Requis pour les accès aux APIs internes du compilateur Java
@@ -336,7 +340,7 @@ Configurer tous les plugins de qualité Maven pour l'analyse statique, le format
   - Notes:
     - NVD_API_KEY accélère l'analyse (plusieurs heures → quelques minutes). Voir Phase 2C Task 7.
     - **Breaking change septembre 2025** : Sonatype OSS Index n'accepte plus les requêtes anonymes. Sans credentials, l'analyseur OSS Index se désactive automatiquement.
-    - **OSS Index credentials** : S'inscrire sur https://ossindex.sonatype.org/ pour obtenir un token API (email = username, token = password)
+    - **OSS Index credentials** : S'inscrire sur <https://ossindex.sonatype.org/> pour obtenir un token API (email = username, token = password)
     - **Configuration OSS Index** (2 options) :
       1. Variables d'environnement : `OSS_INDEX_USERNAME` et `OSS_INDEX_PASSWORD`
       2. Dans `~/.m2/settings.xml` :
