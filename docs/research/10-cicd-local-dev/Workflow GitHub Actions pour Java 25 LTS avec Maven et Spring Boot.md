@@ -435,7 +435,7 @@ Branch name pattern: main
 ☑ Require conversation resolution before merging
 
 ☑ Do not allow bypassing the above settings
-```
+```text
 
 La clé est d'ajouter **"Alexandria CI Pipeline"** comme status check requis après avoir exécuté le workflow au moins une fois sur la branche `main`.
 
