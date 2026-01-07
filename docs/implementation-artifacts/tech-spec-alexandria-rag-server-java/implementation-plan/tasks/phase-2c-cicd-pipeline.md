@@ -359,12 +359,14 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
               output: |
                 {"summary":"Pipeline terminé avec statut: ${{ steps.status.outputs.conclusion }}","title":"Résultat CI Alexandria"}
     ```
+
   - Notes:
     - Jobs 2-6 s'exécutent en parallèle après init-check
     - Docker build attend le succès des tests unitaires
     - Temps total estimé: ~12-15 min (contrôlé par CodeQL)
     - **Pas de mutation testing** (PIT) pour réduire le temps d'exécution
     - **Versions mises à jour janvier 2026** :
+
       | Action | Version | Notes |
       |--------|---------|-------|
       | actions/checkout | v6.0.1 | Breaking change: credentials sous `$RUNNER_TEMP` |
@@ -497,7 +499,8 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
     ☑ Require conversation resolution before merging
 
     ☑ Do not allow bypassing the above settings
-    ```
+    ```text
+
   - Notes:
     - Exécuter le workflow une fois sur `main` avant d'ajouter le status check
     - Le check "Alexandria CI Pipeline" apparaîtra après la première exécution
