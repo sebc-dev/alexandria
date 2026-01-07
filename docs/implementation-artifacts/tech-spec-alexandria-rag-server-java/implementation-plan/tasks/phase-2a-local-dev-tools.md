@@ -410,13 +410,13 @@ Configurer l'environnement de développement local pour un feedback instantané 
 
     if [ -n "$STAGED_JAVA" ]; then
         # Appliquer Spotless
-        if ! mvn spotless:apply -q 2>/dev/null; then
+        if ! mvn spotless:apply -q; then
             echo -e "${RED}❌ Spotless formatting failed${NC}"
             exit 1
         fi
 
         # Re-stage les fichiers modifiés par Spotless
-        echo "$STAGED_JAVA" | xargs -r git add
+        echo "$STAGED_JAVA" | xargs git add
 
         echo -e "  ${GREEN}✓ Formatted${NC}"
     else
@@ -426,7 +426,7 @@ Configurer l'environnement de développement local pour un feedback instantané 
     # 2. Checkstyle rapide (uniquement si des fichiers Java sont staged)
     if [ -n "$STAGED_JAVA" ]; then
         echo "  → Running Checkstyle..."
-        if ! mvn checkstyle:check -q 2>/dev/null; then
+        if ! mvn checkstyle:check -q; then
             echo -e "${RED}❌ Checkstyle violations found${NC}"
             echo ""
             echo "Run 'mvn checkstyle:check' for details"
