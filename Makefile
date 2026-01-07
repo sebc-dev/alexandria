@@ -1,7 +1,7 @@
 # Makefile pour Alexandria
 # Simplifie les commandes Maven fréquentes
 
-.PHONY: help dev compile test test-it analyse pit full-check format clean install-hooks
+.PHONY: help dev compile test test-it test-all analyse pmd spotbugs spotbugs-gui checkstyle pit full-check quick-check format format-check security clean install-hooks deps deps-updates ci-local reports open-pmd open-pit
 
 # Couleurs
 CYAN := \033[0;36m
