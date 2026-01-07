@@ -1,0 +1,240 @@
+# Tracking Review PR #6
+# Generated: 2026-01-07T09:00:00+01:00
+# Analyzed: 2026-01-07T09:15:00+01:00
+# Applied: 2026-01-07T10:00:00+01:00
+# Re-synced: 2026-01-07T11:30:00+01:00
+
+pr_number: 6
+pr_title: "Phase 2A: Local Dev Tools - VS Code, Makefile, Git hooks"
+branch: "feature/cicd-local-dev-tools"
+state: "OPEN"
+created_at: "2026-01-07T09:00:00+01:00"
+last_updated: "2026-01-07T11:30:00+01:00"
+status: applied
+
+summary:
+  total_comments: 31  # 26 + 5 nouveaux
+  analyzed: 31
+  accepted: 22  # 17 + 5 nouveaux
+  rejected: 6
+  discussed: 1  # Résolu: supprimer 2>/dev/null
+  deferred: 2
+  applied: 23  # 18 + 5 nouveaux
+
+# ============================================================
+# APPLIED (23) - Corrections appliquées
+# ============================================================
+comments_applied:
+  # --- RE-SYNC 2026-01-07 (5 nouveaux) ---
+  - id: "2667594449"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 77
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```text au bloc diagramme ASCII"
+    applied_at: "2026-01-07T11:30:00+01:00"
+
+  - id: "2667594456"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 219
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```bash au bloc .mvn/jvm.config + ligne vide"
+    applied_at: "2026-01-07T11:30:00+01:00"
+
+  - id: "2667594461"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 74
+    criticality: "MINOR"
+    fix_applied: "Ajouté lignes blanches autour du bloc XML (MD031)"
+    applied_at: "2026-01-07T11:30:00+01:00"
+
+  - id: "2667594466"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 98
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```properties au bloc JVM config + lignes blanches"
+    applied_at: "2026-01-07T11:30:00+01:00"
+
+  - id: "2667594472"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 339
+    criticality: "COSMETIC"
+    fix_applied: "URL formatée avec chevrons <https://...> (MD034)"
+    applied_at: "2026-01-07T11:30:00+01:00"
+
+  # --- IMPORTANT (4) ---
+  - id: "2667219223"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2a-local-dev-tools.md"
+    line: 413
+    criticality: "IMPORTANT"
+    fix_applied: "Supprimé 2>/dev/null, remplacé xargs -r par xargs"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219267"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
+    line: 207
+    criticality: "IMPORTANT"
+    fix_applied: 'path: "**/target/failsafe-reports/"'
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219285"
+    file: "hooks/pre-commit"
+    line: 35
+    criticality: "IMPORTANT"
+    fix_applied: "Remplacé xargs -r par xargs"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219291"
+    file: "hooks/pre-commit"
+    line: 45
+    criticality: "IMPORTANT"
+    fix_applied: "Supprimé 2>/dev/null"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  # --- DISCUSSED (résolu) ---
+  - id: "2667219280"
+    file: "hooks/pre-commit"
+    line: 29
+    criticality: "IMPORTANT"
+    fix_applied: "Supprimé 2>/dev/null (décision utilisateur: préférer traçabilité)"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  # --- MINOR (3) ---
+  - id: "2667219211"
+    file: ".mvn/jvm.config"
+    line: 10
+    criticality: "MINOR"
+    fix_applied: "Ajouté commentaires explicatifs pour Error Prone"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219261"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
+    line: 1042
+    criticality: "MINOR"
+    fix_applied: "Ajouté ```text"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219294"
+    file: "Makefile"
+    line: 4
+    criticality: "MINOR"
+    fix_applied: "Ajouté toutes les targets à .PHONY"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  # --- COSMETIC (10) ---
+  - id: "2667219221"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/index.md"
+    line: 31
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```text"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219229"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 649
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté mvn verify -Pci au tableau"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219230"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
+    line: 361
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ligne vide après bloc YAML"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219234"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
+    line: 376
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ligne vide avant tableau"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219236"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2c-cicd-pipeline.md"
+    line: 500
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```text"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219238"
+    file: "docs/research/10-cicd-local-dev/Outils de qualité de code Java pour agents IA : guide complet 2026.md"
+    line: 223
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```properties"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219242"
+    file: "docs/research/10-cicd-local-dev/Outils de qualité de code Java pour agents IA : guide complet 2026.md"
+    line: 561
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté newline final"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219245"
+    file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
+    line: 440
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```text"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219253"
+    file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
+    line: 668
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté newline final"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+  - id: "2667219255"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
+    line: 29
+    criticality: "COSMETIC"
+    fix_applied: "Ajouté ```text"
+    applied_at: "2026-01-07T10:00:00+01:00"
+
+# ============================================================
+# REJECT (6) - Faux positifs ou non pertinents
+# ============================================================
+comments_reject:
+  - id: "2667219249"
+    file: "docs/research/10-cicd-local-dev/Workflow GitHub Actions pour Java 25 LTS avec Maven et Spring Boot.md"
+    line: 553
+    reason: "Faux positif MD036: le bold est un callout d'emphase, pas une structure hiérarchique"
+
+  - id: "2667219263"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/ci.yml"
+    line: 105
+    reason: "Faux positif: Java 25 EST une version LTS (cycle Oracle 2 ans depuis Java 17)"
+
+  - id: "2667219272"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/Makefile"
+    line: 4
+    reason: "Non pertinent: Makefile orienté sélection de targets, 'help' est le point d'entrée"
+
+  - id: "2667219275"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/Makefile"
+    line: 140
+    reason: "Faux positif: les lignes sont courtes et lisibles, style standard"
+
+  - id: "2667219277"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/pre-commit"
+    line: 55
+    reason: "Duplication intentionnelle: fichier de recherche/documentation vs implémentation"
+
+  - id: "2667219298"
+    file: "Makefile"
+    line: 145
+    reason: "Faux positif: le fichier se termine correctement avec un newline"
+
+# ============================================================
+# DEFER (2) - Hors scope ou faible priorité
+# ============================================================
+comments_defer:
+  - id: "2667219226"
+    file: "docs/implementation-artifacts/tech-spec-alexandria-rag-server-java/implementation-plan/tasks/phase-2b-quality-plugins.md"
+    line: 378
+    reason: "Hors scope: ajouter note SonarCloud au README - à faire lors création README"
+
+  - id: "2667219258"
+    file: "docs/research/10-cicd-local-dev/workflow-local-cicd/alexandria-workflow-guide.md"
+    line: 34
+    reason: "Faible priorité: espacement titres MD022 - cosmétique documentation"

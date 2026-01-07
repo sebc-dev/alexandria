@@ -1,0 +1,141 @@
+# =============================================================================
+# Template de Tracking Review PR CodeRabbit
+# =============================================================================
+# Usage: Copier ce fichier vers pr-{NUMBER}-tracking.yaml
+# Le workflow /review-coderabbit-pr crée automatiquement ce fichier
+# =============================================================================
+
+# Métadonnées PR
+pr_number: 0
+pr_title: ""
+pr_url: ""
+branch: ""
+base_branch: "main"
+author: ""
+
+# Timestamps
+created_at: ""
+last_updated: ""
+completed_at: null
+
+# Statut global
+# - in_progress: Review en cours
+# - completed: Tous les commentaires traités
+# - abandoned: Review abandonnée
+status: in_progress
+
+# Résumé des décisions
+summary:
+  total_comments: 0
+  analyzed: 0
+  pending: 0
+  accepted: 0
+  rejected: 0
+  discussed: 0
+  deferred: 0
+  applied: 0
+  skipped: 0
+  # Nouveaux compteurs pour le suivi des résolutions
+  verified: 0           # Confirmés résolus par CodeRabbit
+  needs_attention: 0    # Nécessitent une action (nouveau feedback)
+  pending_verification: 0  # En attente de vérification CodeRabbit
+
+# Configuration de la session
+session:
+  # Modèle utilisé pour l'analyse
+  analyzer_model: "haiku"
+  # Seuil de confiance pour auto-accept
+  auto_accept_threshold: 0.9
+  # Seuil de confiance pour auto-reject
+  auto_reject_threshold: 0.2
+
+# Liste des commentaires
+# Chaque entrée représente un commentaire CodeRabbit
+comments:
+  # Exemple de structure d'un commentaire:
+  # - id: "1234567890"
+  #   github_url: "https://github.com/owner/repo/pull/123#discussion_r1234567890"
+  #   file: "src/main/java/com/example/Service.java"
+  #   line: 42
+  #   diff_hunk: |
+  #     @@ -40,5 +40,10 @@ public class Service {
+  #     +    public void newMethod() {
+  #     +        // code
+  #     +    }
+  #   original_comment: |
+  #     CodeRabbit suggestion: Consider using Optional instead of null check.
+  #
+  #   # Résultat de l'analyse par le sub-agent
+  #   analysis:
+  #     decision: "ACCEPT"  # ACCEPT | REJECT | DISCUSS | DEFER
+  #     confidence: 0.85
+  #     type: "best-practice"  # bug | security | performance | style | best-practice | documentation
+  #     criticality: "MINOR"  # BLOCKING | IMPORTANT | MINOR | COSMETIC
+  #     effort: "TRIVIAL"  # TRIVIAL | LOW | MEDIUM | HIGH
+  #     regression_risk: false
+  #     summary: "Suggestion d'utiliser Optional au lieu de null"
+  #     rationale: "Le pattern Optional est recommandé dans nos standards pour éviter les NPE"
+  #     code_suggestion: |
+  #       public Optional<String> getValue() {
+  #           return Optional.ofNullable(this.value);
+  #       }
+  #     research_needed: null
+  #
+  #   # Statut de traitement
+  #   # - pending: Non encore analysé
+  #   # - analyzed: Analysé, en attente d'action
+  #   # - applied: Correction appliquée
+  #   # - skipped: Ignoré volontairement
+  #   # - overridden: Décision changée manuellement
+  #   status: "analyzed"
+  #
+  #   # Actions effectuées
+  #   applied_at: null
+  #   applied_by: null  # "auto" | "manual"
+  #   override_reason: null
+  #   github_reply: null  # Réponse postée sur GitHub
+  #
+  #   # Suivi des résolutions (nouveaux champs)
+  #   resolution_status: null  # pending_verification | verified | needs_attention | manually_resolved
+  #
+  #   # Réponses de CodeRabbit sur nos corrections
+  #   coderabbit_replies:
+  #     - id: "reply_id"
+  #       body: "Réponse de CodeRabbit"
+  #       received_at: "timestamp"
+  #       type: "confirmation"  # confirmation | new_feedback | question
+  #
+  #   # Nos réponses postées sur GitHub
+  #   our_replies:
+  #     - id: "our_reply_id"
+  #       body: "Notre réponse"
+  #       posted_at: "timestamp"
+  #       reason: "reject_justification"  # reject_justification | verification_request | discussion
+
+# Historique des actions
+history:
+  # - timestamp: "2024-01-15T10:30:00Z"
+  #   action: "analysis_started"
+  #   details: "Démarrage de l'analyse de 15 commentaires"
+  # - timestamp: "2024-01-15T10:35:00Z"
+  #   action: "analysis_completed"
+  #   details: "Analyse terminée: 8 ACCEPT, 4 REJECT, 2 DISCUSS, 1 DEFER"
+  # - timestamp: "2024-01-15T10:40:00Z"
+  #   action: "fixes_applied"
+  #   details: "6 corrections appliquées automatiquement"
+  # - timestamp: "2024-01-15T11:00:00Z"
+  #   action: "sync"
+  #   details: "Synchronisation: 2 nouveaux commentaires, 3 vérifications"
+  # - timestamp: "2024-01-15T11:05:00Z"
+  #   action: "github_reply_posted"
+  #   details: "Réponse postée sur commentaire #1234567890 (REJECT)"
+  # - timestamp: "2024-01-15T11:10:00Z"
+  #   action: "resolution_verified"
+  #   details: "Commentaire #1234567890 confirmé résolu par CodeRabbit"
+  # - timestamp: "2024-01-15T11:15:00Z"
+  #   action: "needs_attention"
+  #   details: "Commentaire #1234567890: nouveau feedback de CodeRabbit"
+
+# Notes utilisateur
+notes: |
+  # Ajouter ici des notes personnelles sur cette PR
