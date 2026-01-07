@@ -1,0 +1,3 @@
+# Ce répertoire contient les fichiers de tracking des reviews PR CodeRabbit
+# Les fichiers sont au format: pr-{NUMBER}-tracking.yaml
+# Ils persistent l'état entre les sessions Claude Code
