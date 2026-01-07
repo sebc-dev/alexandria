@@ -26,7 +26,7 @@
 
 ## Ordre d'exécution
 
-```
+```text
 Phase 1 (Scaffold) ──► Phase 2A (Dev Tools) ──► Phase 2B (Quality Plugins) ──► Phase 2C (CI/CD) ──► Phase 3 (Test Infra) ──► Phases 4-12 (TDD) ──► Phase 13 (DB) ──► Phase 14 (E2E) ──► Phase 15 (Docker)
 ```
 
