@@ -26,7 +26,7 @@ Ce guide définit une stratégie en trois phases pour maximiser la qualité du c
 │  └──────────────┘      ~10-15 minutes                                  │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
-```
+```text
 
 ## Phase 1 : Développement local avec Claude Code
 
@@ -1039,7 +1039,7 @@ Branch name pattern: main
 ☑ Require conversation resolution before merging
 
 ☐ Do not allow bypassing the above settings
-```
+```text
 
 ## Secrets GitHub requis
 
