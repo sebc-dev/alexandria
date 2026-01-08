@@ -165,6 +165,7 @@ jobs:
             -Dsonar.organization=${{ github.repository_owner }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.java.source=25 \
+            -Dsonar.qualitygate.wait=true \
             -Dsonar.scanner.jreProvisioning=disabled
 
   # Job 5: Sécurité SAST - CodeQL
