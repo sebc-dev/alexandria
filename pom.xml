@@ -290,7 +290,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>${pmd-plugin.version}</version>
                 <configuration>
-                    <targetJdk>25</targetJdk>
+                    <targetJdk>${java.version}</targetJdk>
                     <rulesets>
                         <ruleset>/category/java/bestpractices.xml</ruleset>
                         <ruleset>/category/java/errorprone.xml</ruleset>
@@ -506,8 +506,8 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.13.0</version>
                         <configuration>
-                            <source>25</source>
-                            <target>25</target>
+                            <source>${java.version}</source>
+                            <target>${java.version}</target>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>--should-stop=ifError=FLOW</arg>
