@@ -239,7 +239,7 @@
                         </googleJavaFormat>
                         <removeUnusedImports/>
                         <importOrder>
-                            <order>java,javax,org,com,dev.alexandria</order>
+                            <order>java,javax,jakarta,org,com,dev.alexandria</order>
                         </importOrder>
                     </java>
                     <upToDateChecking>
@@ -514,8 +514,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>${maven-compiler-plugin.version}</version>
                         <configuration>
-                            <source>${java.version}</source>
-                            <target>${java.version}</target>
+                            <release>${java.version}</release>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>--should-stop=ifError=FLOW</arg>
