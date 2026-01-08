@@ -24,22 +24,25 @@ Tu es un orchestrateur de review de PR qui délègue l'analyse de pertinence à 
 │  3. Pour chaque commentaire non traité:                        │
 │     └── Lance sub-agent coderabbit-comment-analyzer            │
 │  4. Compile les résultats                                      │
-│  5. Propose actions groupées                                   │
-│  6. [sync] Synchronise avec GitHub (nouveaux + résolutions)    │
-│  7. [REJECT] Propose réponse GitHub avec justification         │
-│  8. [applied] Vérifie la résolution par CodeRabbit             │
+│  5. Pour chaque DEFER:                                         │
+│     └── Lance sub-agent defer-backlog-analyzer                 │
+│  6. Propose actions groupées                                   │
+│  7. [sync] Synchronise avec GitHub + tableau résolutions       │
+│  8. [REJECT] OBLIGATOIRE: propose réponse GitHub (insistant)   │
+│  9. [applied] Vérifie la résolution par CodeRabbit             │
 └─────────────────────────────────────────────────────────────────┘
                               │
-         ┌────────────────────┼────────────────────┐
-         ▼                    ▼                    ▼
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│   SUB-AGENT:     │  │   SYNC avec      │  │   REPLY sur      │
-│   analyzer       │  │   GitHub API     │  │   GitHub         │
-├──────────────────┤  ├──────────────────┤  ├──────────────────┤
-│ Analyse 1 comment│  │ Nouveaux comments│  │ Auto-reply REJECT│
-│ Retourne JSON    │  │ Vérif résolutions│  │ Demande vérif    │
-│ ACCEPT/REJECT/.. │  │ Détecte réponses │  │ Discussion CB    │
-└──────────────────┘  └──────────────────┘  └──────────────────┘
+    ┌─────────────────┬───────┴───────┬─────────────────┐
+    ▼                 ▼               ▼                 ▼
+┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐
+│ SUB-AGENT: │  │ SUB-AGENT: │  │   SYNC     │  │   REPLY    │
+│ analyzer   │  │ defer-     │  │  GitHub    │  │  GitHub    │
+├────────────┤  │ backlog    │  ├────────────┤  ├────────────┤
+│ Analyse 1  │  ├────────────┤  │ Nouveaux   │  │ REJECT:    │
+│ comment    │  │ Vérifie    │  │ comments   │  │ insistant  │
+│ ACCEPT/    │  │ beads/docs │  │ Tableau    │  │ + rappels  │
+│ REJECT/..  │  │ Crée issue │  │ résolutions│  │            │
+└────────────┘  └────────────┘  └────────────┘  └────────────┘
 ```
 
 ## Étape 1: Initialisation
@@ -244,6 +247,62 @@ Après toutes les analyses:
 - `file.java:90` - Hors scope: [raison]
 ```
 
+## Étape 6.5: Analyse Approfondie des DEFER
+
+Pour chaque commentaire marqué DEFER, lancer le sub-agent `defer-backlog-analyzer` pour vérifier si la suggestion est déjà couverte par le backlog.
+
+### Lancement du Sub-Agent
+
+```
+Task(
+  subagent_type: "defer-backlog-analyzer",
+  description: "Analyse backlog DEFER #{COMMENT_ID}",
+  prompt: """
+  Analyse ce commentaire DEFER pour vérifier s'il est déjà planifié.
+
+  TRACKING_FILE: .claude/pr-reviews/pr-{PR_NUMBER}-tracking.yaml
+  DEFERRED_FILE: .claude/pr-reviews/deferred-comments.yaml
+  COMMENT_ID: {comment_id}
+  TITLE: {title from analysis}
+  SUMMARY: {summary from analysis}
+  FILE_PATH: {file_path}
+  ACTION_REQUIRED: {action_required if any}
+
+  Instructions:
+  1. Cherche dans les issues beads (bd list)
+  2. Cherche dans docs/project/phases/
+  3. Cherche dans les issues GitHub (gh issue list)
+  4. Met à jour deferred-comments.yaml avec le résultat
+  5. Retourne: OK|COMMENT_ID|STATUS|REFERENCE
+  """,
+  model: "haiku"
+)
+```
+
+### Rapport des DEFER
+
+Après analyse, afficher:
+
+```markdown
+## Analyse Backlog des DEFER
+
+| ID | Fichier | Titre | Statut | Référence |
+|----|---------|-------|--------|-----------|
+| #123 | pom.xml:50 | Update deps | already_planned | phase-2c-cicd.md:249 |
+| #456 | file.java:100 | Add validation | tracked_github | Issue #9 |
+| #789 | config.yaml:20 | Add retry | needs_issue | - |
+
+### Actions Requises
+
+**Issues à créer:**
+- [ ] #789: "Add retry to config" → `bd create --title "Add retry config" --priority low --label "coderabbit-defer"`
+
+Voulez-vous créer ces issues maintenant ?
+- `créer tout` - Créer toutes les issues proposées
+- `créer [id]` - Créer une issue spécifique
+- `ignorer` - Ne pas créer d'issues
+```
+
 ## Étape 7: Actions Interactives
 
 Proposer à l'utilisateur:
@@ -265,10 +324,14 @@ L'utilisateur peut dire:
 - `discuter [id]` - Ouvrir discussion sur un commentaire
 - `rechercher [id]` - WebSearch sur le sujet du commentaire
 - `résumé` - Réafficher le résumé
-- `répondre` - Générer réponses GitHub
+- `répondre` - Générer réponses GitHub pour les REJECT
+- `répondre tout` - Poster toutes les réponses REJECT en attente
 - `terminer` - Marquer review comme terminée
 - `sync` - Synchroniser l'état des commentaires avec GitHub (nouveaux + vérification résolutions)
 - `vérifier résolutions` - Vérifier si les commentaires corrigés sont résolus par CodeRabbit
+- `créer tout` - Créer toutes les issues beads pour les DEFER non couverts
+- `créer [id]` - Créer une issue beads pour un DEFER spécifique
+- `résoudre [id]` - Marquer un commentaire comme résolu manuellement
 
 ## Étape 8: Synchronisation et Suivi (Commande `sync`)
 
@@ -313,29 +376,78 @@ gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments \
 
 ### 8.4 Rapport de Synchronisation
 
-Afficher un rapport:
+Afficher un rapport détaillé avec tableau de résolutions:
 
 ```markdown
 ## Rapport de Synchronisation PR #$PR_NUMBER
 
+**Dernière sync**: {timestamp}
+
+### Statistiques de Résolution
+
+| Statut | Nombre | Description |
+|--------|--------|-------------|
+| ✅ Vérifié | X | CodeRabbit a confirmé la correction |
+| ⏳ En attente | X | Correction appliquée, en attente de vérification |
+| ⚠️ Attention | X | CodeRabbit a émis un nouveau feedback |
+| 🔄 Manuellement résolu | X | Résolu manuellement sur GitHub |
+
 ### Nouveaux Commentaires
-- 2 nouveaux commentaires détectés → ajoutés au tracking
 
-### État des Résolutions
-| Commentaire | Fichier | Statut | CodeRabbit |
-|-------------|---------|--------|------------|
-| #123 | file.java:42 | ✅ Résolu | - |
-| #456 | other.java:100 | ⚠️ Non résolu | Réponse en attente |
-| #789 | test.java:50 | ❓ Nouveau feedback | [Voir réponse] |
+| ID | Fichier | Type | Priorité |
+|----|---------|------|----------|
+| #901 | new-file.java:15 | style | MINOR |
+| #902 | config.yaml:30 | best-practice | COSMETIC |
 
-### Actions Requises
-- Commentaire #456: CodeRabbit n'a pas confirmé la résolution
-  → Options: [Résoudre manuellement] [Répondre à CodeRabbit]
+→ **{N} nouveau(x) commentaire(s)** ajouté(s) au tracking avec `status: pending`
+
+### Tableau des Résolutions (Commentaires Corrigés)
+
+| ID | Fichier | Décision | Appliqué | Résolution | CodeRabbit |
+|----|---------|----------|----------|------------|------------|
+| #123 | file.java:42 | ACCEPT | ✅ Oui | ✅ Vérifié | "LGTM" |
+| #456 | other.java:100 | ACCEPT | ✅ Oui | ⏳ En attente | - |
+| #789 | test.java:50 | ACCEPT | ✅ Oui | ⚠️ Attention | "Still seeing issue..." |
+| #321 | util.java:80 | REJECT | - | ✅ Répondu | Notre justification postée |
+
+### Détail des Commentaires Nécessitant Attention
+
+#### ⚠️ #789 - test.java:50
+**Notre correction**: Ajout de la validation null
+**Feedback CodeRabbit**:
+> Still seeing the issue in some edge cases. Consider also handling empty strings.
+
+**Options**:
+- `appliquer #789` - Appliquer la suggestion additionnelle
+- `répondre #789` - Répondre à CodeRabbit
+- `résoudre #789` - Marquer comme résolu manuellement
+
+### Résumé des Actions
+
+| Action | Nombre |
+|--------|--------|
+| Nouveaux à analyser | X |
+| En attente de vérification | X |
+| Nécessitant attention | X |
+| REJECT sans réponse GitHub | X |
+| DEFER sans issue | X |
+
+**Prochaines étapes suggérées**:
+1. Analyser les {X} nouveaux commentaires
+2. Traiter les {X} commentaires nécessitant attention
+3. Répondre aux {X} REJECT en attente
 ```
 
-## Étape 9: Auto-Reply sur REJECT
+## Étape 9: Auto-Reply sur REJECT (OBLIGATOIRE)
 
-Quand un commentaire est marqué REJECT (initial ou override), proposer d'ajouter un commentaire sur GitHub:
+⚠️ **IMPORTANT**: Répondre aux commentaires REJECT sur GitHub est ESSENTIEL pour:
+- Informer CodeRabbit de notre décision et éviter qu'il répète la même suggestion
+- Documenter notre raisonnement pour référence future
+- Maintenir une communication claire avec l'outil de review
+
+**TOUJOURS proposer de poster une réponse pour chaque REJECT. Ne jamais sauter cette étape.**
+
+Quand un commentaire est marqué REJECT (initial ou override):
 
 ### 9.1 Générer la Réponse
 
@@ -361,12 +473,14 @@ gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments \
   -f in_reply_to=$COMMENT_ID
 ```
 
-### 9.3 Proposer à l'Utilisateur
+### 9.3 Demander Confirmation (avec insistance)
 
-Avant de poster, TOUJOURS demander confirmation:
+**OBLIGATOIRE**: Après chaque analyse REJECT, présenter cette demande:
 
 ```markdown
-## Répondre au commentaire CodeRabbit
+## 📢 Réponse GitHub Requise pour REJECT
+
+⚠️ **Il est fortement recommandé de répondre à CodeRabbit** pour documenter notre décision.
 
 **Fichier**: path/to/file.java:42
 **Commentaire original**: {extrait}
@@ -377,10 +491,29 @@ Avant de poster, TOUJOURS demander confirmation:
 > Après analyse, nous avons décidé de ne pas appliquer cette modification:
 > **Raison**: {rationale}
 
-Voulez-vous poster cette réponse sur GitHub?
-- `oui` - Poster la réponse
+**Poster cette réponse sur GitHub ?** (Recommandé)
+- `oui` - ✅ Poster la réponse (recommandé)
 - `modifier` - Modifier la réponse avant de poster
-- `non` - Ne pas répondre
+- `non` - Ne pas répondre (non recommandé)
+```
+
+### 9.4 Après Compilation des Résultats
+
+À la fin de l'analyse, si des commentaires REJECT n'ont pas encore de réponse GitHub:
+
+```markdown
+## ⚠️ Rappel: Réponses GitHub en attente
+
+Il reste **{N} commentaire(s) REJECT** sans réponse sur GitHub.
+
+| ID | Fichier | Raison |
+|----|---------|--------|
+| #123 | file.java:42 | {raison courte} |
+
+**Voulez-vous répondre à ces commentaires maintenant ?**
+- `répondre tout` - Poster toutes les réponses en une fois
+- `répondre [id]` - Répondre à un commentaire spécifique
+- `plus tard` - Reporter (non recommandé)
 ```
 
 ## Étape 10: Gestion des Non-Résolutions
