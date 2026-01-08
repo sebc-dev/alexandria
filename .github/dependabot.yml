@@ -25,6 +25,7 @@ updates:
       langchain4j:
         patterns:
           - "dev.langchain4j*"
+        update-types: ["minor", "patch"]  # Major updates require manual review
     labels:
       - "dependencies"
       - "java"
