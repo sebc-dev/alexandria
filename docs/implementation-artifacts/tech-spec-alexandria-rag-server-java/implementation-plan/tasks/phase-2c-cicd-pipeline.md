@@ -19,7 +19,7 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
 
 ---
 
-- [ ] **Task 1: Create GitHub Actions CI Workflow**
+- [x] **Task 1: Create GitHub Actions CI Workflow**
   - File: `.github/workflows/ci.yml`
   - Action: Workflow unifié avec jobs parallèles
     ```yaml
@@ -381,7 +381,7 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
 
 ---
 
-- [ ] **Task 2: Create Dependabot Configuration**
+- [x] **Task 2: Create Dependabot Configuration**
   - File: `.github/dependabot.yml`
   - Action: Configuration avec groupes de dépendances
     ```yaml
@@ -443,7 +443,7 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
 
 ---
 
-- [ ] **Task 3: Configure SonarCloud Project**
+- [x] **Task 3: Configure SonarCloud Project**
   - File: `sonar-project.properties` (optionnel, config via Maven)
   - Action: Configuration dans pom.xml ou fichier dédié
     ```properties
@@ -469,7 +469,7 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
 
 ---
 
-- [ ] **Task 4: Configure GitHub Secrets**
+- [ ] **Task 4: Configure GitHub Secrets** *(manual action required)*
   - Location: Settings → Secrets and variables → Actions
   - Action: Ajouter les secrets requis
     | Secret | Source | Obligatoire |
@@ -483,7 +483,7 @@ Mettre en place le pipeline CI/CD GitHub Actions pour :
 
 ---
 
-- [ ] **Task 5: Configure Branch Protection Rules**
+- [ ] **Task 5: Configure Branch Protection Rules** *(manual action required)*
   - Location: Settings → Branches → Add branch protection rule
   - Action: Configurer pour `main`
     ```

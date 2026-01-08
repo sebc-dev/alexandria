@@ -318,6 +318,7 @@ jobs:
                 "${{ needs.integration-tests.outputs.test_status }}" == "success" && \
                 "${{ needs.sonarcloud.outputs.sonar_status }}" == "success" && \
                 "${{ needs.codeql.outputs.codeql_status }}" == "success" && \
+                "${{ needs.dependency-security.outputs.security_status }}" == "success" && \
                 "${{ needs.docker-build.outputs.docker_status }}" == "success" ]]; then
             echo "conclusion=success" >> $GITHUB_OUTPUT
           else
