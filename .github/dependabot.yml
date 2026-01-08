@@ -1,0 +1,49 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    # Cooldown: attendre avant de proposer des mises à jour (évite les versions buggy)
+    cooldown:
+      default-days: 3
+      semver-major-days: 7  # Attendre plus longtemps pour les majors
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot*"
+          - "org.springframework*"
+        update-types: ["minor", "patch"]
+      testing:
+        patterns:
+          - "org.junit*"
+          - "org.mockito*"
+          - "org.testcontainers*"
+        update-types: ["minor", "patch"]
+      langchain4j:
+        patterns:
+          - "dev.langchain4j*"
+    labels:
+      - "dependencies"
+      - "java"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions-minor:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "ci"
