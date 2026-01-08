@@ -248,7 +248,7 @@
                 <executions>
                     <execution>
                         <goals><goal>check</goal></goals>
-                        <phase>compile</phase>
+                        <phase>validate</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -512,10 +512,6 @@
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>--should-stop=ifError=FLOW</arg>
                                 <arg>-Xplugin:ErrorProne</arg>
-                                <!-- Workaround Lombok < 1.18.42 + JDK 25 (issue projectlombok/lombok#3940) -->
-                                <arg>-Xep:InvalidBlockTag:OFF</arg>
-                                <arg>-Xep:InvalidInlineTag:OFF</arg>
-                                <arg>-Xep:AlmostJavadoc:OFF</arg>
                             </compilerArgs>
                             <annotationProcessorPaths>
                                 <path>
