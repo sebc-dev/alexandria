@@ -8,7 +8,7 @@ set -euo pipefail
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 TRACKING_FILE="${PROJECT_ROOT}/.claude/hooks/modified-java-files.json"
 LOCK_FILE="/tmp/alexandria-java-hook.lock"
-MAX_WAIT=10
+MAX_ITERATIONS=10
 
 # Couleurs (silencieuses si pas de TTY)
 if [ -t 2 ]; then
@@ -41,7 +41,7 @@ is_source_file() {
 acquire_lock() {
     local waited=0
     while [ -f "$LOCK_FILE" ]; do
-        if [ $waited -ge $MAX_WAIT ]; then
+        if [ $waited -ge $MAX_ITERATIONS ]; then
             warn "Lock timeout - skipping to avoid deadlock"
             exit 0
         fi
@@ -85,7 +85,7 @@ track_modified_file() {
 # Formater avec Spotless (fichier unique pour rapidite)
 run_spotless() {
     local file="$1"
-    local relative_path="${file#$PROJECT_ROOT/}"
+    local relative_path="${file#"$PROJECT_ROOT"/}"
 
     cd "$PROJECT_ROOT"
 
@@ -123,7 +123,7 @@ main() {
     # Eviter les boucles
     acquire_lock
 
-    log "Processing: ${file_path#$PROJECT_ROOT/}"
+    log "Processing: ${file_path#"$PROJECT_ROOT"/}"
 
     # Tracker le fichier pour le rappel
     track_modified_file "$file_path"

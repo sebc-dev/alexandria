@@ -35,7 +35,7 @@ make install-hooks    # Install pre-commit hook
 
 Flat, YAGNI architecture - no hexagonal, no abstract interfaces for HTTP clients.
 
-```
+```text
 dev.alexandria/
 ├── core/           # Business logic, entities, services
 ├── adapters/       # HTTP clients (Infinity), MCP tools, formatters
@@ -90,7 +90,7 @@ Key timeouts in `application.yml`:
 
 ## Quality Commands (Custom Skills)
 
-```
+```text
 /quality-check       # PMD + SpotBugs + Checkstyle (~2-5 min)
 /full-analysis       # Complete analysis + PIT (~10-15 min)
 /pit-test            # Mutation testing only (~8-15 min)
