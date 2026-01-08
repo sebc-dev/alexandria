@@ -7,13 +7,13 @@ last_updated: "2026-01-08T12:00:00Z"
 status: completed
 
 summary:
-  total_comments: 8
-  analyzed: 8
-  accepted: 5
-  rejected: 3
+  total_comments: 12
+  analyzed: 12
+  accepted: 6
+  rejected: 6
   discussed: 0
   deferred: 0
-  applied: 5
+  applied: 6
 
 comments:
   - id: "2670906411"
@@ -52,8 +52,8 @@ comments:
             waited=$((waited + 1))
         done
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "verified"
 
   - id: "2670906416"
     source: "inline"
@@ -263,6 +263,121 @@ comments:
         /full-analysis       # Complete analysis + PIT (~10-15 min)
         /pit-test            # Mutation testing only (~8-15 min)
         ```
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670940714"
+    source: "inline"
+    review_id: null
+    file: "config/checkstyle/checkstyle.xml"
+    line: 47
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **URL incohérente : utiliser HTTPS pour la cohérence.**
+      Le commentaire utilise `http://` alors que le lien en ligne 8 utilise `https://`. Pour la cohérence et la sécurité, préférez HTTPS.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "best-practice"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Incohérence HTTP/HTTPS dans les commentaires du fichier de configuration"
+      rationale: |
+        Le fichier utilise HTTPS partout (ligne 4 pour le DTD, ligne 8 pour le Google Style Guide),
+        sauf ligne 47 où un commentaire référence http://checkstyle.org. Bien que ce soit un commentaire
+        et non du code exécuté, la cohérence est une best practice valide. HTTPS est standard depuis
+        des années et checkstyle.org supporte HTTPS. Changement trivial sans risque.
+      code_suggestion: |
+        <!-- See https://checkstyle.org/checks/whitespace/index.html -->
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670965208"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 53
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Risque de verrou obsolète non géré.**
+      La fonction `acquire_lock` ne vérifie pas si le fichier de verrou est obsolète (processus mort). Si le script se termine anormalement sans déclencher le trap, le verrou peut rester indéfiniment.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.85
+      type: "best-practice"
+      criticality: "COSMETIC"
+      effort: "MEDIUM"
+      regression_risk: false
+      summary: "Over-engineering pour un hook d'auto-format - le risque pratique est négligeable"
+      rationale: |
+        Bien que techniquement valide, cette suggestion est excessive pour le contexte d'un hook PostToolUse
+        qui exécute Spotless. Scénario d'échec: processus Claude Code tué brutalement (kill -9) pendant le
+        formatage. Impact réel: le prochain format attendra 5 secondes puis skip avec warning (ligne 45).
+        Ajouter une vérification de PID (ps, /proc/$pid) complexifierait le code pour un gain marginal.
+        Si le lock reste, il sera simplement timeout et ignoré. Pas de blocage permanent.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+
+  - id: "2670965210"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 58
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Validation d'entrée manquante pour le paramètre `$file`.**
+      La fonction devrait valider que `$file` n'est pas vide avant de procéder.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Validation redondante - le caller (main) valide déjà $file_path avant l'appel"
+      rationale: |
+        La fonction track_modified_file() est appelée uniquement à la ligne 129 avec $file_path.
+        Le code main() effectue déjà la validation ligne 118 : [ -z "$file_path" ] && exit 0.
+        Ajouter une validation dans la fonction serait redondant. De plus, set -euo pipefail (ligne 6)
+        fait que toute utilisation de variable vide échouerait immédiatement. Cette suggestion relève
+        du perfectionnisme excessif sans apport de robustesse réel dans ce contexte contrôlé.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670965213"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 90
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Gestion d'erreur manquante pour `cd`.**
+      Si `cd "$PROJECT_ROOT"` échoue, le script continuera avec le mauvais répertoire courant. Suggère: `cd "$PROJECT_ROOT" || { error "Cannot cd"; return 1; }`
+    analysis:
+      decision: "REJECT"
+      confidence: 0.92
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Gestion d'erreur redondante - set -e arrête déjà le script si cd échoue"
+      rationale: |
+        Le script déclare `set -euo pipefail` en ligne 6, ce qui signifie que toute commande échouant
+        (y compris `cd`) arrêtera immédiatement l'exécution. Ajouter `|| { error "..."; return 1; }`
+        est redondant et viole le principe DRY. Le seul avantage serait un message d'erreur explicite,
+        mais cela n'apporte qu'une clarté marginale pour un cas d'erreur quasi impossible (PROJECT_ROOT
+        devrait toujours être valide).
+      code_suggestion: null
       research_needed: null
     status: "analyzed"
     resolution_status: null
