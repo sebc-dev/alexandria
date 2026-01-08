@@ -20,24 +20,26 @@ reset_tracking() {
     echo '{"session_start":"'"$timestamp"'","modified_files":[]}' > "$TRACKING_FILE"
 }
 
-# Message de bienvenue
+# Message de bienvenue (écrit sur /dev/tty pour être visible par l'utilisateur)
 show_welcome() {
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${GREEN}  Alexandria RAG Server - Session Claude Code${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    echo "  Hooks actifs:"
-    echo "    - Formatage automatique (Spotless) sur fichiers .java"
-    echo "    - Rappel qualite en fin de reponse"
-    echo ""
-    echo "  Commandes disponibles:"
-    echo "    /quality-check   - PMD + SpotBugs + Checkstyle (~2-5 min)"
-    echo "    /full-analysis   - Analyse complete + PIT (~10-15 min)"
-    echo "    /pit-test        - Mutation testing seul (~8-15 min)"
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
+    {
+        echo ""
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${GREEN}  Alexandria RAG Server - Session Claude Code${NC}"
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        echo "  Hooks actifs:"
+        echo "    - Formatage automatique (Spotless) sur fichiers .java"
+        echo "    - Rappel qualite en fin de reponse"
+        echo ""
+        echo "  Commandes disponibles:"
+        echo "    /quality-check   - PMD + SpotBugs + Checkstyle (~2-5 min)"
+        echo "    /full-analysis   - Analyse complete + PIT (~10-15 min)"
+        echo "    /pit-test        - Mutation testing seul (~8-15 min)"
+        echo ""
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+    } > /dev/tty 2>/dev/null || true
 }
 
 # === MAIN ===
