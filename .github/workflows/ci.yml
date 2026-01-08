@@ -160,7 +160,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.3.0.6276:sonar \
-            -Dsonar.projectKey=alexandria-mcp \
+            -Dsonar.projectKey=sebc-dev_alexandria \
             -Dsonar.organization=${{ github.repository_owner }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.java.source=25 \
