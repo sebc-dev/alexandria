@@ -1,0 +1,135 @@
+# Commentaires DEFER extraits des PR reviews
+# Extracted: 2026-01-08
+# Updated: 2026-01-08
+# Purpose: Backlog de suggestions à traiter dans des PRs dédiées
+
+summary:
+  total_deferred: 3
+  resolved: 3
+  sources:
+    pr-6: 0
+    pr-7: 0
+    pr-8: 3
+  resolution_summary:
+    already_documented: 1  # OWASP secrets déjà dans phase-2c
+    tracked: 1             # Issue GitHub #9 créée
+    not_applicable: 1      # CVE-2025-11226 ne s'applique pas
+
+deferred_items:
+
+  # ============================================================================
+  # PR #8: feat(quality): configure Maven quality plugins for static analysis
+  # ============================================================================
+
+  - id: "2671159098"
+    source_pr: 8
+    file: "pom.xml"
+    line: 371
+    type: "documentation"
+    criticality: "COSMETIC"
+    effort: "TRIVIAL"
+    title: "Configuration CI des variables d'environnement OWASP"
+    summary: |
+      Rappel informatif sur la configuration CI des variables d'environnement OWASP, hors scope de la PR qualité.
+    original_comment: |
+      Configuration OWASP Dependency-Check appropriée.
+      La configuration référence correctement le fichier de suppressions et utilise un seuil CVSS de 7.
+      Notez que ce plugin n'a pas d'exécution automatique et doit être invoqué manuellement via
+      `mvn dependency-check:check` ou activé via le profil CI.
+
+      Assurez-vous que les variables d'environnement (`NVD_API_KEY`, `OSS_INDEX_USERNAME`,
+      `OSS_INDEX_PASSWORD`) sont configurées dans votre pipeline CI.
+    action_required: |
+      Lors de la phase 2C (CI/CD pipeline), configurer les secrets GitHub:
+      - NVD_API_KEY
+      - OSS_INDEX_USERNAME
+      - OSS_INDEX_PASSWORD
+    target_phase: "phase-2c-cicd-pipeline"
+    resolution:
+      status: "already_documented"
+      location: "docs/.../phase-2c-cicd-pipeline.md (lines 249, 478-481)"
+      resolved_at: "2026-01-08"
+      notes: "NVD_API_KEY et configuration OWASP déjà documentés dans la phase 2C"
+
+  - id: "2672621513"
+    source_pr: 8
+    file: "pom.xml"
+    line: 76
+    type: "best-practice"
+    criticality: "MINOR"
+    effort: "TRIVIAL"
+    title: "Mise à jour dépendances transitives (checker-qual, swagger-annotations)"
+    summary: |
+      Mise à jour de dépendances transitives hors scope de la PR focalisée sur les plugins de qualité.
+    original_comment: |
+      Mettre à jour les versions des dépendances de convergence vers les dernières versions stables.
+      Les versions déclarées sont obsolètes :
+      - checker-qual : 3.43.0 → dernière : 3.49.5
+      - swagger-annotations-jakarta : 2.2.38 → dernière : 2.2.41
+
+      Bien qu'aucune vulnérabilité connue ne soit détectée pour ces versions, la mise à jour vers
+      les versions stables les plus récentes est recommandée.
+    action_required: |
+      Créer une PR dédiée "chore(deps): update transitive dependencies" avec:
+      - checker-qual: 3.43.0 → 3.49.5 (ou plus récente)
+      - swagger-annotations-jakarta: 2.2.38 → 2.2.41 (ou plus récente)
+    target_phase: "maintenance"
+    resolution:
+      status: "tracked"
+      github_issue: "https://github.com/sebc-dev/alexandria/issues/9"
+      resolved_at: "2026-01-08"
+
+  - id: "2673329031"
+    source_pr: 8
+    file: "pom.xml"
+    line: 77
+    type: "security"
+    criticality: "MINOR"
+    effort: "TRIVIAL"
+    title: "CVE-2025-11226 logback-core - analyse et mise à jour"
+    summary: |
+      Mise à jour de dépendances transitives hors scope PR - CVE-2025-11226 nécessite Janino et écriture fichier config.
+    original_comment: |
+      `checker-qual` est en version 3.43.0 alors que la version 3.52.0 (novembre 2025) est disponible.
+      Plus critique, `swagger-annotations-jakarta` en version 2.2.38 inclut une dépendance transitive
+      vulnérable (CVE-2025-11226 dans `logback-core` — exécution de code arbitraire). Mettre à jour
+      vers les versions actuelles : `checker-qual:3.52.0` et `swagger-annotations-jakarta:2.2.41`.
+    analysis_notes: |
+      CVE-2025-11226 affecte logback-core versions <1.3.16 et >=1.4.0 <1.5.19.
+      Exploitation requiert DEUX conditions:
+      1. Janino library sur le classpath
+      2. Accès écriture au fichier logback.xml OU injection variable d'environnement
+      CVSS score 5.9 (modéré), pas critique.
+
+      swagger-annotations-jakarta n'a PAS de dépendance transitive directe sur logback-core.
+      Le commentaire CodeRabbit semble confondre avec d'autres composants.
+    action_required: |
+      Dans PR dependency-updates:
+      1. Vérifier version logback-core dans Spring Boot 3.5.9 BOM
+      2. Si vulnérable, override explicite vers logback-core >= 1.5.19
+      3. Mettre à jour checker-qual vers 3.52.1+
+      4. Mettre à jour swagger-annotations-jakarta vers 2.2.41+
+    target_phase: "maintenance"
+    resolution:
+      status: "not_applicable"
+      resolved_at: "2026-01-08"
+      notes: |
+        CVE-2025-11226 n'affecte PAS ce projet:
+        - Version vulnérable: logback-core < 1.3.16 ou >=1.4.0 < 1.5.19
+        - Version projet: logback-core 1.5.22 (via Spring Boot 3.5.9 BOM)
+        - De plus, swagger-annotations-jakarta n'a pas de dépendance transitive sur logback-core
+        Les mises à jour checker-qual/swagger sont couvertes par issue #9
+
+# ============================================================================
+# Notes d'implémentation
+# ============================================================================
+#
+# Ces items DEFER sont des suggestions valides mais hors scope des PRs d'origine.
+# Ils doivent être traités dans des PRs dédiées:
+#
+# 1. PR "chore(ci): configure OWASP secrets" - phase-2c-cicd-pipeline
+# 2. PR "chore(deps): update transitive dependencies" - maintenance régulière
+#
+# Priorité suggérée:
+# - OWASP secrets: lors de l'implémentation du pipeline CI/CD
+# - Dependency updates: PR dédiée après merge de la PR #8
