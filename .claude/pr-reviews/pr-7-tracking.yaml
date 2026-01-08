@@ -1,0 +1,268 @@
+# Tracking Review PR #7
+pr_number: 7
+pr_title: "feat(hooks): integrate Claude Code hooks for automated code quality"
+branch: "feature/claude-code-hooks-integration"
+created_at: "2026-01-08T12:00:00Z"
+last_updated: "2026-01-08T12:00:00Z"
+status: completed
+
+summary:
+  total_comments: 8
+  analyzed: 8
+  accepted: 5
+  rejected: 3
+  discussed: 0
+  deferred: 0
+  applied: 5
+
+comments:
+  - id: "2670906411"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 53
+    type: null
+    original_comment: |
+      _Potential issue_ | _Minor_
+      **Corriger la logique de timeout du verrou**
+      La variable `MAX_WAIT=10` suggère un timeout de 10 secondes, mais la logique actuelle attend en réalité 5 secondes (10 itérations × 0.5 seconde). Cela peut créer de la confusion.
+      Options: sleep 1 pour 10s réelles, ou renommer MAX_WAIT en MAX_ITERATIONS.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Incohérence entre le nom MAX_WAIT et la durée réelle du timeout (5s vs 10s attendus)"
+      rationale: |
+        Le commentaire identifie correctement une confusion de nommage : MAX_WAIT=10 suggère 10 secondes,
+        mais la boucle fait 10 itérations × sleep 0.5 = 5 secondes réelles. Cela peut induire en erreur
+        lors de la maintenance. La solution la plus claire est de renommer en MAX_ITERATIONS pour éviter
+        toute ambiguïté sur la sémantique de la variable.
+      code_suggestion: |
+        MAX_ITERATIONS=10
+        # ...
+        while [ -f "$LOCK_FILE" ]; do
+            if [ $waited -ge $MAX_ITERATIONS ]; then
+                warn "Lock timeout - skipping to avoid deadlock"
+                exit 0
+            fi
+            sleep 0.5
+            waited=$((waited + 1))
+        done
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906416"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 100
+    type: null
+    original_comment: |
+      _Potential issue_ | _Minor_
+      **Corriger le guillemet dans l'expansion de paramètre**
+      L'expansion `${file#$PROJECT_ROOT/}` à la ligne 88 devrait guillemeter `$PROJECT_ROOT` séparément pour un matching de pattern correct.
+      Shellcheck SC2295.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.75
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Amélioration de robustesse shell selon Shellcheck SC2295"
+      rationale: |
+        La syntaxe actuelle fonctionne mais Shellcheck recommande de quoter séparément
+        la variable dans le pattern. Best practice shell valide même si le risque
+        réel est minime (environnement contrôlé).
+      code_suggestion: |
+        local relative_path="${file#"$PROJECT_ROOT"/}"
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906421"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/java-format-hook.sh"
+    line: 137
+    type: null
+    original_comment: |
+      _Potential issue_ | _Minor_
+      **Corriger le guillemet dans l'expansion de paramètre (ligne 126)**
+      Même problème que ligne 88 : l'expansion `${file_path#$PROJECT_ROOT/}` devrait guillemeter `$PROJECT_ROOT` séparément.
+      Shellcheck SC2295.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Guillemets recommandés pour robustesse contre espaces dans chemins"
+      rationale: |
+        Shellcheck SC2295 valide: bien que PROJECT_ROOT ne contienne probablement jamais d'espaces,
+        la syntaxe ${var#"$other"/} est plus robuste. Best practice shell sans régression.
+      code_suggestion: |
+        log "Processing: ${file_path#"$PROJECT_ROOT"/}"
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906424"
+    source: "inline"
+    review_id: null
+    file: ".claude/hooks/quality-reminder.sh"
+    line: 38
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Vérification redondante de jq.**
+      Cette vérification de la disponibilité de `jq` est redondante car la fonction `check_modified_files` (appelée avant `show_reminder` dans `main`) effectue déjà cette vérification et retourne 1 si `jq` est absent.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Redondance intentionnelle pour programmation défensive - show_reminder() reste callable indépendamment"
+      rationale: |
+        Bien que techniquement redondante dans le flow actuel (main → check_modified_files → show_reminder),
+        cette vérification permet à show_reminder() d'être une fonction autonome et robuste.
+        C'est un pattern de defensive programming valide pour bash. Supprimer la vérification économiserait 4 lignes
+        mais réduirait la résilience de la fonction si le code est refactoré plus tard.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906426"
+    source: "inline"
+    review_id: null
+    file: "CLAUDE.md"
+    line: 46
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Ajoutez la spécification de langage au bloc de code.**
+      Le bloc de code pour la structure d'architecture devrait spécifier un identifiant de langage pour améliorer le rendu (par exemple `text` ou `plaintext`).
+      MD040 fenced-code-language.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "best-practice"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Suggestion valide pour conformité markdownlint MD040"
+      rationale: |
+        Le bloc de code lignes 38-46 représente l'arborescence du projet sans spécification de langage.
+        Ajouter 'text' ou 'plaintext' améliore le rendu et respecte les standards markdownlint.
+        Aucun impact fonctionnel, amélioration purement cosmétique de la qualité du Markdown.
+      code_suggestion: |
+        ```text
+        dev.alexandria/
+        ├── core/           # Business logic, entities, services
+        ├── adapters/       # HTTP clients (Infinity), MCP tools, formatters
+        ├── config/         # @Configuration, @ConfigurationProperties
+        ├── filter/         # HTTP filters (CorrelationId)
+        ├── health/         # Custom HealthIndicators
+        └── cli/            # Picocli commands for bulk ingestion
+        ```
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906429"
+    source: "inline"
+    review_id: null
+    file: "CLAUDE.md"
+    line: 50
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Ajoutez une ligne vierge après le titre de section.**
+      Les titres doivent être entourés de lignes vierges selon les bonnes pratiques Markdown (MD022).
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Suggestion de formatage Markdown cosmétique sans valeur réelle"
+      rationale: |
+        Bien que techniquement correct selon MD022, cette suggestion est un perfectionnisme
+        excessif pour un document de travail interne. CLAUDE.md sert de guide à Claude Code,
+        pas de documentation publique stricte. Ajouter des lignes vierges partout ralentit
+        la revue sans bénéfice tangible sur la lisibilité ou la fonctionnalité.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906433"
+    source: "inline"
+    review_id: null
+    file: "CLAUDE.md"
+    line: 56
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Ajoutez des lignes vierges avant les sous-titres.**
+      Tous les sous-titres de niveau 3 dans la section "Critical Technical Rules" manquent d'une ligne vierge avant le titre (MD022).
+      Lignes concernées: 56, 61, 66, 71.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Perfectionnisme Markdown excessif pour documentation interne"
+      rationale: |
+        Même commentaire que 2670906429, même raison de rejet. CLAUDE.md est un document de travail
+        interne pour guider Claude Code, pas une documentation publique nécessitant une conformité
+        stricte aux linters Markdown. L'ajout de lignes vierges partout n'améliore pas la lisibilité
+        de façon significative et crée du bruit dans la revue de code.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2670906435"
+    source: "inline"
+    review_id: null
+    file: "CLAUDE.md"
+    line: 97
+    type: null
+    original_comment: |
+      _Nitpick_ | _Trivial_
+      **Ajoutez la spécification de langage au bloc de code.**
+      Le bloc de code des commandes qualité devrait spécifier un identifiant de langage (par exemple `bash` ou `text`).
+      MD040 fenced-code-language.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.9
+      type: "documentation"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Ajouter identifiant de langage au bloc de code pour conformité MD040 et cohérence du document"
+      rationale: |
+        Suggestion valide - MD040 est une règle markdownlint standard. Tous les autres blocs de code du fichier
+        ont un identifiant de langage (bash, text). Améliore le rendu et la cohérence. L'identifiant `text` est
+        approprié car ces commandes sont des custom skills Claude Code (pas du bash réel).
+      code_suggestion: |
+        ```text
+        /quality-check       # PMD + SpotBugs + Checkstyle (~2-5 min)
+        /full-analysis       # Complete analysis + PIT (~10-15 min)
+        /pit-test            # Mutation testing only (~8-15 min)
+        ```
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
