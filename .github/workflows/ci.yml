@@ -84,7 +84,7 @@ jobs:
         run: mvn -B compile -DskipTests
 
       - name: Run unit tests
-        run: mvn -B test -Dtest='!**/*IT.java' -DfailIfNoTests=false
+        run: mvn -B test -Dtest='!**/*IT.java' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false
 
       - name: Upload test results
         if: always()
@@ -124,6 +124,7 @@ jobs:
             -DskipUnitTests=true \
             -Dtest='**/*IT.java' \
             -DfailIfNoTests=false \
+            -Dsurefire.failIfNoSpecifiedTests=false \
             -Dfailsafe.timeout=600
 
       - name: Upload integration test results
