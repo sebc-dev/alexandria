@@ -1,19 +1,15 @@
 {
     // ════════════════════════════════════════════════════════════════
     // Java Settings
-    // ⚠️ OBSOLÈTE: L'URL eclipse-java-google-style.xml est marquée obsolète
-    // (GitHub Issue #687, non mise à jour depuis 4+ ans).
-    // Google recommande d'utiliser google-java-format directement.
-    // Conservée ici pour compatibilité VS Code, mais Spotless fait foi.
     // ════════════════════════════════════════════════════════════════
 
-    // Formatage Google Java Style (fallback VS Code)
-    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
-    "java.format.settings.profile": "GoogleStyle",
-
-    // Format on save (cohérent avec Spotless)
-    "editor.formatOnSave": true,
+    // Formatage: Spotless (google-java-format) est la source de vérité
+    // Désactiver formatOnSave VSCode - utiliser `mvn spotless:apply` ou hooks
+    "editor.formatOnSave": false,
     "editor.formatOnPaste": false,
+    "[java]": {
+        "editor.formatOnSave": false
+    },
 
     // Analyse null automatique
     "java.compile.nullAnalysis.mode": "automatic",
@@ -23,11 +19,10 @@
 
     // ════════════════════════════════════════════════════════════════
     // Checkstyle
-    // ⚠️ Note: "/google_checks.xml" n'est PAS un chemin valide.
-    // Utiliser l'URL officielle ou le preset "Google's Check" via commande.
+    // Config locale alignée sur google-java-format (sans module Indentation)
     // ════════════════════════════════════════════════════════════════
-    "java.checkstyle.configuration": "https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml",
-    "java.checkstyle.version": "13.0.0",
+    "java.checkstyle.configuration": "${workspaceFolder}/config/checkstyle/checkstyle.xml",
+    "java.checkstyle.version": "10.21.4",
 
     // ════════════════════════════════════════════════════════════════
     // SonarLint
