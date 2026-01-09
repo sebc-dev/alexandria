@@ -64,8 +64,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Set up Java 25 LTS
         uses: actions/setup-java@v5
@@ -115,10 +113,8 @@ jobs:
       - name: Run integration tests
         run: |
           mvn -B verify \
-            -DskipUnitTests=true \
-            -Dtest='**/*IT.java' \
-            -DfailIfNoTests=false \
-            -Dsurefire.failIfNoSpecifiedTests=false \
+            -DskipTests \
+            -Dfailsafe.failIfNoSpecifiedTests=false \
             -Dfailsafe.timeout=600
 
       - name: Upload integration test results
