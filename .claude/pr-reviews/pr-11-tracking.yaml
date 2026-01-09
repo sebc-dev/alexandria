@@ -1,0 +1,353 @@
+# Tracking Review PR #11
+pr_number: 11
+pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
+branch: "feature/phase-2c-cicd-pipeline"
+created_at: "2026-01-09T10:00:00Z"
+last_updated: "2026-01-09T10:00:00Z"
+status: completed
+
+summary:
+  total_comments: 10
+  analyzed: 10
+  accepted: 7
+  rejected: 2
+  discussed: 0
+  deferred: 0
+  applied: 7
+  duplicates: 1  # 2673846385 duplicata de 2673863356
+
+comments:
+  - id: "2673846370"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 48
+    type: "security"
+    original_comment: |
+      [Potential issue | Major] Risque d'injection de commande shell.
+      Les inputs workflow_dispatch sont interpolés directement dans le script shell via ${{ inputs.commit_sha }}.
+      Un acteur malveillant avec accès au déclenchement manuel pourrait injecter des commandes.
+      Correction recommandée: utiliser une variable d'environnement.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.75
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Best practice GitHub Actions: passer les inputs par des variables d'environnement"
+      rationale: |
+        Le risque d'injection réel est faible (workflow_dispatch nécessite write access), mais suivre la best practice
+        GitHub Actions recommandée améliore la posture de sécurité et évite de créer des mauvais exemples pour la communauté.
+        La correction est triviale et sans risque de régression.
+      code_suggestion: |
+        - name: Determine effective SHA
+          id: determine-sha
+          env:
+            INPUT_COMMIT_SHA: ${{ inputs.commit_sha }}
+          run: |
+            if [ -n "$INPUT_COMMIT_SHA" ]; then
+              echo "sha=$INPUT_COMMIT_SHA" >> $GITHUB_OUTPUT
+            else
+              echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+            fi
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673846379"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 59
+    type: "best-practice"
+    original_comment: |
+      [Nitpick | Trivial] L'action tierce LouisBrunner/checks-action@v2.0.0 est bien maintenue.
+      Le projet compte 249 étoiles et a été mis à jour récemment. La version v2.0.0 est la dernière version stable.
+      Bien que l'épinglage au SHA du commit soit une pratique de sécurité valide, l'utilisation d'une étiquette de version pour une action bien maintenue est acceptable.
+      Aucun changement immédiat n'est nécessaire, mais vous pouvez envisager le SHA pinning pour une sécurité renforcée à l'avenir.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "SHA pinning pour LouisBrunner/checks-action"
+      rationale: |
+        Appliquer le SHA pinning maintenant pour renforcer la sécurité du pipeline.
+        SHA v2.0.0 = 6b626ffbad7cc56fd58627f774b9067e6118af23
+      code_suggestion: |
+        uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23  # v2.0.0
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673846385"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 171
+    type: "best-practice"
+    original_comment: |
+      [Nitpick | Trivial] Le job échouera si SONAR_TOKEN n'est pas configuré.
+      Le secret SONAR_TOKEN est requis mais le job ne vérifie pas sa présence avant exécution.
+      Le PR mentionne que c'est une action post-merge manuelle, mais une vérification explicite améliorerait l'expérience développeur.
+      Suggestion: Ajout d'une vérification du token avec condition if: ${{ env.SONAR_TOKEN != '' }}
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Duplicata de #2673863356 - Validation du SONAR_TOKEN"
+      rationale: |
+        Ce commentaire est un duplicata de #2673863356 qui traite du même problème (validation SONAR_TOKEN).
+        Voir l'analyse détaillée dans le commentaire #2673863356.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "duplicate_of_2673863356"
+
+  - id: "2673846390"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 235
+    type: "security"
+    original_comment: |
+      [Potential issue | Major] continue-on-error: true neutralise la vérification de sécurité.
+      Avec failBuildOnCVSS=8 combiné à continue-on-error: true, les vulnérabilités critiques (CVSS >= 8) n'empêcheront jamais le merge.
+      Le job apparaîtra toujours en succès.
+      Options: Supprimer continue-on-error pour bloquer sur les vulnérabilités critiques, ou garder continue-on-error mais ajouter une étape de vérification explicite du rapport.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "security"
+      criticality: "BLOCKING"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "continue-on-error neutralise failBuildOnCVSS=8, permettant le merge avec vulnérabilités critiques"
+      rationale: |
+        Problème de sécurité avéré. La configuration failBuildOnCVSS=8 est conçue pour bloquer les builds avec CVSS >= 8,
+        mais continue-on-error: true rend cette protection inefficace. Le job finalize vérifie security_status == "success"
+        qui sera toujours vrai avec continue-on-error. Solution recommandée: supprimer continue-on-error pour que les vulnérabilités
+        critiques bloquent effectivement le merge, alignant le comportement avec l'intention de sécurité déclarée.
+      code_suggestion: |
+        - name: OWASP Dependency-Check
+          run: |
+            mvn -B org.owasp:dependency-check-maven:check \
+              -DfailBuildOnCVSS=8 \
+              -Dformat=ALL \
+              -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+          # Supprimé: continue-on-error: true
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673846395"
+    source: "inline"
+    file: "sonar-project.properties"
+    line: 19
+    type: "style"
+    original_comment: |
+      [Nitpick | Trivial] Configuration cohérente avec le workflow CI.
+      Redondance avec le workflow CI: Les propriétés sonar.projectKey, sonar.host.url, et sonar.java.source sont également définies dans ci.yml (lignes 162-167).
+      Cela peut créer une confusion si les valeurs divergent à l'avenir.
+      Suggestion: centraliser la configuration en supprimant les paramètres dupliqués du workflow CI ou de ce fichier.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.95
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Redondance intentionnelle - sonar-project.properties requis pour commentaires PR"
+      rationale: |
+        La configuration sonar-project.properties est intentionnellement présente pour permettre
+        à SonarCloud d'ajouter des commentaires sur les PR avec les infos du scan.
+        Ce n'est pas une redondance à corriger mais un choix d'architecture délibéré.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673863338"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 28
+    type: "compatibility"
+    original_comment: |
+      [Potential issue | Critical] Java 25 n'est pas encore officiellement supporté par SonarCloud.
+      SonarCloud/SonarJava: Aucun support officiel pour Java 25. Les analyses risquent d'échouer ou de produire des résultats incorrects.
+      OWASP Dependency-Check: Aucune garantie de compatibilité officielle avec Java 25.
+      GitHub CodeQL: Supporté depuis CodeQL v2.23.1 (septembre 2025) - pas de problème.
+      Trivy: Peut détecter les vulnérabilités Java 25.
+      Recommandation: Soit réduire à Java 21/23 (versions LTS stables), soit implémenter des contournements pour SonarCloud.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.95
+      type: "compatibility"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Java 25 est un choix délibéré du projet - configuration actuelle acceptée"
+      rationale: |
+        Décision utilisateur: rester sur Java 25 avec la configuration actuelle.
+        Java 25 est un choix architectural délibéré du projet Alexandria (CLAUDE.md).
+        Les mitigations sont déjà en place: -Dsonar.java.source=25, -Dsonar.scanner.jreProvisioning=disabled.
+        Le job SonarCloud est conditionnel (if: secrets.SONAR_TOKEN) et skip gracieusement si non configuré.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "rejected_by_user"
+
+  - id: "2673863343"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 67
+    type: "bug"
+    original_comment: |
+      [Potential issue | Critical] Problème critique: job.status n'est pas disponible dans le contexte outputs.
+      La sortie build_status: ${{ job.status }} ne fonctionnera pas.
+      Le contexte job.status n'est pas disponible dans la section outputs d'un job.
+      Les outputs sont évalués pendant l'exécution du job, pas après sa conclusion.
+      Utilisez plutôt needs.<job_id>.result dans un job dépendant pour vérifier le statut.
+      NOTE: Addressed in commit 205bfc5
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "bug"
+      criticality: "BLOCKING"
+      effort: "LOW"
+      regression_risk: false
+      summary: "job.status n'est pas accessible dans outputs - les 6 jobs concernés retourneront des valeurs vides"
+      rationale: |
+        Bug critique avéré: GitHub Actions n'expose pas job.status dans le contexte outputs.
+        Les outputs sont évalués pendant l'exécution du job, pas après sa conclusion.
+        Impact: Le job finalize (ligne 330-335) utilise ces outputs pour déterminer le statut global, mais recevra des valeurs vides.
+        La note "Addressed in commit 205bfc5" est incorrecte - le problème persiste dans le code actuel (lignes 67, 106, 145, 184, 216, 269).
+        Solution: Utiliser needs.<job_id>.result dans le job finalize au lieu de needs.<job_id>.outputs.<status>.
+      code_suggestion: |
+        # Supprimer tous les outputs de type job.status dans les jobs:
+        # Lignes 66-67, 105-106, 144-145, 183-184, 215-216, 268-269
+
+        # Dans le job finalize (ligne 330), remplacer:
+        if [[ "${{ needs.build-and-unit-tests.outputs.build_status }}" == "success" && \
+              "${{ needs.integration-tests.outputs.test_status }}" == "success" && \
+              "${{ needs.sonarcloud.outputs.sonar_status }}" == "success" && \
+              "${{ needs.codeql.outputs.codeql_status }}" == "success" && \
+              "${{ needs.dependency-security.outputs.security_status }}" == "success" && \
+              "$DOCKER_OK" == "true" ]]; then
+
+        # Par:
+        if [[ "${{ needs.build-and-unit-tests.result }}" == "success" && \
+              "${{ needs.integration-tests.result }}" == "success" && \
+              "${{ needs.sonarcloud.result }}" == "success" && \
+              "${{ needs.codeql.result }}" == "success" && \
+              "${{ needs.dependency-security.result }}" == "success" && \
+              "$DOCKER_OK" == "true" ]]; then
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673863345"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 87
+    type: "bug"
+    original_comment: |
+      [Potential issue | Major] Corriger le pattern d'exclusion des tests d'intégration.
+      Le pattern -Dtest='!**/*IT.java' ne fonctionnera probablement pas correctement.
+      Maven Surefire utilise des noms de classes Java, pas des chemins de fichiers.
+      L'extension .java doit être omise.
+      Correction proposée: -Dtest='!**/*IT'
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Omettre l'extension .java dans le pattern -Dtest par conformité best practices Maven"
+      rationale: |
+        Selon la documentation officielle Maven Surefire, l'extension .java est optionnelle et sera automatiquement supprimée si fournie.
+        Citation: "the extension is optional and will be stripped off if you accidentally provide one".
+        Bien que le pattern actuel -Dtest='!**/*IT.java' fonctionne techniquement, suivre la convention Maven recommandée améliore la lisibilité et évite toute confusion.
+        Les exemples officiels utilisent systématiquement la forme sans extension (ex: -Dtest='!Unstable*').
+      code_suggestion: |
+        # Ligne 87 - Remplacer:
+        run: mvn -B test -Dtest='!**/*IT.java' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false
+        # Par:
+        run: mvn -B test -Dtest='!**/*IT' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673863356"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 171
+    type: "best-practice"
+    original_comment: |
+      [Potential issue | Major] Ajouter une validation du secret SONAR_TOKEN.
+      Le job échouera avec une erreur peu claire si SONAR_TOKEN n'est pas configuré.
+      Selon la description de la PR, ce secret doit être ajouté manuellement après le merge.
+      Option 1: Ajouter une condition au job pour le sauter si le token n'est pas disponible (if: ${{ secrets.SONAR_TOKEN != '' }})
+      Option 2: Ajouter une étape de validation explicite avant l'analyse.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.9
+      type: "best-practice"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Validation du secret SONAR_TOKEN pour éviter des échecs cryptiques et améliorer l'expérience développeur"
+      rationale: |
+        Le commentaire est pertinent et aligné avec la réalité du workflow. Le secret SONAR_TOKEN doit être configuré manuellement après merge (mentionné dans la PR).
+        Sans validation, le job échouera avec une erreur Maven peu claire. Ajouter une condition 'if: secrets.SONAR_TOKEN != ''' au niveau du job sonarcloud permettrait de skip proprement l'analyse si le token n'est pas encore configuré.
+        Cette amélioration est cohérente avec les best practices GitHub Actions pour les secrets optionnels/post-configuration.
+        NOTE: Duplicata partiel de #2673846385 (même ligne, même préoccupation mais formulation différente).
+      code_suggestion: |
+        # Dans ci.yml, ligne ~140
+        sonarcloud:
+          name: SonarCloud Analysis
+          runs-on: ubuntu-latest
+          needs: init-check
+          if: ${{ secrets.SONAR_TOKEN != '' }}  # Skip si token non configuré
+          outputs:
+            sonar_status: ${{ job.status }}
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2673863371"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 15
+    type: "style"
+    original_comment: |
+      [Potential issue | Minor] L'input pr_number n'est jamais utilisé dans le workflow.
+      L'input pr_number est défini mais n'est référencé nulle part dans le workflow.
+      Si cet input était destiné à une fonctionnalité spécifique, il devrait être utilisé ou supprimé pour éviter toute confusion.
+      Correction proposée: supprimer l'input inutilisé.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "style"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Input pr_number est défini mais jamais référencé dans les 350 lignes du workflow"
+      rationale: |
+        Vérifié tout le fichier ci.yml: l'input pr_number (lignes 12-15) n'est jamais utilisé via ${{ inputs.pr_number }} dans aucun step.
+        Seul commit_sha est utilisé (ligne 44). Cet input mort peut créer de la confusion et suggérer une fonctionnalité inexistante.
+        Suppression recommandée pour clarifier l'intention du workflow_dispatch (seul commit_sha est nécessaire).
+      code_suggestion: |
+        # Supprimer les lignes 12-15
+        workflow_dispatch:
+          inputs:
+            commit_sha:
+              description: 'SHA du commit pour le status check'
+              required: false
+              type: string
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
