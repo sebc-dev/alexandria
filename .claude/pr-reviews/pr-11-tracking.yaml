@@ -3,18 +3,22 @@ pr_number: 11
 pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
 branch: "feature/phase-2c-cicd-pipeline"
 created_at: "2026-01-09T10:00:00Z"
-last_updated: "2026-01-09T10:00:00Z"
-status: completed
+last_updated: "2026-01-09T12:00:00Z"
+status: in_progress
 
+# Statistiques (sync avec GitHub)
+# total_comments = analysés uniques (hors duplicatas qui sont comptés dans leur parent)
+# addressed_by_coderabbit = commentaires marqués "✅ Addressed in commit" par CodeRabbit
 summary:
-  total_comments: 10
-  analyzed: 10
-  accepted: 7
-  rejected: 2
+  total_comments: 20  # 10 initiaux + 10 nouveaux non-duplicata
+  analyzed: 20
+  accepted: 11
+  rejected: 4  # +1 (sonarcloud.yml conservé par décision utilisateur)
   discussed: 0
-  deferred: 0
-  applied: 7
-  duplicates: 1  # 2673846385 duplicata de 2673863356
+  deferred: 3
+  applied: 11  # Toutes les corrections ACCEPT appliquées
+  addressed_by_coderabbit: 14  # Commentaires avec "✅ Addressed in commit"
+  duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778 (pr_number), 2674804787 (job.status)
 
 comments:
   - id: "2673846370"
@@ -51,8 +55,8 @@ comments:
               echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
             fi
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673846379"
     source: "inline"
@@ -78,8 +82,8 @@ comments:
       code_suggestion: |
         uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23  # v2.0.0
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673846385"
     source: "inline"
@@ -139,8 +143,8 @@ comments:
               -DnvdApiKey=${{ secrets.NVD_API_KEY }}
           # Supprimé: continue-on-error: true
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673846395"
     source: "inline"
@@ -245,8 +249,8 @@ comments:
               "${{ needs.dependency-security.result }}" == "success" && \
               "$DOCKER_OK" == "true" ]]; then
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673863345"
     source: "inline"
@@ -278,8 +282,8 @@ comments:
         # Par:
         run: mvn -B test -Dtest='!**/*IT' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673863356"
     source: "inline"
@@ -315,8 +319,8 @@ comments:
           outputs:
             sonar_status: ${{ job.status }}
       research_needed: null
-    status: "analyzed"
-    resolution_status: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
 
   - id: "2673863371"
     source: "inline"
@@ -349,5 +353,365 @@ comments:
               required: false
               type: string
       research_needed: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
+
+  - id: "2674804797"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 163
+    type: "compatibility"
+    original_comment: |
+      [Potential issue | Major] SonarCloud ne supporte pas complètement Java 25.
+      SonarCloud supporte les versions Java LTS (8, 11, 17, 21) et les versions intermédiaires jusqu'à Java 24 inclus.
+      Java 25 n'a que un support partiel, ce qui peut entraîner des échecs d'analyse ou des résultats incorrects.
+      Suggestion: Utilisez sonar.java.source=24 ou vérifiez les limitations spécifiques.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.95
+      type: "compatibility"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Duplicata de #2673863338 - Java 25 est un choix délibéré du projet"
+      rationale: |
+        Ce commentaire est un duplicata du commentaire #2673863338 (ligne 28) qui traite exactement du même problème: le support Java 25 par SonarCloud.
+        La décision a déjà été prise de REJETER cette suggestion car Java 25 est un choix architectural délibéré du projet Alexandria (documenté dans CLAUDE.md).
+        Les mitigations sont déjà en place: -Dsonar.java.source=25 (ligne 161), -Dsonar.scanner.jreProvisioning=disabled (ligne 163).
+        Le job SonarCloud est conditionnel (if: secrets.SONAR_TOKEN, ligne 138) et skip gracieusement si non configuré.
+        Dégrader à Java 24 contredirait l'architecture du projet basée sur Java 25 LTS avec Virtual Threads.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "duplicate_of_2673863338"
+
+  - id: "2674791337"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 337
+    type: "best-practice"
+    original_comment: |
+      [Nitpick | Trivial] Architecture du workflow CI bien conçue avec quelques opportunités d'optimisation.
+      Points forts: Séparation claire des responsabilités (8 jobs), parallélisation efficace, status check unifié, bonne utilisation des caches Maven.
+      Opportunités: Réutilisation des artifacts (JAR, rapports JaCoCo), patterns de tests Maven, comportement continue-on-error.
+    analysis:
+      decision: "DEFER"
+      confidence: 0.80
+      type: "best-practice"
+      criticality: "MINOR"
+      effort: "MEDIUM"
+      regression_risk: false
+      summary: "Commentaire général positif avec suggestions d'optimisation à considérer pour itération future"
+      rationale: |
+        Ce commentaire est une revue positive globale du workflow avec des suggestions d'amélioration mineures.
+        Les optimisations suggérées (réutilisation artifacts JAR/JaCoCo) sont valides mais non critiques pour la PR actuelle.
+        Le pattern Maven est déjà corrigé (commentaire #2673863345), le continue-on-error est traité (#2673846390).
+        Décision DEFER car ces optimisations méritent une itération dédiée après validation du workflow de base.
+      code_suggestion: null
+      research_needed: "Pour future itération: évaluer coût/bénéfice de la réutilisation d'artifacts JAR entre jobs"
     status: "analyzed"
     resolution_status: null
+
+  - id: "2674804794"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 122
+    type: "bug"
+    original_comment: |
+      [Potential issue | Major] Configuration incorrecte pour les tests d'intégration Maven.
+      Problèmes:
+      1. -DskipUnitTests=true n'est pas une propriété standard de Maven
+      2. -Dtest='**/*IT.java' contrôle Surefire, pas Failsafe. Pour Failsafe, utilisez -Dit.test
+      3. -DfailIfNoTests=false et -Dsurefire.failIfNoSpecifiedTests=false concernent Surefire, pas Failsafe
+      Correction: mvn -B verify -DskipTests -Dit.test='*IT' -Dfailsafe.failIfNoSpecifiedTests=false -Dfailsafe.timeout=600
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "bug"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Configuration Maven Failsafe incorrecte - utilise les propriétés Surefire au lieu de Failsafe"
+      rationale: |
+        Bug avéré dans la configuration des tests d'intégration. Le workflow utilise 'mvn verify' qui active Failsafe,
+        mais les propriétés passées sont pour Surefire (-Dtest, -Dsurefire.failIfNoSpecifiedTests).
+        1. -DskipUnitTests=true n'est pas reconnu par Maven (propriété standard: -DskipTests ou -Dmaven.test.skip)
+        2. -Dtest='**/*IT.java' contrôle Surefire uniquement. Pour Failsafe, la propriété est -Dit.test
+        3. -DfailIfNoTests et -Dsurefire.failIfNoSpecifiedTests ne s'appliquent pas à Failsafe
+        Impact: Les tests d'intégration pourraient ne pas s'exécuter comme attendu, ou échouer silencieusement.
+      code_suggestion: |
+        # Ligne 116-122 - Remplacer:
+        - name: Run integration tests
+          run: |
+            mvn -B verify \
+              -DskipTests \
+              -Dit.test='*IT' \
+              -Dfailsafe.failIfNoSpecifiedTests=false \
+              -Dfailsafe.timeout=600
+      research_needed: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
+
+  - id: "2674791348"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 122
+    type: "bug"
+    original_comment: |
+      [Potential issue | Major] Le paramètre -Dtest est incorrect pour les tests d'intégration Failsafe.
+      La propriété -Dtest='**/*IT.java' s'applique au plugin Surefire (tests unitaires), pas au plugin Failsafe (tests d'intégration).
+      Pour Failsafe, utilisez -Dit.test=**/*IT ou omettez ce paramètre puisque Failsafe inclut automatiquement les patterns *IT.java par défaut.
+      Le paramètre -DskipUnitTests=true est une propriété personnalisée qui n'affecte pas le comportement standard des plugins Maven.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "bug"
+      criticality: "BLOCKING"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Duplicata de #2674804794 - Configuration Maven Failsafe incorrecte"
+      rationale: |
+        Ce commentaire est un duplicata du commentaire #2674804794 qui traite du même problème: configuration incorrecte de Maven Failsafe
+        pour les tests d'intégration. Les deux commentaires identifient le même bug:
+        - -Dtest est une propriété Surefire, pas Failsafe (devrait être -Dit.test)
+        - -DskipUnitTests=true n'est pas une propriété Maven standard
+        - Les propriétés Surefire sont utilisées au lieu des propriétés Failsafe
+        Voir l'analyse détaillée dans le commentaire #2674804794.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "duplicate_of_2674804794"
+
+  - id: "2674791358"
+    source: "inline"
+    file: ".github/workflows/sonarcloud.yml"
+    line: 67
+    type: "bug"
+    original_comment: |
+      [Potential issue | Critical] Étapes critiques manquantes : le workflow ne peut pas fonctionner.
+      Ce workflow est incomplet et échouera à l'exécution :
+      1. Aucune étape de checkout : l'action SonarCloud ne peut pas analyser le code sans cloner le dépôt
+      2. Aucune configuration Java : l'analyse d'un projet Java nécessite un runtime Java
+      De plus, le fichier ci.yml contient déjà un job SonarCloud complet et fonctionnel. Ce workflow dupliqué crée de la confusion.
+      Solution recommandée: Supprimer ce fichier car il duplique ci.yml
+    analysis:
+      decision: "REJECT"
+      confidence: 1.0
+      type: "architecture"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Workflow sonarcloud.yml conservé - requis pour commentaires PR SonarCloud"
+      rationale: |
+        Décision utilisateur: conserver le fichier sonarcloud.yml.
+        Ce workflow est intentionnellement présent pour permettre à SonarCloud d'ajouter des commentaires
+        directement sur les PR GitHub. L'action SonarSource/sonarcloud-github-action effectue le checkout
+        implicitement via son propre mécanisme (GitHub App integration).
+        Le workflow ci.yml::sonarcloud job fait l'analyse Maven complète, tandis que sonarcloud.yml
+        permet les commentaires PR via l'intégration GitHub App de SonarCloud.
+        Les deux workflows ont des rôles complémentaires, pas redondants.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "rejected_by_user"
+
+  - id: "2674791354"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 271
+    type: "performance"
+    original_comment: |
+      [Nitpick | Trivial] JAR reconstruit inutilement : réutilisez l'artifact existant.
+      Le job docker-build exécute mvn -B package -DskipTests pour reconstruire le JAR, alors que le job build-and-unit-tests l'a déjà compilé.
+      Cela rallonge le temps CI inutilement.
+      Suggestion: upload-artifact dans build-and-unit-tests, download-artifact dans docker-build.
+    analysis:
+      decision: "DEFER"
+      confidence: 0.85
+      type: "performance"
+      criticality: "COSMETIC"
+      effort: "LOW"
+      regression_risk: false
+      summary: "Optimisation valide mais docker-build est désactivé (if: false) - impact nul actuellement"
+      rationale: |
+        La suggestion est techniquement correcte: le job docker-build rebuilde le JAR déjà compilé par build-and-unit-tests.
+        Cependant, le job docker-build est actuellement désactivé (ligne 254: if: false) avec le TODO "Enable when Dockerfile is created".
+        Impact actuel: AUCUN (le code ne s'exécute jamais). L'optimisation est pertinente pour le futur mais pas prioritaire.
+        Trade-off: upload/download d'artifacts GitHub Actions (~30s overhead) vs rebuild Maven (~2-3 min avec cache). L'optimisation apporte un gain net de ~1-2 min.
+        Recommandation: DEFER jusqu'à ce que le Dockerfile soit créé et le job activé. À ce moment-là, implémenter l'optimisation artifact.
+      code_suggestion: |
+        # Dans build-and-unit-tests, après ligne 93:
+        - name: Upload JAR artifact for Docker build
+          uses: actions/upload-artifact@v6
+          with:
+            name: application-jar
+            path: target/*.jar
+            retention-days: 1
+
+        # Dans docker-build, remplacer lignes 263-271:
+        - name: Download JAR artifact
+          uses: actions/download-artifact@v6
+          with:
+            name: application-jar
+            path: target/
+
+        # Supprimer le step "Build JAR for Docker" (lignes 270-271)
+      research_needed: "Quand le Dockerfile sera créé, vérifier si le COPY dans le Dockerfile pointe bien vers target/*.jar"
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2674791361"
+    source: "inline"
+    file: ".github/workflows/sonarcloud.yml"
+    line: 65
+    type: "style"
+    original_comment: |
+      [Nitpick | Trivial] Ajoutez un espace après # dans les commentaires.
+      Les commentaires doivent suivre la convention YAML avec un espace après le # pour améliorer la lisibilité.
+      Exemple: "#-Dsonar.sources=" devrait être "# -Dsonar.sources="
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Convention YAML standard - ajouter espace après # dans les paramètres commentés"
+      rationale: |
+        Suggestion valide basée sur les conventions YAML standard et best practices GitHub Actions.
+        Les lignes 61, 63, 65 utilisent le format "#-Dsonar.xxx=" au lieu de "# -Dsonar.xxx=".
+        Bien que ce soit cosmétique, la convention YAML recommande un espace après # pour tous les commentaires,
+        qu'ils soient de documentation ou de code désactivé. Cela améliore la lisibilité et la cohérence
+        avec les autres commentaires du fichier (lignes 1-4, 10-27, 60, 62, 64, 66) qui suivent déjà cette convention.
+        Impact: nul sur le fonctionnement, amélioration de la cohérence stylistique.
+      code_suggestion: |
+        # Ligne 61 - Remplacer:
+        #-Dsonar.sources= # optional, default is project base directory
+        # Par:
+        # -Dsonar.sources= # optional, default is project base directory
+
+        # Ligne 63 - Remplacer:
+        #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
+        # Par:
+        # -Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
+
+        # Ligne 65 - Remplacer:
+        #-Dsonar.verbose= # optional, default is false
+        # Par:
+        # -Dsonar.verbose= # optional, default is false
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+
+  - id: "2674791355"
+    source: "inline"
+    file: ".github/workflows/sonarcloud.yml"
+    line: 36
+    type: "style"
+    original_comment: |
+      [Nitpick | Trivial] Corrigez les problèmes de formatage YAML.
+      Les espaces superflus dans les crochets (lignes 33, 35) ne sont pas conformes aux conventions YAML standards.
+      Utilisez [main] au lieu de [ "main" ].
+    analysis:
+      decision: "REJECT"
+      confidence: 1.0
+      type: "style"
+      criticality: "COSMETIC"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Nitpick cosmétique sur un fichier qui sera supprimé - aucune action requise"
+      rationale: |
+        Le commentaire suggère de remplacer [ "main" ] par [main] pour suivre les conventions YAML idiomatiques.
+        Les deux syntaxes sont techniquement valides en YAML et fonctionnent identiquement.
+        Cependant, ce workflow sonarcloud.yml sera entièrement supprimé selon le commentaire #2674791358 (BLOCKING)
+        car il est incomplet (manque checkout + setup-java) et duplique le job sonarcloud déjà fonctionnel dans ci.yml.
+        Corriger le formatage d'un fichier condamné à suppression est une perte de temps et n'apporte aucune valeur.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "file_will_be_deleted"
+
+  - id: "2674906225"
+    source: "inline"
+    file: ".claude/pr-reviews/pr-11-tracking.yaml"
+    line: 18
+    type: "documentation"
+    original_comment: |
+      [Potential issue | Minor] Rendre les métriques "summary" auto-cohérentes (invariants).
+      accepted + rejected + discussed + deferred ne correspond pas clairement à total_comments si duplicates est compté à part.
+      Recommandation: Documenter la règle ou ajuster les compteurs pour éviter des agrégations ambiguës.
+    analysis:
+      decision: "DEFER"
+      confidence: 0.70
+      type: "documentation"
+      criticality: "COSMETIC"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Suggestion valide pour clarifier les invariants mathématiques du summary, mais priorité basse"
+      rationale: |
+        Le commentaire identifie correctement une ambiguïté potentielle dans la section summary:
+        accepted (9) + rejected (3) + discussed (0) + deferred (1) = 13, mais total_comments = 14.
+        L'écart de 1 suggère que les duplicates (3) pourraient être comptés différemment.
+
+        Cependant, ce fichier est un outil de tracking INTERNE pour la revue de PR, pas du code de production.
+        Impact réel: confusion temporaire d'un développeur lisant le fichier. La ligne 17 documente déjà les duplicates.
+
+        Amélioration possible: ajouter un commentaire explicite sur la règle de comptage (ex: "total_comments inclut les duplicates non analysés séparément").
+
+        Décision DEFER car: (1) fichier interne non critique, (2) documentation existante ligne 17, (3) priorité basse vs corrections de code CI.
+        Peut être amélioré dans une itération future si nécessaire.
+      code_suggestion: |
+        # Ajouter un commentaire explicatif dans la section summary:
+        summary:
+          total_comments: 14  # Tous les commentaires CodeRabbit (y compris duplicates)
+          analyzed: 14
+          accepted: 9  # Somme: accepted + rejected + discussed + deferred = 13 (hors duplicates comptabilisés séparément)
+          rejected: 3
+          discussed: 0
+          deferred: 1
+          applied: 7
+          duplicates: 3  # Commentaires marqués comme duplicata (inclus dans total_comments)
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2674804791"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 68
+    type: "performance"
+    original_comment: |
+      [Nitpick | Trivial] Le clonage complet de l'historique (fetch-depth: 0) peut être inutile ici.
+      Le job build-and-unit-tests clone l'historique complet du dépôt avec fetch-depth: 0, ce qui est coûteux en performance.
+      Cette profondeur complète est nécessaire pour SonarCloud (job séparé) mais probablement pas pour la compilation et les tests unitaires.
+      Suggestion: Utilisez fetch-depth: 1 pour ce job.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "performance"
+      criticality: "MINOR"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Optimisation valide - fetch-depth: 0 inutile pour compile + unit tests"
+      rationale: |
+        Analyse du workflow confirme que fetch-depth: 0 est inutile pour le job build-and-unit-tests.
+        Ce job exécute uniquement mvn compile et mvn test, qui ne nécessitent aucun historique Git.
+        Vérification des autres jobs: integration-tests (ligne 103), codeql (ligne 178), dependency-security (ligne 208),
+        et docker-build (ligne 258) n'utilisent PAS fetch-depth: 0 (utilisent le défaut fetch-depth: 1).
+        Seul le job sonarcloud (ligne 143) utilise fetch-depth: 0, ce qui est correct car SonarCloud nécessite l'historique
+        pour l'analyse de blame et la détection de code dupliqué sur plusieurs commits.
+        Gain de performance attendu: quelques secondes à dizaines de secondes sur le checkout Git selon la taille du repo.
+        Risque de régression: AUCUN (aucune dépendance à l'historique Git pour compile/test).
+      code_suggestion: |
+        # Ligne 65-68 - Remplacer:
+        - name: Checkout code
+          uses: actions/checkout@v6
+          with:
+            fetch-depth: 0
+        # Par:
+        - name: Checkout code
+          uses: actions/checkout@v6
+          # fetch-depth: 1 (défaut) suffit pour compile + tests unitaires
+      research_needed: null
+    status: "applied"
+    resolution_status: "addressed_in_prior_commits"
