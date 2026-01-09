@@ -3,7 +3,7 @@ pr_number: 11
 pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
 branch: "feature/phase-2c-cicd-pipeline"
 created_at: "2026-01-09T10:00:00Z"
-last_updated: "2026-01-09T12:30:00Z"
+last_updated: "2026-01-09T16:45:00Z"
 status: in_progress
 
 # Statistiques (sync avec GitHub)
@@ -410,7 +410,8 @@ comments:
       code_suggestion: null
       research_needed: "Pour future itération: évaluer coût/bénéfice de la réutilisation d'artifacts JAR entre jobs"
     status: "analyzed"
-    resolution_status: null
+    resolution_status: "deferred_to_issue"
+    github_issue: 12
 
   - id: "2674804794"
     source: "inline"
@@ -514,6 +515,10 @@ comments:
       research_needed: null
     status: "analyzed"
     resolution_status: "rejected_by_user"
+    our_replies:
+      - id: "2676870454"
+        body: "Workflow conservé - rôles complémentaires avec ci.yml::sonarcloud"
+        posted_at: "2026-01-09T16:40:39Z"
 
   - id: "2674791354"
     source: "inline"
@@ -558,7 +563,8 @@ comments:
         # Supprimer le step "Build JAR for Docker" (lignes 270-271)
       research_needed: "Quand le Dockerfile sera créé, vérifier si le COPY dans le Dockerfile pointe bien vers target/*.jar"
     status: "analyzed"
-    resolution_status: null
+    resolution_status: "deferred_to_issue"
+    github_issue: 12
 
   - id: "2674791361"
     source: "inline"
