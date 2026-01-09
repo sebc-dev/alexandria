@@ -259,9 +259,11 @@ jobs:
           retention-days: 14
 
   # Job 7: Build Docker (validation sans push)
+  # TODO: Enable when Dockerfile is created
   docker-build:
     name: Docker Build Validation
     runs-on: ubuntu-latest
+    if: false  # Disabled until Dockerfile exists
     needs: [build-and-unit-tests]
     outputs:
       docker_status: ${{ job.status }}
@@ -323,12 +325,14 @@ jobs:
       - name: Determine overall status
         id: status
         run: |
+          # Docker build is optional (skipped until Dockerfile exists)
+          DOCKER_OK=${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}
           if [[ "${{ needs.build-and-unit-tests.outputs.build_status }}" == "success" && \
                 "${{ needs.integration-tests.outputs.test_status }}" == "success" && \
                 "${{ needs.sonarcloud.outputs.sonar_status }}" == "success" && \
                 "${{ needs.codeql.outputs.codeql_status }}" == "success" && \
                 "${{ needs.dependency-security.outputs.security_status }}" == "success" && \
-                "${{ needs.docker-build.outputs.docker_status }}" == "success" ]]; then
+                "$DOCKER_OK" == "true" ]]; then
             echo "conclusion=success" >> $GITHUB_OUTPUT
           else
             echo "conclusion=failure" >> $GITHUB_OUTPUT
