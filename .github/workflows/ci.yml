@@ -113,7 +113,7 @@ jobs:
       - name: Run integration tests
         run: |
           mvn -B verify \
-            -DskipTests \
+            -Dsurefire.skip=true \
             -Dfailsafe.failIfNoSpecifiedTests=false \
             -Dfailsafe.timeout=600
 
