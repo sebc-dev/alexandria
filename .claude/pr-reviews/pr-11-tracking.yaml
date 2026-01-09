@@ -3,22 +3,23 @@ pr_number: 11
 pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
 branch: "feature/phase-2c-cicd-pipeline"
 created_at: "2026-01-09T10:00:00Z"
-last_updated: "2026-01-09T16:45:00Z"
+last_updated: "2026-01-09T19:20:00Z"
 status: in_progress
 
 # Statistiques (sync avec GitHub)
 # total_comments = analysés uniques (hors duplicatas qui sont comptés dans leur parent)
 # addressed_by_coderabbit = commentaires marqués "✅ Addressed in commit" par CodeRabbit
 summary:
-  total_comments: 21  # +1 nouveau (actionlint secrets context)
-  analyzed: 21
-  accepted: 12  # +1 (secrets context fix)
-  rejected: 4  # +1 (sonarcloud.yml conservé par décision utilisateur)
+  total_comments: 21
+  analyzed: 19  # -2 (sonarcloud.yml supprimé → 2 commentaires obsolètes)
+  accepted: 12  # 2674791358 REJECT→ACCEPT mais 2674791361 ACCEPT→skipped = net 0
+  rejected: 2  # -2 (2674791358 REJECT→ACCEPT, 2674791355 REJECT→skipped)
   discussed: 0
   deferred: 3
-  applied: 12  # Toutes les corrections ACCEPT appliquées
-  addressed_by_coderabbit: 14  # Commentaires avec "✅ Addressed in commit"
-  duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778 (pr_number), 2674804787 (job.status)
+  applied: 13  # +1 (suppression sonarcloud.yml)
+  skipped: 2  # Commentaires obsolètes suite à suppression fichier (2674791361, 2674791355)
+  addressed_by_coderabbit: 14
+  duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778
 
 comments:
   - id: "2673846370"
@@ -57,6 +58,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677332327"
+        body: "Corrigé - inputs passent par variables d'environnement"
+        posted_at: "2026-01-09T19:15:00Z"
 
   - id: "2673846379"
     source: "inline"
@@ -84,6 +89,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677332602"
+        body: "Corrigé - SHA pinning appliqué"
+        posted_at: "2026-01-09T19:15:00Z"
 
   - id: "2673846385"
     source: "inline"
@@ -110,6 +119,10 @@ comments:
       research_needed: null
     status: "analyzed"
     resolution_status: "duplicate_of_2673863356"
+    our_replies:
+      - id: "2677332864"
+        body: "Duplicata de #2673863356"
+        posted_at: "2026-01-09T19:15:00Z"
 
   - id: "2673846390"
     source: "inline"
@@ -145,6 +158,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677333482"
+        body: "Corrigé - continue-on-error supprimé"
+        posted_at: "2026-01-09T19:15:00Z"
 
   - id: "2673846395"
     source: "inline"
@@ -171,7 +188,11 @@ comments:
       code_suggestion: null
       research_needed: null
     status: "analyzed"
-    resolution_status: null
+    resolution_status: "rejected_replied"
+    our_replies:
+      - id: "2677333609"
+        body: "Rejeté - redondance intentionnelle pour intégration SonarCloud"
+        posted_at: "2026-01-09T19:15:00Z"
 
   - id: "2673863338"
     source: "inline"
@@ -201,7 +222,11 @@ comments:
       code_suggestion: null
       research_needed: null
     status: "analyzed"
-    resolution_status: "rejected_by_user"
+    resolution_status: "rejected_replied"
+    our_replies:
+      - id: "2677336495"
+        body: "Rejeté - Java 25 choix architectural délibéré"
+        posted_at: "2026-01-09T19:16:00Z"
 
   - id: "2673863343"
     source: "inline"
@@ -251,6 +276,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677336698"
+        body: "Corrigé - job.status remplacé par needs.result"
+        posted_at: "2026-01-09T19:16:00Z"
 
   - id: "2673863345"
     source: "inline"
@@ -284,6 +313,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677338532"
+        body: "Corrigé - pattern Maven sans .java"
+        posted_at: "2026-01-09T19:16:00Z"
 
   - id: "2673863356"
     source: "inline"
@@ -321,6 +354,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677339095"
+        body: "Corrigé - validation SONAR_TOKEN au niveau step"
+        posted_at: "2026-01-09T19:16:00Z"
 
   - id: "2673863371"
     source: "inline"
@@ -383,7 +420,11 @@ comments:
       code_suggestion: null
       research_needed: null
     status: "analyzed"
-    resolution_status: "duplicate_of_2673863338"
+    resolution_status: "duplicate_replied"
+    our_replies:
+      - id: "2677340720"
+        body: "Duplicata de #2673863338"
+        posted_at: "2026-01-09T19:17:00Z"
 
   - id: "2674791337"
     source: "inline"
@@ -412,6 +453,10 @@ comments:
     status: "analyzed"
     resolution_status: "deferred_to_issue"
     github_issue: 12
+    our_replies:
+      - id: "2677315360"
+        body: "Réponse postée: artifacts déférés à #12, patterns Maven et continue-on-error corrigés"
+        posted_at: "2026-01-09T19:02:45Z"
 
   - id: "2674804794"
     source: "inline"
@@ -452,6 +497,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677341115"
+        body: "Corrigé - propriétés Failsafe utilisées"
+        posted_at: "2026-01-09T19:17:00Z"
 
   - id: "2674791348"
     source: "inline"
@@ -496,29 +545,37 @@ comments:
       De plus, le fichier ci.yml contient déjà un job SonarCloud complet et fonctionnel. Ce workflow dupliqué crée de la confusion.
       Solution recommandée: Supprimer ce fichier car il duplique ci.yml
     analysis:
-      decision: "REJECT"
+      decision: "ACCEPT"
       confidence: 1.0
       type: "architecture"
-      criticality: "N/A"
-      effort: "N/A"
+      criticality: "BLOCKING"
+      effort: "TRIVIAL"
       regression_risk: false
-      summary: "Workflow sonarcloud.yml conservé - requis pour commentaires PR SonarCloud"
+      summary: "Fichier sonarcloud.yml supprimé - CodeRabbit avait raison"
       rationale: |
-        Décision utilisateur: conserver le fichier sonarcloud.yml.
-        Ce workflow est intentionnellement présent pour permettre à SonarCloud d'ajouter des commentaires
-        directement sur les PR GitHub. L'action SonarSource/sonarcloud-github-action effectue le checkout
-        implicitement via son propre mécanisme (GitHub App integration).
-        Le workflow ci.yml::sonarcloud job fait l'analyse Maven complète, tandis que sonarcloud.yml
-        permet les commentaires PR via l'intégration GitHub App de SonarCloud.
-        Les deux workflows ont des rôles complémentaires, pas redondants.
+        Recherche internet confirmée: l'action SonarSource/sonarcloud-github-action NE gère PAS
+        automatiquement le checkout. La documentation officielle exige explicitement actions/checkout
+        avec fetch-depth: 0 recommandé AVANT l'action SonarCloud.
+
+        De plus, pour un projet Maven/Java, SonarSource recommande d'utiliser le SonarScanner for Maven
+        (mvn sonar:sonar) au lieu de l'action GitHub. Le job sonarcloud dans ci.yml fait exactement cela.
+
+        Bonus découvert: l'action sonarcloud-github-action a été archivée le 22 octobre 2025.
+
+        Décision finale: supprimer sonarcloud.yml car:
+        1. Il est incomplet et échouera à l'exécution
+        2. ci.yml::sonarcloud implémente déjà l'approche Maven recommandée
+        3. L'action utilisée est dépréciée
       code_suggestion: null
       research_needed: null
-    status: "analyzed"
-    resolution_status: "rejected_by_user"
+    status: "applied"
+    resolution_status: "applied_now"
     our_replies:
       - id: "2676870454"
         body: "Workflow conservé - rôles complémentaires avec ci.yml::sonarcloud"
         posted_at: "2026-01-09T16:40:39Z"
+      - body: "Correction: recherche confirmée, fichier supprimé. CodeRabbit avait raison."
+        posted_at: "2026-01-09"
 
   - id: "2674791354"
     source: "inline"
@@ -565,6 +622,10 @@ comments:
     status: "analyzed"
     resolution_status: "deferred_to_issue"
     github_issue: 12
+    our_replies:
+      - id: "2677317691"
+        body: "Réponse postée: docker-build désactivé, optimisation reportée à issue #12"
+        posted_at: "2026-01-09T19:03:47Z"
 
   - id: "2674791361"
     source: "inline"
@@ -576,38 +637,21 @@ comments:
       Les commentaires doivent suivre la convention YAML avec un espace après le # pour améliorer la lisibilité.
       Exemple: "#-Dsonar.sources=" devrait être "# -Dsonar.sources="
     analysis:
-      decision: "ACCEPT"
-      confidence: 0.95
+      decision: "N/A"
+      confidence: 1.0
       type: "style"
-      criticality: "COSMETIC"
-      effort: "TRIVIAL"
+      criticality: "N/A"
+      effort: "N/A"
       regression_risk: false
-      summary: "Convention YAML standard - ajouter espace après # dans les paramètres commentés"
+      summary: "Obsolète - fichier sonarcloud.yml supprimé"
       rationale: |
-        Suggestion valide basée sur les conventions YAML standard et best practices GitHub Actions.
-        Les lignes 61, 63, 65 utilisent le format "#-Dsonar.xxx=" au lieu de "# -Dsonar.xxx=".
-        Bien que ce soit cosmétique, la convention YAML recommande un espace après # pour tous les commentaires,
-        qu'ils soient de documentation ou de code désactivé. Cela améliore la lisibilité et la cohérence
-        avec les autres commentaires du fichier (lignes 1-4, 10-27, 60, 62, 64, 66) qui suivent déjà cette convention.
-        Impact: nul sur le fonctionnement, amélioration de la cohérence stylistique.
-      code_suggestion: |
-        # Ligne 61 - Remplacer:
-        #-Dsonar.sources= # optional, default is project base directory
-        # Par:
-        # -Dsonar.sources= # optional, default is project base directory
-
-        # Ligne 63 - Remplacer:
-        #-Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
-        # Par:
-        # -Dsonar.tests= # optional. For more info about Code Coverage, please refer to https://docs.sonarcloud.io/enriching/test-coverage/overview/
-
-        # Ligne 65 - Remplacer:
-        #-Dsonar.verbose= # optional, default is false
-        # Par:
-        # -Dsonar.verbose= # optional, default is false
+        Ce commentaire concernait le fichier sonarcloud.yml qui a été supprimé suite à la
+        confirmation que l'action SonarCloud nécessite un checkout explicite et que le
+        job ci.yml::sonarcloud implémente déjà l'approche Maven recommandée par SonarSource.
+      code_suggestion: null
       research_needed: null
-    status: "applied"
-    resolution_status: "applied_now"
+    status: "skipped"
+    resolution_status: "obsolete_file_deleted"
 
   - id: "2674791355"
     source: "inline"
@@ -619,23 +663,21 @@ comments:
       Les espaces superflus dans les crochets (lignes 33, 35) ne sont pas conformes aux conventions YAML standards.
       Utilisez [main] au lieu de [ "main" ].
     analysis:
-      decision: "REJECT"
+      decision: "N/A"
       confidence: 1.0
       type: "style"
-      criticality: "COSMETIC"
+      criticality: "N/A"
       effort: "N/A"
       regression_risk: false
-      summary: "Nitpick cosmétique sur un fichier qui sera supprimé - aucune action requise"
+      summary: "Obsolète - fichier sonarcloud.yml supprimé"
       rationale: |
-        Le commentaire suggère de remplacer [ "main" ] par [main] pour suivre les conventions YAML idiomatiques.
-        Les deux syntaxes sont techniquement valides en YAML et fonctionnent identiquement.
-        Cependant, ce workflow sonarcloud.yml sera entièrement supprimé selon le commentaire #2674791358 (BLOCKING)
-        car il est incomplet (manque checkout + setup-java) et duplique le job sonarcloud déjà fonctionnel dans ci.yml.
-        Corriger le formatage d'un fichier condamné à suppression est une perte de temps et n'apporte aucune valeur.
+        Ce commentaire concernait le fichier sonarcloud.yml qui a été supprimé suite à la
+        confirmation que l'action SonarCloud nécessite un checkout explicite et que le
+        job ci.yml::sonarcloud implémente déjà l'approche Maven recommandée par SonarSource.
       code_suggestion: null
       research_needed: null
-    status: "analyzed"
-    resolution_status: "file_will_be_deleted"
+    status: "skipped"
+    resolution_status: "obsolete_file_deleted"
 
   - id: "2674906225"
     source: "inline"
@@ -679,7 +721,11 @@ comments:
           duplicates: 3  # Commentaires marqués comme duplicata (inclus dans total_comments)
       research_needed: null
     status: "analyzed"
-    resolution_status: null
+    resolution_status: "deferred_replied"
+    our_replies:
+      - id: "2677349160"
+        body: "Reporté - amélioration priorité basse pour fichier interne"
+        posted_at: "2026-01-09T19:19:00Z"
 
   - id: "2674804791"
     source: "inline"
@@ -721,6 +767,10 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+    our_replies:
+      - id: "2677349535"
+        body: "Corrigé - fetch-depth: 0 supprimé"
+        posted_at: "2026-01-09T19:19:00Z"
 
   - id: "actionlint-134"
     source: "actionlint"
