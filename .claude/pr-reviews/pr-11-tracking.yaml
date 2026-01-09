@@ -3,20 +3,20 @@ pr_number: 11
 pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
 branch: "feature/phase-2c-cicd-pipeline"
 created_at: "2026-01-09T10:00:00Z"
-last_updated: "2026-01-09T12:00:00Z"
+last_updated: "2026-01-09T12:30:00Z"
 status: in_progress
 
 # Statistiques (sync avec GitHub)
 # total_comments = analysés uniques (hors duplicatas qui sont comptés dans leur parent)
 # addressed_by_coderabbit = commentaires marqués "✅ Addressed in commit" par CodeRabbit
 summary:
-  total_comments: 20  # 10 initiaux + 10 nouveaux non-duplicata
-  analyzed: 20
-  accepted: 11
+  total_comments: 21  # +1 nouveau (actionlint secrets context)
+  analyzed: 21
+  accepted: 12  # +1 (secrets context fix)
   rejected: 4  # +1 (sonarcloud.yml conservé par décision utilisateur)
   discussed: 0
   deferred: 3
-  applied: 11  # Toutes les corrections ACCEPT appliquées
+  applied: 12  # Toutes les corrections ACCEPT appliquées
   addressed_by_coderabbit: 14  # Commentaires avec "✅ Addressed in commit"
   duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778 (pr_number), 2674804787 (job.status)
 
@@ -715,3 +715,43 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "addressed_in_prior_commits"
+
+  - id: "actionlint-134"
+    source: "actionlint"
+    file: ".github/workflows/ci.yml"
+    line: 134
+    type: "bug"
+    original_comment: |
+      [actionlint 1.7.10] context "secrets" is not allowed here.
+      Available contexts are "github", "inputs", "needs", "vars".
+      The condition if: ${{ secrets.SONAR_TOKEN != '' }} at job level is invalid.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 1.0
+      type: "bug"
+      criticality: "BLOCKING"
+      effort: "LOW"
+      regression_risk: false
+      summary: "secrets context invalide au niveau job.if - déplacer vérification au niveau step"
+      rationale: |
+        Bug avéré détecté par actionlint. Le contexte 'secrets' n'est pas disponible dans job.if.
+        Seuls github, inputs, needs, vars sont autorisés à ce niveau.
+        Solution: déplacer SONAR_TOKEN en env du job et vérifier via un step dédié.
+      code_suggestion: |
+        sonarcloud:
+          env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          steps:
+            - name: Check SONAR_TOKEN availability
+              id: check-token
+              run: |
+                if [ -z "$SONAR_TOKEN" ]; then
+                  echo "available=false" >> $GITHUB_OUTPUT
+                else
+                  echo "available=true" >> $GITHUB_OUTPUT
+                fi
+            - name: Subsequent steps...
+              if: steps.check-token.outputs.available == 'true'
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
