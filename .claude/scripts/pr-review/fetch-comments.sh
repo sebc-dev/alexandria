@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DB_DIR="${HOME}/.local/share/alexandria"
 DB_PATH="${DB_DIR}/pr-reviews.db"
 
+# Load shared utilities
+source "${SCRIPT_DIR}/lib/utils.sh"
+
 # Default repo
 DEFAULT_REPO=""
 if git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
@@ -96,11 +99,6 @@ if [[ ! -f "$DB_PATH" ]]; then
     exit 3
 fi
 
-# Helper: Escape for SQL (defined early for PR_ID query)
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
-}
-
 # Get PR ID from database (escape REPO to prevent SQL injection)
 REPO_ESC=$(escape_sql "$REPO")
 PR_ID=$(sqlite3 "$DB_PATH" "SELECT id FROM prs WHERE repo='$REPO_ESC' AND pr_number=$PR_NUMBER;" 2>/dev/null)
@@ -178,12 +176,6 @@ parse_cr_type() {
     else
         echo ""
     fi
-}
-
-# Helper: Parse addressed SHA
-parse_addressed() {
-    local body="$1"
-    echo "$body" | grep -oP '(?:Addressed|Fixed|Resolved) in commit \K[a-f0-9]{7,40}' | head -1 || echo ""
 }
 
 # Helper: Check if has committable suggestion

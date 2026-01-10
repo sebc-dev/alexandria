@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DB_DIR="${HOME}/.local/share/alexandria"
 DB_PATH="${DB_DIR}/pr-reviews.db"
 
+# Load shared utilities
+source "${SCRIPT_DIR}/lib/utils.sh"
+
 # Default repo
 DEFAULT_REPO=""
 if git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
@@ -97,11 +100,6 @@ fi
 echo "Fetching workflows for PR #$PR_NUMBER (sha=$HEAD_SHA)..." >&2
 
 TIMESTAMP=$(date -Iseconds)
-
-# Helper: Escape for SQL
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
-}
 
 # ============================================
 # 1. Fetch workflow runs

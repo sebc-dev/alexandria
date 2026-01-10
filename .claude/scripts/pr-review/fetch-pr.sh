@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DB_DIR="${HOME}/.local/share/alexandria"
 DB_PATH="${DB_DIR}/pr-reviews.db"
 
+# Load shared utilities
+source "${SCRIPT_DIR}/lib/utils.sh"
+
 # Default repo (auto-detect from git)
 DEFAULT_REPO=""
 if git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
@@ -93,11 +96,6 @@ if [[ "$MERGED" == "true" ]]; then
 fi
 
 TIMESTAMP=$(date -Iseconds)
-
-# Escape strings for SQL (replace ' with '')
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
-}
 
 TITLE_ESC=$(escape_sql "$TITLE")
 BODY_ESC=$(escape_sql "$BODY")

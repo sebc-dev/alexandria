@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DB_DIR="${HOME}/.local/share/alexandria"
 DB_PATH="${DB_DIR}/pr-reviews.db"
 
+# Load shared utilities
+source "${SCRIPT_DIR}/lib/utils.sh"
+
 # Default repo
 DEFAULT_REPO=""
 if git rev-parse --is-inside-work-tree &>/dev/null 2>&1; then
@@ -131,17 +134,6 @@ if [[ "$OLD_STATE" != "$NEW_STATE" ]]; then
     PR_STATE_CHANGED=true
     echo "  PR state changed: $OLD_STATE -> $NEW_STATE" >&2
 fi
-
-# Helper: Parse "Addressed in commit" from body
-parse_addressed() {
-    local body="$1"
-    echo "$body" | grep -oP '(?:Addressed|Fixed|Resolved) in commit [a-f0-9]{7,40}' | grep -oP '[a-f0-9]{7,40}' | head -1 || echo ""
-}
-
-# Helper: Escape for SQL
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
-}
 
 # ============================================
 # 1. Check for addressed comments (CodeRabbit)
