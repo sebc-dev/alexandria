@@ -1,5 +1,5 @@
 ---
-description: 'Review les commentaires CodeRabbit d''une PR avec analyse de pertinence par sub-agent. Économise le contexte et garantit un suivi complet.'
+description: 'Review les commentaires CodeRabbit d''une PR avec analyse de pertinence par sub-agent. Crée issues GitHub pour DEFER et poste réponses systématiques pour tous les commentaires.'
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(gh:*), Bash(git:*), Bash(cat:*), Bash(mkdir:*), Task
 argument-hint: [PR_NUMBER ou URL]
 ---
@@ -26,23 +26,25 @@ Tu es un orchestrateur de review de PR qui délègue l'analyse de pertinence à 
 │  4. Compile les résultats                                      │
 │  5. Pour chaque DEFER:                                         │
 │     └── Lance sub-agent defer-backlog-analyzer                 │
+│     └── Crée issue GitHub si non couvert                       │
 │  6. Propose actions groupées                                   │
-│  7. [sync] Synchronise avec GitHub + tableau résolutions       │
-│  8. [REJECT] OBLIGATOIRE: propose réponse GitHub (insistant)   │
+│  7. [RÉPONSES] OBLIGATOIRE: poster réponse GitHub pour CHAQUE  │
+│     commentaire (ACCEPT, REJECT, DEFER, DISCUSS)               │
+│  8. [sync] Synchronise avec GitHub + tableau résolutions       │
 │  9. [applied] Vérifie la résolution par CodeRabbit             │
 └─────────────────────────────────────────────────────────────────┘
                               │
-    ┌─────────────────┬───────┴───────┬─────────────────┐
-    ▼                 ▼               ▼                 ▼
-┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐
-│ SUB-AGENT: │  │ SUB-AGENT: │  │   SYNC     │  │   REPLY    │
-│ analyzer   │  │ defer-     │  │  GitHub    │  │  GitHub    │
-├────────────┤  │ backlog    │  ├────────────┤  ├────────────┤
-│ Analyse 1  │  ├────────────┤  │ Nouveaux   │  │ REJECT:    │
-│ comment    │  │ Vérifie    │  │ comments   │  │ insistant  │
-│ ACCEPT/    │  │ beads/docs │  │ Tableau    │  │ + rappels  │
-│ REJECT/..  │  │ Crée issue │  │ résolutions│  │            │
-└────────────┘  └────────────┘  └────────────┘  └────────────┘
+    ┌─────────────┬───────────┼───────────┬─────────────┐
+    ▼             ▼           ▼           ▼             ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│SUB-AGENT:│ │SUB-AGENT:│ │  ISSUE   │ │  REPLY   │ │   SYNC   │
+│ analyzer │ │ defer-   │ │  GitHub  │ │  GitHub  │ │  GitHub  │
+├──────────┤ │ backlog  │ ├──────────┤ ├──────────┤ ├──────────┤
+│Analyse 1 │ ├──────────┤ │Crée issue│ │TOUTES    │ │Nouveaux  │
+│comment   │ │Vérifie   │ │pour DEFER│ │décisions:│ │comments  │
+│ACCEPT/   │ │beads/docs│ │non couvert│ │templates │ │Tableau   │
+│REJECT/.. │ │          │ │          │ │adaptés   │ │résolutions│
+└──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
 ## Étape 1: Initialisation
@@ -317,21 +319,30 @@ Proposer à l'utilisateur:
 ## Commandes Utilisateur
 
 L'utilisateur peut dire:
+
+### Actions sur les commentaires
 - `appliquer tout` - Applique tous les ACCEPT
 - `appliquer [id]` - Applique un commentaire spécifique
-- `rejeter [id]` - Override: rejeter un ACCEPT (avec réponse GitHub automatique)
+- `rejeter [id]` - Override: rejeter un ACCEPT
 - `accepter [id]` - Override: accepter un REJECT
 - `discuter [id]` - Ouvrir discussion sur un commentaire
 - `rechercher [id]` - WebSearch sur le sujet du commentaire
-- `résumé` - Réafficher le résumé
-- `répondre` - Générer réponses GitHub pour les REJECT
-- `répondre tout` - Poster toutes les réponses REJECT en attente
-- `terminer` - Marquer review comme terminée
+- `résoudre [id]` - Marquer un commentaire comme résolu manuellement
+
+### Réponses GitHub (NOUVEAU - systématique)
+- `répondre tout` - Poster TOUTES les réponses en attente (ACCEPT, REJECT, DEFER, DISCUSS)
+- `répondre [id]` - Poster une réponse spécifique
+- `modifier [id]` - Modifier une réponse avant de poster
+
+### Issues et Backlog
+- `créer tout` - Créer toutes les issues GitHub pour les DEFER non couverts
+- `créer [id]` - Créer une issue GitHub pour un DEFER spécifique
+
+### Synchronisation et Suivi
 - `sync` - Synchroniser l'état des commentaires avec GitHub (nouveaux + vérification résolutions)
 - `vérifier résolutions` - Vérifier si les commentaires corrigés sont résolus par CodeRabbit
-- `créer tout` - Créer toutes les issues beads pour les DEFER non couverts
-- `créer [id]` - Créer une issue beads pour un DEFER spécifique
-- `résoudre [id]` - Marquer un commentaire comme résolu manuellement
+- `résumé` - Réafficher le résumé des analyses
+- `terminer` - Marquer review comme terminée
 
 ## Étape 8: Synchronisation et Suivi (Commande `sync`)
 
@@ -438,29 +449,91 @@ Afficher un rapport détaillé avec tableau de résolutions:
 3. Répondre aux {X} REJECT en attente
 ```
 
-## Étape 9: Auto-Reply sur REJECT (OBLIGATOIRE)
+## Étape 9: Réponses GitHub Systématiques (OBLIGATOIRE)
 
-⚠️ **IMPORTANT**: Répondre aux commentaires REJECT sur GitHub est ESSENTIEL pour:
+⚠️ **IMPORTANT**: Répondre sur GitHub pour CHAQUE commentaire analysé est ESSENTIEL pour:
 - Informer CodeRabbit de notre décision et éviter qu'il répète la même suggestion
 - Documenter notre raisonnement pour référence future
-- Maintenir une communication claire avec l'outil de review
+- Assurer la traçabilité des décisions prises
+- Permettre à d'autres reviewers de comprendre notre analyse
 
-**TOUJOURS proposer de poster une réponse pour chaque REJECT. Ne jamais sauter cette étape.**
+**TOUJOURS proposer de poster une réponse pour CHAQUE commentaire (ACCEPT, REJECT, DEFER, DISCUSS). Ne jamais sauter cette étape.**
 
-Quand un commentaire est marqué REJECT (initial ou override):
+### 9.1 Templates de Réponse par Décision
 
-### 9.1 Générer la Réponse
+#### Template ACCEPT (correction appliquée)
 
-Format de réponse standard:
+```markdown
+Merci @coderabbitai 👍
+
+✅ **Correction appliquée** dans ce commit.
+
+{description courte de ce qui a été corrigé}
+```
+
+#### Template ACCEPT (déjà corrigé dans commit précédent)
+
+```markdown
+Merci @coderabbitai 👍
+
+✅ **Déjà corrigé** dans un commit précédent.
+
+{description de la correction}
+```
+
+#### Template REJECT
 
 ```markdown
 Merci pour la suggestion @coderabbitai.
 
-Après analyse, nous avons décidé de ne pas appliquer cette modification:
+❌ **Décision: Ne pas appliquer**
 
 **Raison**: {rationale du REJECT}
 
 {Détails supplémentaires si pertinents}
+```
+
+#### Template DEFER (avec issue créée)
+
+```markdown
+Merci @coderabbitai pour cette suggestion d'amélioration.
+
+📋 **Reporté** - Issue #{issue_number} créée pour suivi.
+
+Cette amélioration est pertinente mais hors scope de cette PR.
+{contexte additionnel: job désactivé, dépendance future, etc.}
+```
+
+#### Template DEFER (déjà planifié)
+
+```markdown
+Merci @coderabbitai pour cette suggestion.
+
+📋 **Déjà planifié** - Voir {référence: issue #X, phase-Y.md, etc.}
+
+{contexte sur quand/comment ce sera traité}
+```
+
+#### Template DISCUSS
+
+```markdown
+Merci @coderabbitai pour ce point.
+
+💬 **En discussion** - Trade-off à évaluer.
+
+{question ou point à clarifier}
+
+Nous reviendrons sur ce point après {condition: tests, review équipe, etc.}
+```
+
+#### Template DUPLICATE
+
+```markdown
+Merci @coderabbitai.
+
+🔗 **Duplicata** de #{original_comment_id}
+
+Voir la discussion sur le commentaire original.
 ```
 
 ### 9.2 Poster le Commentaire
@@ -470,50 +543,98 @@ Après analyse, nous avons décidé de ne pas appliquer cette modification:
 gh api repos/{owner}/{repo}/pulls/$PR_NUMBER/comments \
   -X POST \
   -f body="$REPLY_BODY" \
-  -f in_reply_to=$COMMENT_ID
+  -F in_reply_to=$COMMENT_ID
 ```
 
-### 9.3 Demander Confirmation (avec insistance)
+### 9.3 Workflow de Réponses Systématiques
 
-**OBLIGATOIRE**: Après chaque analyse REJECT, présenter cette demande:
+Après compilation des résultats (étape 6), pour CHAQUE commentaire analysé sans réponse:
 
 ```markdown
-## 📢 Réponse GitHub Requise pour REJECT
+## 📢 Réponses GitHub à Poster
 
-⚠️ **Il est fortement recommandé de répondre à CodeRabbit** pour documenter notre décision.
+| ID | Fichier | Décision | Réponse |
+|----|---------|----------|---------|
+| #123 | file.java:42 | ACCEPT | ✅ Correction appliquée |
+| #456 | other.java:100 | REJECT | ❌ Faux positif: {raison} |
+| #789 | config.yaml:50 | DEFER | 📋 Issue #12 créée |
 
-**Fichier**: path/to/file.java:42
-**Commentaire original**: {extrait}
-**Raison du rejet**: {rationale}
-
-**Réponse proposée**:
-> Merci pour la suggestion @coderabbitai.
-> Après analyse, nous avons décidé de ne pas appliquer cette modification:
-> **Raison**: {rationale}
-
-**Poster cette réponse sur GitHub ?** (Recommandé)
-- `oui` - ✅ Poster la réponse (recommandé)
-- `modifier` - Modifier la réponse avant de poster
-- `non` - Ne pas répondre (non recommandé)
+**Options**:
+- `répondre tout` - Poster toutes les réponses (recommandé)
+- `répondre [id]` - Poster une réponse spécifique
+- `modifier [id]` - Modifier une réponse avant de poster
+- `plus tard` - Reporter (déconseillé)
 ```
 
-### 9.4 Après Compilation des Résultats
+### 9.4 Demande de Confirmation par Batch
 
-À la fin de l'analyse, si des commentaires REJECT n'ont pas encore de réponse GitHub:
+**OBLIGATOIRE**: À la fin de l'analyse, présenter un récapitulatif:
 
 ```markdown
-## ⚠️ Rappel: Réponses GitHub en attente
+## 📝 Récapitulatif des Réponses à Poster
 
-Il reste **{N} commentaire(s) REJECT** sans réponse sur GitHub.
+### ACCEPT ({N} commentaires)
+| ID | Fichier | Description |
+|----|---------|-------------|
+| #123 | file.java:42 | Pattern Maven corrigé |
 
+### REJECT ({N} commentaires)
 | ID | Fichier | Raison |
 |----|---------|--------|
-| #123 | file.java:42 | {raison courte} |
+| #456 | other.java:100 | Faux positif: config intentionnelle |
 
-**Voulez-vous répondre à ces commentaires maintenant ?**
-- `répondre tout` - Poster toutes les réponses en une fois
-- `répondre [id]` - Répondre à un commentaire spécifique
-- `plus tard` - Reporter (non recommandé)
+### DEFER ({N} commentaires)
+| ID | Fichier | Issue | Référence |
+|----|---------|-------|-----------|
+| #789 | config.yaml:50 | À créer | - |
+| #321 | util.java:80 | Existante | #12 |
+
+---
+
+**Poster toutes ces réponses sur GitHub ?** (Fortement recommandé)
+- `oui` - ✅ Poster tout (recommandé)
+- `sélectif` - Choisir lesquelles poster
+- `non` - Ne pas poster maintenant
+```
+
+### 9.5 Gestion des Réponses Groupées
+
+Quand l'utilisateur dit `répondre tout`:
+
+1. Pour chaque commentaire sans `our_replies` dans le tracking:
+   - Générer la réponse selon le template
+   - Poster via `gh api`
+   - Mettre à jour le tracking avec `our_replies`
+2. Afficher un rapport de succès:
+
+```markdown
+## ✅ Réponses Postées
+
+| ID | Fichier | Décision | Statut |
+|----|---------|----------|--------|
+| #123 | file.java:42 | ACCEPT | ✅ Posté |
+| #456 | other.java:100 | REJECT | ✅ Posté |
+| #789 | config.yaml:50 | DEFER | ✅ Posté + Issue #15 créée |
+
+**{N} réponses** postées avec succès.
+```
+
+### 9.6 Rappel Final
+
+À la fin de CHAQUE session du workflow, si des commentaires n'ont pas de réponse:
+
+```markdown
+## ⚠️ Rappel: Commentaires Sans Réponse GitHub
+
+Il reste **{N} commentaire(s)** sans réponse sur GitHub:
+
+| ID | Fichier | Décision | Depuis |
+|----|---------|----------|--------|
+| #123 | file.java:42 | REJECT | 2h |
+
+**Il est fortement recommandé de répondre** pour maintenir une communication claire avec CodeRabbit.
+
+`répondre tout` pour poster les réponses maintenant.
 ```
 
 ## Étape 10: Gestion des Non-Résolutions
@@ -619,6 +740,8 @@ our_replies:
 3. **Idempotence**: Ne pas ré-analyser les commentaires déjà traités
 4. **Parallélisation**: Lancer les analyses en parallèle quand possible
 5. **Traçabilité**: Logger toutes les décisions avec rationale
+6. **Réponses GitHub**: TOUJOURS proposer de poster une réponse pour CHAQUE commentaire analysé
+7. **Issues DEFER**: TOUJOURS créer une issue GitHub pour les DEFER non couverts par le backlog
 
 ## Démarrage
 
