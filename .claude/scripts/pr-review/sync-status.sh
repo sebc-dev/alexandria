@@ -67,6 +67,11 @@ if [[ -z "$PR_NUMBER" ]]; then
     exit 1
 fi
 
+if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo '{"error": "PR number must be numeric"}' >&2
+    exit 1
+fi
+
 if [[ -z "$REPO" ]]; then
     echo '{"error": "Could not determine repository. Use --repo owner/name"}' >&2
     exit 1
