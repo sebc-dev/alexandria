@@ -65,9 +65,10 @@ case $FORMAT in
         OUTPUT=$(sqlite3 -json "$DB_PATH" "$SQL" 2>&1)
         STATUS=$?
         if [[ $STATUS -ne 0 ]]; then
-            # Extract first line of error message
+            # Extract first line of error message and escape for JSON output
             ERROR_MSG=$(echo "$OUTPUT" | head -1)
-            echo "{\"error\": \"Query failed: $ERROR_MSG\"}"
+            ERROR_MSG_ESC=$(echo "$ERROR_MSG" | sed 's/\\/\\\\/g; s/"/\\"/g')
+            echo "{\"error\": \"Query failed: $ERROR_MSG_ESC\"}"
             exit 3
         fi
         echo "$OUTPUT"
