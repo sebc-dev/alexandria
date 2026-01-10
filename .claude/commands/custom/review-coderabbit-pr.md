@@ -171,7 +171,7 @@ Pour chaque commentaire avec `status: pending`, utiliser le Task tool.
 
 ```
 Task(
-  subagent_type: "coderabbit-comment-analyzer",
+  subagent_type: "pr-comment-analyzer",
   description: "Analyse commentaire #{COMMENT_ID}",
   prompt: """
   Analyse ce commentaire CodeRabbit et mets à jour le fichier de tracking.
@@ -255,7 +255,7 @@ Pour chaque commentaire marqué DEFER, lancer le sub-agent `defer-backlog-analyz
 
 ```
 Task(
-  subagent_type: "defer-backlog-analyzer",
+  subagent_type: "pr-defer-analyzer",
   description: "Analyse backlog DEFER #{COMMENT_ID}",
   prompt: """
   Analyse ce commentaire DEFER pour vérifier s'il est déjà planifié.

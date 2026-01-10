@@ -86,5 +86,5 @@ Afficher un resume:
 
 ## Notes
 
-Cette commande est generalement appelee par l'orchestrateur `/pr-review`.
+Cette commande est generalement appelee par l'orchestrateur `/custom:pr-review`.
 Elle peut aussi etre utilisee standalone pour rafraichir les donnees.

@@ -172,6 +172,6 @@ GROUP BY d.backlog_status;
 
 - Le dashboard est une vue read-only
 - Pour les actions, utiliser les autres commandes:
-  - `/pr-review-fetch` pour rafraichir
-  - `/pr-review-analyze` pour analyser
-  - `/pr-review-reply` pour poster
+  - `/custom:pr-review-fetch` pour rafraichir
+  - `/custom:pr-review-analyze` pour analyser
+  - `/custom:pr-review-reply` pour poster

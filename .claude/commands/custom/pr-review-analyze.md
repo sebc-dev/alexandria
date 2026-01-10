@@ -114,7 +114,7 @@ Task(pr-defer-analyzer, {
 - 1 needs new issue
 
 ### Next Steps
-- Run `/pr-review-reply $PR_NUMBER` to post responses
+- Run `/custom:pr-review-reply $PR_NUMBER` to post responses
 - Review DISCUSS items manually
 ```
 
