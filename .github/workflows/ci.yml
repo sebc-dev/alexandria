@@ -349,14 +349,12 @@ jobs:
         run: |
           # Docker build is optional (skipped until Dockerfile exists)
           # SonarCloud is optional (skipped if SONAR_TOKEN not configured)
-          DOCKER_OK="${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}"
-          SONAR_OK="${{ needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped' }}"
           if [[ "${{ needs.build-and-unit-tests.result }}" == "success" && \
                 "${{ needs.integration-tests.result }}" == "success" && \
-                "$SONAR_OK" == "true" && \
+                ( "${{ needs.sonarcloud.result }}" == "success" || "${{ needs.sonarcloud.result }}" == "skipped" ) && \
                 "${{ needs.codeql.result }}" == "success" && \
                 "${{ needs.dependency-security.result }}" == "success" && \
-                "$DOCKER_OK" == "true" ]]; then
+                ( "${{ needs.docker-build.result }}" == "success" || "${{ needs.docker-build.result }}" == "skipped" ) ]]; then
             echo "conclusion=success" >> $GITHUB_OUTPUT
           else
             echo "conclusion=failure" >> $GITHUB_OUTPUT
