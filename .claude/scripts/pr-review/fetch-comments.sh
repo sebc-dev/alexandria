@@ -1,7 +1,6 @@
 #!/bin/bash
 # Fetch ALL PR comments (not just CodeRabbit) and store in database
-# Version 2: Fixed counters, improved parsing, better error handling
-# Usage: fetch-comments-v2.sh <PR_NUMBER> [--repo REPO] [--since TIMESTAMP] [--filter USER]
+# Usage: fetch-comments.sh <PR_NUMBER> [--repo REPO] [--since TIMESTAMP] [--filter USER]
 # Output: JSON {"fetched": N, "new": N, "updated": N}
 
 set -euo pipefail

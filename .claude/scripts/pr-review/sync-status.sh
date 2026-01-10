@@ -119,9 +119,8 @@ echo "Updating PR metadata..." >&2
 OLD_STATE=$(sqlite3 "$DB_PATH" "SELECT state FROM prs WHERE id = $PR_ID;" 2>/dev/null || echo "unknown")
 
 # Fetch fresh PR data
-PR_UPDATE=$("$SCRIPT_DIR/fetch-pr.sh" "$PR_NUMBER" --repo "$REPO" 2>/dev/null) || {
+"$SCRIPT_DIR/fetch-pr.sh" "$PR_NUMBER" --repo "$REPO" >/dev/null 2>&1 || {
     echo "Warning: Failed to update PR metadata" >&2
-    PR_UPDATE="{}"
 }
 
 # Get new state after update
