@@ -76,10 +76,11 @@ Si pas `--auto-reply`, proposer un menu:
 1. `analyser` - Relancer l'analyse des commentaires pending
 2. `repondre` - Poster toutes les reponses pending
 3. `repondre --dry-run` - Apercu des reponses
-4. `sync` - Synchroniser avec GitHub
-5. `workflows` - Voir le status des workflows
-6. `status` - Afficher le dashboard
-7. `terminer` - Quitter
+4. `sync` - Synchroniser avec GitHub (incremental)
+5. `sync --full` - Re-synchroniser completement (tous les commentaires)
+6. `workflows` - Voir le status des workflows
+7. `status` - Afficher le dashboard
+8. `terminer` - Quitter
 
 Votre choix:
 ```
@@ -138,12 +139,16 @@ Relance `/custom:pr-review-analyze $PR_NUMBER`
 ### `repondre [--dry-run]`
 Execute `/custom:pr-review-reply $PR_NUMBER [--dry-run]`
 
-### `sync`
-Execute:
-```bash
-.claude/scripts/pr-review/sync-status.sh $PR_NUMBER
-```
-Detecte les nouveaux commentaires et resolutions CodeRabbit.
+### `sync [--full]`
+Execute `/custom:pr-review-sync $PR_NUMBER [--full]`
+
+Synchronise les donnees avec GitHub:
+- Met a jour l'etat de la PR (open/closed/merged)
+- Recupere les nouveaux commentaires
+- Detecte les commentaires resolus (CodeRabbit)
+- Met a jour le status des workflows CI
+
+Avec `--full`: force un re-fetch complet de tous les commentaires.
 
 ### `workflows`
 Execute `/custom:pr-review-workflows $PR_NUMBER --details`
