@@ -368,7 +368,7 @@ jobs:
           check_id: ${{ needs.init-check.outputs.check_run_id }}
           sha: ${{ needs.init-check.outputs.effective_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Alexandria CI Pipeline
+          # name is not needed when updating existing check via check_id
           conclusion: ${{ steps.status.outputs.conclusion }}
           output: |
             {"summary":"Pipeline terminé avec statut: ${{ steps.status.outputs.conclusion }}","title":"Résultat CI Alexandria"}
