@@ -10,13 +10,13 @@ status: in_progress
 # total_comments = analysés uniques (hors duplicatas qui sont comptés dans leur parent)
 # addressed_by_coderabbit = commentaires marqués "✅ Addressed in commit" par CodeRabbit
 summary:
-  total_comments: 21
-  analyzed: 19  # -2 (sonarcloud.yml supprimé → 2 commentaires obsolètes)
-  accepted: 12  # 2674791358 REJECT→ACCEPT mais 2674791361 ACCEPT→skipped = net 0
-  rejected: 2  # -2 (2674791358 REJECT→ACCEPT, 2674791355 REJECT→skipped)
+  total_comments: 22  # +1 nouveau (check_run_id)
+  analyzed: 20
+  accepted: 13  # +1 (check_run_id)
+  rejected: 2
   discussed: 0
   deferred: 3
-  applied: 13  # +1 (suppression sonarcloud.yml)
+  applied: 14  # +1 (check_run_id fix)
   skipped: 2  # Commentaires obsolètes suite à suppression fichier (2674791361, 2674791355)
   addressed_by_coderabbit: 14
   duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778
@@ -808,6 +808,40 @@ comments:
                 fi
             - name: Subsequent steps...
               if: steps.check-token.outputs.available == 'true'
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+
+  - id: "2674906229"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 58
+    type: "bug"
+    original_comment: |
+      [Potential issue | Major] Utiliser check_run_id pour mettre à jour le check existant.
+      Le job init-check expose check_run_id mais le job finalize ne l'utilise pas.
+      Sans le paramètre check_id, l'action crée un nouveau check au lieu de mettre à jour l'existant.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 1.0
+      type: "bug"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "check_run_id doit être passé au job finalize pour mettre à jour le check unifié"
+      rationale: |
+        Bug valide. Le job init-check crée un check run et expose son ID via outputs.check_run_id.
+        Le job finalize utilise la même action LouisBrunner/checks-action mais sans le paramètre check_id,
+        ce qui crée un nouveau check au lieu de mettre à jour l'existant.
+        Cela fragmente le "unified check" en deux checks séparés.
+        Correction: ajouter check_id: ${{ needs.init-check.outputs.check_run_id }} dans le step Update check run.
+      code_suggestion: |
+        - name: Update check run
+          uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23
+          with:
+            check_id: ${{ needs.init-check.outputs.check_run_id }}
+            sha: ${{ needs.init-check.outputs.effective_sha }}
+            ...
       research_needed: null
     status: "applied"
     resolution_status: "applied_now"

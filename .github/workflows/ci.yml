@@ -339,6 +339,7 @@ jobs:
       - name: Update check run
         uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23  # v2.0.0
         with:
+          check_id: ${{ needs.init-check.outputs.check_run_id }}
           sha: ${{ needs.init-check.outputs.effective_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Alexandria CI Pipeline
