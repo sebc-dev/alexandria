@@ -157,7 +157,9 @@ WHERE c.pr_id = $PR_ID
 INLINE_COMMENTS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/comments" --paginate 2>&1) || INLINE_COMMENTS="[]"
 
 # Check each CodeRabbit comment for "Addressed" marker
-echo "$CODERABBIT_COMMENTS" | jq -c '.[]' 2>/dev/null | while read -r comment; do
+# Use process substitution to avoid subshell variable loss
+while read -r comment; do
+    [[ -z "$comment" ]] && continue
     COMMENT_ID=$(echo "$comment" | jq -r '.id')
 
     # Get fresh body from GitHub
@@ -179,7 +181,7 @@ echo "$CODERABBIT_COMMENTS" | jq -c '.[]' 2>/dev/null | while read -r comment; d
             NEWLY_ADDRESSED=$(echo "$NEWLY_ADDRESSED" | jq --arg id "$COMMENT_ID" --arg sha "$ADDRESSED_SHA" '. + [{id: $id, sha: $sha}]')
         fi
     fi
-done
+done < <(echo "$CODERABBIT_COMMENTS" | jq -c '.[]' 2>/dev/null)
 
 # ============================================
 # 2. Check for new replies to our comments
@@ -200,7 +202,9 @@ for COMMENT_ID in $OUR_REPLY_TARGETS; do
     THREAD=$(echo "$INLINE_COMMENTS" | jq --arg id "$NUMERIC_ID" '[.[] | select(.in_reply_to_id == ($id | tonumber))]' 2>/dev/null || echo "[]")
 
     # Check for new replies (from others, not us)
-    echo "$THREAD" | jq -c '.[]' 2>/dev/null | while read -r reply; do
+    # Use process substitution to avoid subshell variable loss
+    while read -r reply; do
+        [[ -z "$reply" ]] && continue
         REPLY_ID=$(echo "$reply" | jq -r '.id')
         REPLY_USER=$(echo "$reply" | jq -r '.user.login')
         REPLY_BODY=$(echo "$reply" | jq -r '.body')
@@ -218,7 +222,7 @@ for COMMENT_ID in $OUR_REPLY_TARGETS; do
 
             NEW_REPLIES=$(echo "$NEW_REPLIES" | jq --arg id "$REPLY_ID" --arg user "$REPLY_USER" --arg parent "$COMMENT_ID" '. + [{id: $id, user: $user, parent_comment: $parent}]')
         fi
-    done
+    done < <(echo "$THREAD" | jq -c '.[]' 2>/dev/null)
 done
 
 # ============================================
@@ -248,20 +252,21 @@ elif [[ "$GITHUB_COUNT" -gt "$EXISTING_COUNT" ]]; then
     # Find comments not in our database
     EXISTING_IDS=$(sqlite3 "$DB_PATH" "SELECT id FROM comments WHERE pr_id = $PR_ID AND source = 'inline';" 2>/dev/null | tr '\n' '|')
 
-    echo "$INLINE_COMMENTS" | jq -c '.[]' | while read -r comment; do
+    # Use process substitution to avoid subshell variable loss
+    while read -r comment; do
+        [[ -z "$comment" ]] && continue
         COMMENT_ID=$(echo "$comment" | jq -r '.id')
 
         # Check if we have this comment
         if ! echo "$EXISTING_IDS" | grep -q "$COMMENT_ID"; then
             USER_LOGIN=$(echo "$comment" | jq -r '.user.login')
             FILE_PATH=$(echo "$comment" | jq -r '.path // ""')
-            CREATED_AT=$(echo "$comment" | jq -r '.created_at')
 
             echo "  New comment $COMMENT_ID from $USER_LOGIN on $FILE_PATH" >&2
 
             NEW_COMMENTS=$(echo "$NEW_COMMENTS" | jq --arg id "$COMMENT_ID" --arg user "$USER_LOGIN" --arg file "$FILE_PATH" '. + [{id: $id, user: $user, file: $file}]')
         fi
-    done
+    done < <(echo "$INLINE_COMMENTS" | jq -c '.[]')
 fi
 
 # Fetch comments if needed
