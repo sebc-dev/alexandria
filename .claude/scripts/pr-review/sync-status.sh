@@ -1,7 +1,7 @@
 #!/bin/bash
-# Synchronize PR review status with GitHub (detect addressed comments, new replies)
-# Usage: sync-status.sh <PR_NUMBER> [--repo REPO]
-# Output: JSON {"synced": N, "newly_addressed": [...], "new_replies": [...], "new_comments": [...]}
+# Synchronize PR review status with GitHub (detect addressed comments, new replies, update PR state)
+# Usage: sync-status.sh <PR_NUMBER> [--repo REPO] [--full]
+# Output: JSON with sync results including state changes, new comments, addressed comments
 
 set -euo pipefail
 
@@ -18,6 +18,7 @@ fi
 # Parse arguments
 PR_NUMBER=""
 REPO="${DEFAULT_REPO}"
+FULL_SYNC=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -25,10 +26,27 @@ while [[ $# -gt 0 ]]; do
             REPO="$2"
             shift 2
             ;;
+        --full)
+            FULL_SYNC=true
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 <PR_NUMBER> [--repo REPO]" >&2
-            echo "  PR_NUMBER  The PR number to sync" >&2
-            echo "  --repo     Repository (owner/name), defaults to current repo" >&2
+            cat >&2 <<EOF
+Usage: $0 <PR_NUMBER> [OPTIONS]
+
+Synchronize PR data with GitHub.
+
+Options:
+  --repo REPO    Repository (owner/name), defaults to current repo
+  --full         Force full sync (re-fetch all comments, not just new ones)
+
+Output:
+  JSON with sync results including:
+  - pr_state_changed: true if PR state changed (open -> merged, etc.)
+  - newly_addressed: comments marked as addressed since last sync
+  - new_replies: replies to our comments
+  - new_comments: entirely new comments
+EOF
             exit 0
             ;;
         *)
@@ -83,6 +101,32 @@ TIMESTAMP=$(date -Iseconds)
 NEWLY_ADDRESSED="[]"
 NEW_REPLIES="[]"
 NEW_COMMENTS="[]"
+PR_STATE_CHANGED=false
+OLD_STATE=""
+NEW_STATE=""
+
+# ============================================
+# 0. Update PR metadata (state, title, etc.)
+# ============================================
+echo "Updating PR metadata..." >&2
+
+# Get current state before update
+OLD_STATE=$(sqlite3 "$DB_PATH" "SELECT state FROM prs WHERE id = $PR_ID;" 2>/dev/null || echo "unknown")
+
+# Fetch fresh PR data
+PR_UPDATE=$("$SCRIPT_DIR/fetch-pr.sh" "$PR_NUMBER" --repo "$REPO" 2>/dev/null) || {
+    echo "Warning: Failed to update PR metadata" >&2
+    PR_UPDATE="{}"
+}
+
+# Get new state after update
+NEW_STATE=$(sqlite3 "$DB_PATH" "SELECT state FROM prs WHERE id = $PR_ID;" 2>/dev/null || echo "unknown")
+
+# Detect state change
+if [[ "$OLD_STATE" != "$NEW_STATE" ]]; then
+    PR_STATE_CHANGED=true
+    echo "  PR state changed: $OLD_STATE -> $NEW_STATE" >&2
+fi
 
 # Helper: Parse "Addressed in commit" from body
 parse_addressed() {
@@ -191,8 +235,15 @@ EXISTING_COUNT=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM comments WHERE pr_id =
 # Check current count from GitHub
 GITHUB_COUNT=$(echo "$INLINE_COMMENTS" | jq 'length')
 
-if [[ "$GITHUB_COUNT" -gt "$EXISTING_COUNT" ]]; then
+# Determine if we need to fetch new comments
+NEED_FETCH=false
+
+if [[ "$FULL_SYNC" == "true" ]]; then
+    echo "  Full sync requested - re-fetching all comments..." >&2
+    NEED_FETCH=true
+elif [[ "$GITHUB_COUNT" -gt "$EXISTING_COUNT" ]]; then
     echo "  Found potential new comments (GitHub: $GITHUB_COUNT, DB: $EXISTING_COUNT)" >&2
+    NEED_FETCH=true
 
     # Find comments not in our database
     EXISTING_IDS=$(sqlite3 "$DB_PATH" "SELECT id FROM comments WHERE pr_id = $PR_ID AND source = 'inline';" 2>/dev/null | tr '\n' '|')
@@ -211,11 +262,26 @@ if [[ "$GITHUB_COUNT" -gt "$EXISTING_COUNT" ]]; then
             NEW_COMMENTS=$(echo "$NEW_COMMENTS" | jq --arg id "$COMMENT_ID" --arg user "$USER_LOGIN" --arg file "$FILE_PATH" '. + [{id: $id, user: $user, file: $file}]')
         fi
     done
-
-    # Re-run fetch-comments to get the new ones
-    echo "  Re-fetching comments to capture new ones..." >&2
-    "$SCRIPT_DIR/fetch-comments.sh" "$PR_NUMBER" --repo "$REPO" --since "$LAST_SYNC" >/dev/null 2>&1 || true
 fi
+
+# Fetch comments if needed
+if [[ "$NEED_FETCH" == "true" ]]; then
+    if [[ "$FULL_SYNC" == "true" ]]; then
+        echo "  Re-fetching all comments..." >&2
+        "$SCRIPT_DIR/fetch-comments.sh" "$PR_NUMBER" --repo "$REPO" >/dev/null 2>&1 || true
+    else
+        echo "  Re-fetching comments since $LAST_SYNC..." >&2
+        "$SCRIPT_DIR/fetch-comments.sh" "$PR_NUMBER" --repo "$REPO" --since "$LAST_SYNC" >/dev/null 2>&1 || true
+    fi
+fi
+
+# ============================================
+# 3b. Update workflows status
+# ============================================
+echo "Updating workflow status..." >&2
+"$SCRIPT_DIR/fetch-workflows.sh" "$PR_NUMBER" --repo "$REPO" >/dev/null 2>&1 || {
+    echo "  Warning: Failed to update workflow status" >&2
+}
 
 # ============================================
 # 4. Update PR last_synced_at
@@ -237,14 +303,32 @@ SELECT
     (SELECT COUNT(*) FROM replies WHERE comment_id IN (SELECT id FROM comments WHERE pr_id = $PR_ID) AND status = 'posted') as posted_replies;
 " 2>/dev/null || echo '[{}]')
 
+# Count pending analyses
+PENDING_ANALYSIS=$(sqlite3 "$DB_PATH" "
+SELECT COUNT(*) FROM comments c
+WHERE c.pr_id = $PR_ID
+  AND c.id NOT IN (SELECT comment_id FROM analyses WHERE comment_id = c.id)
+  AND c.in_reply_to_id IS NULL;
+" 2>/dev/null || echo "0")
+
 # Output result
 echo "$SUMMARY" | jq --argjson newly_addressed "$NEWLY_ADDRESSED" \
     --argjson new_replies "$NEW_REPLIES" \
     --argjson new_comments "$NEW_COMMENTS" \
+    --argjson pr_state_changed "$PR_STATE_CHANGED" \
+    --arg old_state "$OLD_STATE" \
+    --arg new_state "$NEW_STATE" \
+    --argjson pending_analysis "$PENDING_ANALYSIS" \
+    --argjson full_sync "$FULL_SYNC" \
     --arg timestamp "$TIMESTAMP" \
     '.[0] + {
         status: "ok",
         synced_at: $timestamp,
+        full_sync: $full_sync,
+        pr_state_changed: $pr_state_changed,
+        old_state: $old_state,
+        new_state: $new_state,
+        pending_analysis: $pending_analysis,
         newly_addressed: $newly_addressed,
         new_replies: $new_replies,
         new_comments: $new_comments
