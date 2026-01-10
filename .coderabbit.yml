@@ -71,6 +71,9 @@ reviews:
     # Claude Code markdown specific files
     - "!.claude/**/*.md"
 
+        # Claude Code markdown specific files
+    - "!.claude/**/*.md"
+
     # Generated files
     - "!**/*.min.js"
     - "!**/*.min.css"
