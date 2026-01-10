@@ -195,14 +195,16 @@ public final class InfinityStubs {
       dataArray.append(
           String.format(
               """
-              {"object":"embedding","index":%d,"embedding":%s}""",
+              {"object":"embedding","index":%d,"embedding":%s}\
+              """,
               i, formatFloatArray(embeddings.get(i))));
     }
 
     return String.format(
         """
         {"object":"list","data":[%s],"model":"%s",\
-        "usage":{"prompt_tokens":10,"total_tokens":10}}""",
+        "usage":{"prompt_tokens":10,"total_tokens":10}}\
+        """,
         dataArray, DEFAULT_EMBEDDING_MODEL);
   }
 
