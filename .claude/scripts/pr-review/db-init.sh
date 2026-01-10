@@ -43,7 +43,7 @@ fi
 
 # Check schema file exists
 if [[ ! -f "$SCHEMA_FILE" ]]; then
-    echo "{\"status\": \"error\", \"error\": \"Schema file not found: $SCHEMA_FILE\"}"
+    jq -n --arg path "$SCHEMA_FILE" '{"status": "error", "error": ("Schema file not found: " + $path)}'
     exit 1
 fi
 
