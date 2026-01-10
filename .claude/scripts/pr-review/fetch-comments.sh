@@ -97,8 +97,14 @@ if [[ ! -f "$DB_PATH" ]]; then
     exit 3
 fi
 
-# Get PR ID from database
-PR_ID=$(sqlite3 "$DB_PATH" "SELECT id FROM prs WHERE repo='$REPO' AND pr_number=$PR_NUMBER;" 2>/dev/null)
+# Helper: Escape for SQL (defined early for PR_ID query)
+escape_sql() {
+    echo "$1" | sed "s/'/''/g"
+}
+
+# Get PR ID from database (escape REPO to prevent SQL injection)
+REPO_ESC=$(escape_sql "$REPO")
+PR_ID=$(sqlite3 "$DB_PATH" "SELECT id FROM prs WHERE repo='$REPO_ESC' AND pr_number=$PR_NUMBER;" 2>/dev/null)
 if [[ -z "$PR_ID" ]]; then
     echo '{"error": "PR not found in database. Run fetch-pr.sh first"}' >&2
     exit 1
@@ -188,11 +194,6 @@ has_suggestion() {
     else
         echo 0
     fi
-}
-
-# Helper: Escape for SQL
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
 }
 
 # Helper: Insert/update comment in database

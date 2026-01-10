@@ -61,11 +61,16 @@ fi
 # Execute query based on format
 case $FORMAT in
     json)
-        # Use sqlite3 JSON mode
-        sqlite3 -json "$DB_PATH" "$SQL" 2>&1 || {
-            echo "{\"error\": \"Query failed: $(sqlite3 "$DB_PATH" "$SQL" 2>&1 | head -1)\"}"
+        # Use sqlite3 JSON mode - capture output once to avoid double execution
+        OUTPUT=$(sqlite3 -json "$DB_PATH" "$SQL" 2>&1)
+        STATUS=$?
+        if [[ $STATUS -ne 0 ]]; then
+            # Extract first line of error message
+            ERROR_MSG=$(echo "$OUTPUT" | head -1)
+            echo "{\"error\": \"Query failed: $ERROR_MSG\"}"
             exit 3
-        }
+        fi
+        echo "$OUTPUT"
         ;;
     csv)
         sqlite3 -csv -header "$DB_PATH" "$SQL"

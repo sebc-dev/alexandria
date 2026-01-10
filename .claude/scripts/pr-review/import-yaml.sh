@@ -77,8 +77,8 @@ if [[ ! -f "$DB_PATH" ]]; then
     exit 3
 fi
 
-# Extract PR number from YAML using Python
-PR_NUMBER=$(python3 -c "import yaml; print(yaml.safe_load(open('$YAML_FILE'))['pr_number'])" 2>/dev/null)
+# Extract PR number from YAML using Python (pass filename as argument to avoid injection)
+PR_NUMBER=$(python3 -c "import yaml, sys; print(yaml.safe_load(open(sys.argv[1]))['pr_number'])" "$YAML_FILE" 2>/dev/null)
 if [[ -z "$PR_NUMBER" || "$PR_NUMBER" == "null" ]]; then
     echo '{"error": "Could not extract pr_number from YAML"}' >&2
     exit 1
@@ -93,31 +93,45 @@ fi
 
 echo "Importing analyses from $YAML_FILE for PR #$PR_NUMBER (pr_id=$PR_ID)..." >&2
 
-IMPORTED=0
-SKIPPED=0
-ERRORS=0
 TIMESTAMP=$(date -Iseconds)
+
+# Create temp directory for counters (workaround for subshell issue)
+TMPDIR=$(mktemp -d)
+trap "rm -rf $TMPDIR" EXIT
+
+echo 0 > "$TMPDIR/imported"
+echo 0 > "$TMPDIR/skipped"
+echo 0 > "$TMPDIR/errors"
+
+# Helper: Increment counter
+inc() {
+    local file="$TMPDIR/$1"
+    local val=$(cat "$file")
+    echo $((val + 1)) > "$file"
+}
 
 # Helper: Escape for SQL
 escape_sql() {
     echo "$1" | sed "s/'/''/g"
 }
 
-# Convert YAML to JSON for processing
+# Convert YAML to JSON for processing (pass filename as argument to avoid injection)
 YAML_AS_JSON=$(python3 -c "
 import yaml, json, sys
-with open('$YAML_FILE', 'r') as f:
+with open(sys.argv[1], 'r') as f:
     data = yaml.safe_load(f)
     for comment in data.get('comments', []):
         print(json.dumps(comment))
-" 2>/dev/null)
+" "$YAML_FILE" 2>/dev/null)
 
-# Process each comment
-echo "$YAML_AS_JSON" | while read -r comment_json; do
+# Process each comment using process substitution to avoid subshell
+while read -r comment_json; do
+    [[ -z "$comment_json" ]] && continue
+
     COMMENT_ID=$(echo "$comment_json" | jq -r '.id // empty')
 
     if [[ -z "$COMMENT_ID" ]]; then
-        ((ERRORS++)) || true
+        inc errors
         continue
     fi
 
@@ -125,7 +139,7 @@ echo "$YAML_AS_JSON" | while read -r comment_json; do
     HAS_ANALYSIS=$(echo "$comment_json" | jq -r '.analysis // empty')
     if [[ -z "$HAS_ANALYSIS" || "$HAS_ANALYSIS" == "null" ]]; then
         echo "  Skip $COMMENT_ID: no analysis block" >&2
-        ((SKIPPED++)) || true
+        inc skipped
         continue
     fi
 
@@ -133,7 +147,7 @@ echo "$YAML_AS_JSON" | while read -r comment_json; do
     DECISION=$(echo "$comment_json" | jq -r '.analysis.decision // empty')
     if [[ -z "$DECISION" || "$DECISION" == "null" ]]; then
         echo "  Skip $COMMENT_ID: no decision" >&2
-        ((SKIPPED++)) || true
+        inc skipped
         continue
     fi
 
@@ -175,14 +189,14 @@ echo "$YAML_AS_JSON" | while read -r comment_json; do
 
     if [[ "$DRY_RUN" == "true" ]]; then
         echo "  [DRY-RUN] Would import: $COMMENT_ID -> $DECISION ($CRITICALITY)" >&2
-        ((IMPORTED++)) || true
+        inc imported
     else
         # Check if comment exists in database
         COMMENT_EXISTS=$(sqlite3 "$DB_PATH" "SELECT 1 FROM comments WHERE id = '$COMMENT_ID';" 2>/dev/null || echo "")
 
         if [[ -z "$COMMENT_EXISTS" ]]; then
             echo "  Warning: Comment $COMMENT_ID not in database, skipping" >&2
-            ((SKIPPED++)) || true
+            inc skipped
             continue
         fi
 
@@ -205,10 +219,10 @@ echo "$YAML_AS_JSON" | while read -r comment_json; do
 
         if sqlite3 "$DB_PATH" "$SQL" 2>/dev/null; then
             echo "  Imported: $COMMENT_ID -> $DECISION" >&2
-            ((IMPORTED++)) || true
+            inc imported
         else
             echo "  Error importing $COMMENT_ID" >&2
-            ((ERRORS++)) || true
+            inc errors
         fi
     fi
 
@@ -259,7 +273,12 @@ echo "$YAML_AS_JSON" | while read -r comment_json; do
             sqlite3 "$DB_PATH" "$DEFER_SQL" 2>/dev/null || true
         fi
     fi
-done
+done < <(echo "$YAML_AS_JSON")
+
+# Get final counts from temp files
+IMPORTED=$(cat "$TMPDIR/imported")
+SKIPPED=$(cat "$TMPDIR/skipped")
+ERRORS=$(cat "$TMPDIR/errors")
 
 # Log event
 if [[ "$DRY_RUN" == "false" ]]; then
