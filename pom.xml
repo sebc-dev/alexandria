@@ -47,7 +47,7 @@
         <pitest.version>1.22.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
         <enforcer.version>3.6.2</enforcer.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
 
         <!-- ════════════════════════════════════════════════════════════ -->
         <!-- Skips par défaut (profil dev actif par défaut)               -->
