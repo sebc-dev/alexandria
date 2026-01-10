@@ -165,8 +165,7 @@ public final class InfinityStubs {
    */
   public static void stubClientError(int statusCode, String errorMessage) {
     if (statusCode < 400 || statusCode > 499) {
-      throw new IllegalArgumentException(
-          "statusCode must be in [400, 499], got: " + statusCode);
+      throw new IllegalArgumentException("statusCode must be in [400, 499], got: " + statusCode);
     }
     stubFor(
         post(urlPathEqualTo("/embeddings"))
