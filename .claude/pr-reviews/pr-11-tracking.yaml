@@ -3,23 +3,23 @@ pr_number: 11
 pr_title: "feat(ci): add GitHub Actions CI/CD pipeline (Phase 2C)"
 branch: "feature/phase-2c-cicd-pipeline"
 created_at: "2026-01-09T10:00:00Z"
-last_updated: "2026-01-09T19:20:00Z"
+last_updated: "2026-01-10T07:00:00Z"
 status: in_progress
 
 # Statistiques (sync avec GitHub)
 # total_comments = analysés uniques (hors duplicatas qui sont comptés dans leur parent)
 # addressed_by_coderabbit = commentaires marqués "✅ Addressed in commit" par CodeRabbit
 summary:
-  total_comments: 22  # +1 nouveau (check_run_id)
-  analyzed: 20
-  accepted: 13  # +1 (check_run_id)
-  rejected: 2
+  total_comments: 23
+  analyzed: 23
+  accepted: 16
+  rejected: 4  # 2673846395, 2673863338, 2677318654, 2677318658
   discussed: 0
   deferred: 3
-  applied: 14  # +1 (check_run_id fix)
+  applied: 19  # +5 nouvelles corrections appliquées
   skipped: 2  # Commentaires obsolètes suite à suppression fichier (2674791361, 2674791355)
-  addressed_by_coderabbit: 14
-  duplicates: 5  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778
+  addressed_by_coderabbit: 18
+  duplicates: 6  # 2673846385, 2674804797, 2674791348, 2673902261, 2674804778, 2674906233
 
 comments:
   - id: "2673846370"
@@ -193,6 +193,9 @@ comments:
       - id: "2677333609"
         body: "Rejeté - redondance intentionnelle pour intégration SonarCloud"
         posted_at: "2026-01-09T19:15:00Z"
+      - id: "2678382176"
+        body: "Réponse finale - configuration intentionnelle pour PR comments SonarCloud"
+        posted_at: "2026-01-10T06:42:59Z"
 
   - id: "2673863338"
     source: "inline"
@@ -425,6 +428,9 @@ comments:
       - id: "2677340720"
         body: "Duplicata de #2673863338"
         posted_at: "2026-01-09T19:17:00Z"
+      - id: "2678384280"
+        body: "Duplicata de #2673863338 - Java 25 choix délibéré du projet"
+        posted_at: "2026-01-10T06:47:38Z"
 
   - id: "2674791337"
     source: "inline"
@@ -626,6 +632,9 @@ comments:
       - id: "2677317691"
         body: "Réponse postée: docker-build désactivé, optimisation reportée à issue #12"
         posted_at: "2026-01-09T19:03:47Z"
+      - id: "2678383033"
+        body: "Réponse finale - reporté à issue #12, docker-build désactivé"
+        posted_at: "2026-01-10T06:44:47Z"
 
   - id: "2674791361"
     source: "inline"
@@ -678,6 +687,10 @@ comments:
       research_needed: null
     status: "skipped"
     resolution_status: "obsolete_file_deleted"
+    our_replies:
+      - id: "2678384201"
+        body: "Obsolète - fichier sonarcloud.yml supprimé"
+        posted_at: "2026-01-10T06:47:20Z"
 
   - id: "2674906225"
     source: "inline"
@@ -845,3 +858,450 @@ comments:
       research_needed: null
     status: "applied"
     resolution_status: "applied_now"
+
+  - id: "2674906233"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 127
+    type: "bug"
+    original_comment: |
+      [Potential issue | Major] Le job « Integration Tests » ne sélectionne probablement pas les bons tests.
+      Incohérence avec le job UT : ici -Dtest='**/*IT.java' (ligne 119), ailleurs !**/*IT (ligne 83).
+      L'extension .java est inutile et source d'erreur avec Maven.
+      Si Failsafe est utilisé, le paramètre -Dtest ne contrôle pas les tests d'intégration. Utiliser -Dit.test est plus approprié.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "bug"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Duplicata de #2674804794 - Configuration Maven Failsafe incorrecte"
+      rationale: |
+        Ce commentaire est un duplicata du commentaire #2674804794 qui traite du même problème:
+        configuration incorrecte de Maven Failsafe pour les tests d'intégration.
+        La correction a été appliquée dans le commit 9a3d136.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "duplicate_applied"
+    our_replies:
+      - id: "2678385175"
+        body: "Duplicata de #2674804794 - corrigé dans commit 9a3d136"
+        posted_at: "2026-01-10T06:49:13Z"
+
+  - id: "2678359924"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 15
+    type: "style"
+    original_comment: |
+      [Minor] Input workflow inutilisé : supprimer pr_number.
+      L'input pr_number (lignes 12-15) n'est jamais référencé dans le workflow.
+      Seul commit_sha est utilisé. Cet input mort crée de la confusion.
+      Note: Le tracking indique que cette correction a été "applied", mais l'input est toujours présent.
+    analysis:
+      decision: "REJECT"
+      confidence: 1.0
+      type: "style"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Commentaire obsolète - pr_number a déjà été supprimé dans un commit antérieur"
+      rationale: |
+        Ce commentaire est obsolète. La recherche dans ci.yml confirme qu'il n'y a AUCUNE occurrence de "pr_number"
+        dans le fichier actuel. Le commentaire #2673863371 (identique) a déjà été traité et la correction a été
+        appliquée dans un commit antérieur (status: "applied", resolution_status: "addressed_in_prior_commits").
+        Le commentaire CodeRabbit se réfère probablement à une version antérieure du fichier avant que la correction
+        ne soit effectuée. Sa note "le tracking indique que cette correction a été applied, mais l'input est toujours présent"
+        est incorrecte - l'input a bien été supprimé.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "obsolete_already_fixed"
+
+  - id: "2678372727"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 237
+    type: "best-practice"
+    original_comment: |
+      [Major] Gérer l'absence potentielle de NVD_API_KEY.
+      Le NVD_API_KEY est utilisé sans vérifier sa disponibilité.
+      Sans cette clé, OWASP Dependency-Check fonctionnera mais avec des limites de débit strictes.
+      Suggestion: Ajouter une vérification conditionnelle similaire à celle de SonarCloud.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "IMPORTANT"
+      effort: "LOW"
+      regression_risk: false
+      summary: "Ajouter validation NVD_API_KEY pour éviter rate-limiting silencieux"
+      rationale: |
+        Le commentaire est pertinent et cohérent avec le pattern établi pour SONAR_TOKEN.
+        Contexte: OWASP Dependency-Check utilise l'API NVD (National Vulnerability Database).
+        Sans la clé API, l'outil fonctionne mais avec un rate limit de 0.6 req/s vs 3.6 req/s avec clé.
+        Impact sur CI: scans très lents (plusieurs minutes) avec risque d'échec par timeout.
+
+        Le job sonarcloud (lignes 138-147) implémente déjà un pattern similaire:
+        - Vérification via step dédié avec SONAR_TOKEN en env
+        - Skip gracieux des étapes suivantes si non configuré
+        - Job finalize (ligne 334) accepte result='skipped' comme succès
+
+        Appliquer le même pattern pour NVD_API_KEY améliore l'expérience développeur:
+        - Feedback clair si clé manquante
+        - Évite des builds lents et échecs cryptiques
+        - Permet une configuration post-merge comme SONAR_TOKEN
+      code_suggestion: |
+        dependency-security:
+          name: Dependency Security Scan
+          runs-on: ubuntu-latest
+          needs: init-check
+          permissions:
+            security-events: write
+          env:
+            NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          steps:
+            - name: Check NVD_API_KEY availability
+              id: check-key
+              run: |
+                if [ -z "$NVD_API_KEY" ]; then
+                  echo "⚠️ NVD_API_KEY not configured - OWASP scan will run with strict rate limits"
+                  echo "available=false" >> $GITHUB_OUTPUT
+                else
+                  echo "✅ NVD_API_KEY configured"
+                  echo "available=true" >> $GITHUB_OUTPUT
+                fi
+
+            - name: Checkout code
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6
+
+            - name: Set up Java 25 LTS
+              uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e  # v5
+              with:
+                distribution: ${{ env.JAVA_DISTRIBUTION }}
+                java-version: ${{ env.JAVA_VERSION }}
+                cache: maven
+
+            - name: OWASP Dependency-Check
+              run: |
+                mvn -B org.owasp:dependency-check-maven:check \
+                  -DfailBuildOnCVSS=8 \
+                  -Dformat=ALL \
+                  ${{ steps.check-key.outputs.available == 'true' && format('-DnvdApiKey={0}', env.NVD_API_KEY) || '' }}
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+    applied_at: "2026-01-10T07:00:00Z"
+
+  - id: "2678372740"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 344
+    type: "bug"
+    original_comment: |
+      [CRITICAL] Corriger la syntaxe des assignations de variables bash.
+      Les lignes 333-334 ont une syntaxe incorrecte qui causera des échecs du workflow.
+      Les expressions GitHub Actions ${{ }} doivent être entourées de guillemets.
+      DOCKER_OK=${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}
+      devrait être:
+      DOCKER_OK="${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}"
+    analysis:
+      decision: "ACCEPT"
+      confidence: 1.0
+      type: "bug"
+      criticality: "BLOCKING"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Syntaxe bash incorrecte - expressions GitHub Actions non quotées dans assignations de variables"
+      rationale: |
+        Bug critique avéré. Les lignes 333-334 utilisent une syntaxe invalide pour les assignations bash:
+        DOCKER_OK=${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}
+        SONAR_OK=${{ needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped' }}
+
+        Sans guillemets, bash interprétera l'expansion GitHub Actions comme plusieurs tokens séparés par des espaces,
+        causant des erreurs de syntaxe comme "bash: ==: command not found" ou "unexpected token: ||".
+
+        Les expressions GitHub Actions ${{ }} dans des assignations de variables bash DOIVENT être entourées de guillemets
+        selon la documentation officielle GitHub Actions pour éviter le word splitting et la globbing.
+
+        Impact: Le job finalize échouera systématiquement lors de l'évaluation du status, empêchant la mise à jour
+        du check run unifié. Le pipeline apparaîtra comme "en cours" indéfiniment même si tous les jobs sont terminés.
+      code_suggestion: |
+        # Lignes 333-334 - Remplacer:
+        DOCKER_OK=${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}
+        SONAR_OK=${{ needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped' }}
+
+        # Par:
+        DOCKER_OK="${{ needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped' }}"
+        SONAR_OK="${{ needs.sonarcloud.result == 'success' || needs.sonarcloud.result == 'skipped' }}"
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+    applied_at: "2026-01-10T07:00:00Z"
+
+  - id: "2678379687"
+    source: "inline"
+    file: ".coderabbit.yml"
+    line: 76
+    type: "bug"
+    original_comment: |
+      [CRITICAL] Supprimez les lignes dupliquées avec indentation incorrecte.
+      1. Erreur d'indentation YAML : La ligne 74 contient 8 espaces avant le commentaire
+      2. Duplication redondante : Le pattern !.claude/**/*.md est déjà défini aux lignes 71-73
+      3. Risque de parsing : L'indentation incorrecte peut empêcher le parsing du fichier
+    analysis:
+      decision: "ACCEPT"
+      confidence: 1.0
+      type: "bug"
+      criticality: "BLOCKING"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Bug YAML avéré: duplication du pattern !.claude/**/*.md avec indentation incorrecte (8 espaces)"
+      rationale: |
+        Analyse du fichier .coderabbit.yml confirme le bug:
+        - Ligne 71-73: Bloc correctement formaté avec commentaire (4 espaces) et pattern (4 espaces)
+        - Ligne 74-75: DUPLICATION avec indentation incorrecte (8 espaces ligne 74, 4 espaces ligne 75)
+        La ligne 74 viole la spec YAML pour les listes (indentation cohérente requise dans path_filters).
+        Risque réel: yamllint (activé ligne 338) peut rejeter le fichier, et CodeRabbit pourrait mal parser sa propre config.
+        Correction urgente: supprimer les lignes 74-75 (bloc dupliqué).
+      code_suggestion: |
+        # Supprimer les lignes 74-75:
+        # path_filters:
+        #   ...
+        #   - "!docs/**"
+        #
+        #   # Claude Code markdown specific files
+        #   - "!.claude/**/*.md"
+        #
+        #   [SUPPRIMER CES 2 LIGNES:]
+        #       # Claude Code markdown specific files
+        #   - "!.claude/**/*.md"
+        #
+        #   # Generated files
+        #   - "!**/*.min.js"
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+    applied_at: "2026-01-10T07:00:00Z"
+
+  - id: "2678359923"
+    source: "inline"
+    file: ".claude/pr-reviews/pr-11-tracking.yaml"
+    line: 395
+    type: "verification"
+    original_comment: |
+      [Minor] Incohérence : statut "applied" mais le code n'est pas modifié.
+      Le commentaire 2673863371 indique que l'input pr_number inutilisé devrait être supprimé.
+      Son statut est marqué "applied" avec "addressed_in_prior_commits".
+      Cependant, dans .github/workflows/ci.yml lignes 12-15, l'input pr_number est toujours présent.
+    analysis:
+      decision: "REJECT"
+      confidence: 1.0
+      type: "verification"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Faux positif - l'input pr_number a bien été supprimé de ci.yml"
+      rationale: |
+        Vérification manuelle effectuée: le fichier .github/workflows/ci.yml lignes 10-16 contient uniquement:
+        workflow_dispatch:
+          inputs:
+            commit_sha:
+              description: 'SHA du commit pour le status check'
+              required: false
+              type: string
+
+        L'input pr_number n'existe plus dans le fichier. Le statut "applied" du commentaire #2673863371 est correct.
+        Le commentaire CodeRabbit #2678359923 a probablement été généré sur une version obsolète du fichier
+        ou contient une erreur d'analyse. La correction suggérée dans #2673863371 a bel et bien été appliquée.
+        Grep "pr_number" dans ci.yml ne retourne aucun résultat. Le tracking est cohérent avec l'état réel du code.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: "rejected_false_positive"
+
+  - id: "2678372734"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 240
+    type: "security"
+    original_comment: |
+      [Major] Épingler l'action Trivy à un SHA de commit.
+      L'action aquasecurity/trivy-action@0.33.1 utilise un tag de version au lieu d'un SHA.
+      Toutes les autres actions GitHub dans ce workflow sont épinglées à des SHA de commit.
+      L'action Trivy doit suivre le même standard de sécurité.
+    analysis:
+      decision: "ACCEPT"
+      confidence: 1.0
+      type: "security"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Incohérence de sécurité - aquasecurity/trivy-action@0.33.1 doit être épinglé au SHA comme les autres actions"
+      rationale: |
+        Problème de sécurité légitime. Vérification du workflow ci.yml confirme que TOUTES les autres actions GitHub
+        suivent le standard de pinning par SHA complet:
+        - actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6
+        - actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e  # v5
+        - LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23  # v2.0.0
+        - github/codeql-action/init@27fcff4ecb39e96348e7ceddcc2d9ef42308b6fc  # v4
+        - etc.
+
+        Seule exception: aquasecurity/trivy-action@0.33.1 (lignes 240 et 299) utilise un tag mutable.
+        Cette incohérence crée une faille de sécurité car les tags peuvent être déplacés.
+
+        Le pinning par SHA protège contre:
+        - Modification malveillante des tags upstream
+        - Supply chain attacks
+        - Comportement non déterministe des workflows
+
+        SHA v0.33.1 confirmé: b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+        Source: https://github.com/aquasecurity/trivy-action/releases
+      code_suggestion: |
+        # Ligne 240 - Remplacer:
+        - name: Trivy filesystem scan
+          uses: aquasecurity/trivy-action@0.33.1
+        # Par:
+        - name: Trivy filesystem scan
+          uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
+
+        # Ligne 299 - Remplacer:
+        - name: Scan Docker image with Trivy
+          uses: aquasecurity/trivy-action@0.33.1
+        # Par:
+        - name: Scan Docker image with Trivy
+          uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+    applied_at: "2026-01-10T07:00:00Z"
+
+  - id: "2677318654"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 110
+    type: "best-practice"
+    original_comment: |
+      [Trivial] Considérer le pinning de la version de l'image Docker pgvector.
+      L'image pgvector/pgvector:0.8.1-pg18 utilise un tag sémantique, ce qui est bien.
+      Cependant, pour une reproductibilité maximale, envisagez de référencer l'image par son digest SHA256.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "best-practice"
+      criticality: "COSMETIC"
+      effort: "LOW"
+      regression_risk: false
+      summary: "SHA256 digest pinning apporte peu de valeur pour les images Testcontainers en CI"
+      rationale: |
+        Contexte: Cette ligne (docker pull pgvector/pgvector:0.8.1-pg18) pré-télécharge l'image pour Testcontainers en CI.
+
+        Analyse du trade-off SHA256 pinning:
+        AVANTAGES FAIBLES pour notre contexte:
+        - Reproductibilité absolue: le tag 0.8.1-pg18 pointe vers une version immutable de PostgreSQL 18 et pgvector 0.8.1
+        - Protection contre tag rewrite: pgvector est une image officielle bien maintenue, risque négligeable
+
+        INCONVÉNIENTS SIGNIFICATIFS:
+        - Maintenance complexe: nécessite de mettre à jour manuellement le digest à chaque patch de sécurité PostgreSQL
+        - Perte de transparence: pgvector/pgvector:0.8.1-pg18@sha256:abc123... masque la version réelle
+        - Pas de protection supplémentaire: l'image est déjà pull sur GitHub Actions publics (pas d'attaque MITM)
+        - Over-engineering: le projet utilise le tag sémantique partout (code Java, docs, config Testcontainers)
+
+        Le workflow CI a déjà appliqué SHA pinning aux GitHub Actions (commit c404e9b) pour des raisons valides
+        (supply chain attack via actions compromise). Ce risque n'existe pas pour les images Docker officielles
+        utilisées uniquement pendant l'exécution des tests d'intégration.
+
+        Décision: REJECT - le tag sémantique 0.8.1-pg18 offre le meilleur équilibre entre reproductibilité,
+        maintenabilité et cohérence avec le reste du projet.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2677318658"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 173
+    type: "performance"
+    original_comment: |
+      [Trivial] Le Quality Gate bloquant peut ralentir le pipeline CI.
+      Le paramètre -Dsonar.qualitygate.wait=true force le pipeline à attendre que SonarCloud termine.
+      Cela peut ajouter plusieurs minutes au temps d'exécution et bloquer le merge si le Quality Gate échoue.
+      Considérez si ce comportement bloquant est souhaité ou si une analyse asynchrone serait plus appropriée.
+    analysis:
+      decision: "REJECT"
+      confidence: 0.90
+      type: "performance"
+      criticality: "N/A"
+      effort: "N/A"
+      regression_risk: false
+      summary: "Comportement bloquant du Quality Gate est intentionnel et cohérent avec la stratégie qualité du projet"
+      rationale: |
+        Le comportement bloquant de -Dsonar.qualitygate.wait=true est un choix délibéré aligné avec l'architecture du pipeline.
+
+        Analyse du contexte:
+        1. Le job sonarcloud est DÉJÀ considéré comme bloquant dans le job finalize (ligne 337: SONAR_OK doit être true).
+        2. Sans -Dsonar.qualitygate.wait=true, le job passerait en success même si le Quality Gate SonarCloud échoue ultérieurement.
+        3. Le pipeline imposerait alors une fausse impression de qualité validée.
+
+        L'impact performance est réel (~1-3 minutes d'attente) mais justifié pour:
+        - Bloquer le merge sur code de mauvaise qualité détecté par SonarCloud
+        - Garantir cohérence entre le statut du job et le véritable Quality Gate
+        - Éviter les PRs mergées avec dette technique masquée
+
+        Le job est déjà conditionnel (skip si SONAR_TOKEN non configuré), donc pas d'impact sur les environnements sans SonarCloud.
+
+        Décision: REJECT car la suggestion d'analyse asynchrone contredirait la politique qualité bloquante du projet.
+      code_suggestion: null
+      research_needed: null
+    status: "analyzed"
+    resolution_status: null
+
+  - id: "2674906245"
+    source: "inline"
+    file: ".github/workflows/ci.yml"
+    line: 237
+    type: "security"
+    original_comment: |
+      [Minor] Utiliser nvdApiKeyEnvironmentVariable au lieu de passer la clé via la ligne de commande.
+      -DnvdApiKey=${{ secrets.NVD_API_KEY }} présente deux problèmes:
+      1. Fuite de secret: la clé NVD peut être exposée dans les logs Maven (versions < 9.0.6)
+      2. Rate-limiting: si le secret n'est pas configuré, le plugin utilisera l'accès anonyme
+      Suggestion: Utiliser -DnvdApiKeyEnvironmentVariable=NVD_API_KEY avec env: NVD_API_KEY
+    analysis:
+      decision: "ACCEPT"
+      confidence: 0.95
+      type: "security"
+      criticality: "IMPORTANT"
+      effort: "TRIVIAL"
+      regression_risk: false
+      summary: "Le workflow override la config pom.xml qui définit déjà nvdApiKeyEnvironmentVariable"
+      rationale: |
+        Problème de sécurité et best practice avéré. Le pom.xml configure correctement nvdApiKeyEnvironmentVariable (ligne 364),
+        mais le workflow ci.yml override cette configuration avec -DnvdApiKey=${{ secrets.NVD_API_KEY }} en ligne de commande.
+
+        Recherche confirmée par documentation officielle OWASP (GHSA-qqhq-8r2c-c3f5): nvdApiKey peut être exposé dans les logs
+        Maven debug (versions < 9.0.6). Le projet utilise la version 12.1.9 (safe), MAIS suivre la best practice recommandée
+        améliore la sécurité et respecte l'architecture déjà en place dans le pom.xml.
+
+        Bénéfices additionnels:
+        1. Cohérence: aligne le workflow avec la configuration pom.xml existante
+        2. Rate-limiting gracieux: si NVD_API_KEY n'est pas configuré, le plugin utilise l'accès anonyme au lieu d'échouer
+        3. Future-proof: protection contre d'éventuels rollbacks de version Maven
+      code_suggestion: |
+        # Ligne 232-237 - Remplacer:
+        - name: OWASP Dependency-Check
+          env:
+            NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          run: |
+            mvn -B org.owasp:dependency-check-maven:check \
+              -DfailBuildOnCVSS=8 \
+              -Dformat=ALL
+            # Supprimé: -DnvdApiKey=${{ secrets.NVD_API_KEY }}
+            # La config nvdApiKeyEnvironmentVariable du pom.xml s'appliquera automatiquement
+      research_needed: null
+    status: "applied"
+    resolution_status: "applied_now"
+    applied_at: "2026-01-10T07:00:00Z"
