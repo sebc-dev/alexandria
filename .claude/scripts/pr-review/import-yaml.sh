@@ -97,7 +97,7 @@ TIMESTAMP=$(date -Iseconds)
 
 # Create temp directory for counters (workaround for subshell issue)
 TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+trap 'rm -rf "$TMPDIR"' EXIT
 
 echo 0 > "$TMPDIR/imported"
 echo 0 > "$TMPDIR/skipped"
@@ -106,7 +106,8 @@ echo 0 > "$TMPDIR/errors"
 # Helper: Increment counter
 inc() {
     local file="$TMPDIR/$1"
-    local val=$(cat "$file")
+    local val
+    val=$(cat "$file")
     echo $((val + 1)) > "$file"
 }
 
@@ -168,10 +169,10 @@ while read -r comment_json; do
         REGRESSION_RISK=0
     fi
 
-    # Handle NULL values for SQL
+    # Handle NULL values for SQL (escape all string fields to prevent SQL injection)
     [[ -z "$TYPE" || "$TYPE" == "null" ]] && TYPE_SQL="NULL" || TYPE_SQL="'$(escape_sql "$TYPE")'"
-    [[ -z "$CRITICALITY" || "$CRITICALITY" == "null" || "$CRITICALITY" == "N/A" ]] && CRITICALITY_SQL="NULL" || CRITICALITY_SQL="'$CRITICALITY'"
-    [[ -z "$EFFORT" || "$EFFORT" == "null" || "$EFFORT" == "N/A" ]] && EFFORT_SQL="NULL" || EFFORT_SQL="'$EFFORT'"
+    [[ -z "$CRITICALITY" || "$CRITICALITY" == "null" || "$CRITICALITY" == "N/A" ]] && CRITICALITY_SQL="NULL" || CRITICALITY_SQL="'$(escape_sql "$CRITICALITY")'"
+    [[ -z "$EFFORT" || "$EFFORT" == "null" || "$EFFORT" == "N/A" ]] && EFFORT_SQL="NULL" || EFFORT_SQL="'$(escape_sql "$EFFORT")'"
     [[ -z "$SUMMARY" || "$SUMMARY" == "null" ]] && SUMMARY_SQL="NULL" || SUMMARY_SQL="'$(escape_sql "$SUMMARY")'"
     [[ -z "$RATIONALE" || "$RATIONALE" == "null" ]] && RATIONALE_SQL="NULL" || RATIONALE_SQL="'$(escape_sql "$RATIONALE")'"
     [[ -z "$CODE_SUGGESTION" || "$CODE_SUGGESTION" == "null" ]] && CODE_SQL="NULL" || CODE_SQL="'$(escape_sql "$CODE_SUGGESTION")'"
@@ -282,8 +283,10 @@ ERRORS=$(cat "$TMPDIR/errors")
 
 # Log event
 if [[ "$DRY_RUN" == "false" ]]; then
+    # Escape YAML_FILE for JSON to handle quotes and special characters
+    YAML_FILE_ESC=$(echo "$YAML_FILE" | sed 's/\\/\\\\/g; s/"/\\"/g')
     sqlite3 "$DB_PATH" "INSERT INTO events (pr_id, event_type, event_subtype, event_data)
-    VALUES ($PR_ID, 'import', 'yaml_import', '{\"file\": \"$YAML_FILE\", \"timestamp\": \"$TIMESTAMP\"}');" 2>/dev/null || true
+    VALUES ($PR_ID, 'import', 'yaml_import', '{\"file\": \"$YAML_FILE_ESC\", \"timestamp\": \"$TIMESTAMP\"}');" 2>/dev/null || true
 fi
 
 # Get actual counts from database

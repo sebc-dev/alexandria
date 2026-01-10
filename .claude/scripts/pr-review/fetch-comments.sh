@@ -116,7 +116,7 @@ TIMESTAMP=$(date -Iseconds)
 
 # Create temp directory for counters (workaround for subshell issue)
 TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+trap 'rm -rf "$TMPDIR"' EXIT
 
 echo 0 > "$TMPDIR/fetched"
 echo 0 > "$TMPDIR/new"
@@ -126,7 +126,8 @@ echo 0 > "$TMPDIR/errors"
 # Helper: Increment counter
 inc() {
     local file="$TMPDIR/$1"
-    local val=$(cat "$file")
+    local val
+    val=$(cat "$file")
     echo $((val + 1)) > "$file"
 }
 

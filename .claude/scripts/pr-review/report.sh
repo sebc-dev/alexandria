@@ -111,8 +111,8 @@ format_output() {
             sqlite3 -column -header "$DB_PATH" "$sql"
             ;;
         markdown)
-            # Convert to markdown table
-            sqlite3 -csv -header "$DB_PATH" "$sql" | awk -F',' '
+            # Convert to markdown table using tab separator to avoid comma issues in CSV fields
+            sqlite3 -separator $'\t' -header "$DB_PATH" "$sql" | awk -F'\t' '
                 NR==1 {
                     printf "|"
                     for(i=1; i<=NF; i++) printf " %s |", $i
@@ -191,21 +191,24 @@ report_summary() {
             --argjson types "$type_stats" \
             '{pr: $pr, stats: $stats, by_severity: $severity, by_type: $types}'
     else
-        local title=$(echo "$pr_info" | jq -r '.title')
-        local branch=$(echo "$pr_info" | jq -r '.branch')
-        local state=$(echo "$pr_info" | jq -r '.state')
-        local synced=$(echo "$pr_info" | jq -r '.last_synced_at // "never"')
+        # Separate local declarations from assignments to avoid masking jq exit codes
+        local title branch state synced
+        title=$(echo "$pr_info" | jq -r '.title')
+        branch=$(echo "$pr_info" | jq -r '.branch')
+        state=$(echo "$pr_info" | jq -r '.state')
+        synced=$(echo "$pr_info" | jq -r '.last_synced_at // "never"')
 
-        local total=$(echo "$stats" | jq -r '.total_comments')
-        local cr_total=$(echo "$stats" | jq -r '.coderabbit_comments')
-        local cr_orig=$(echo "$stats" | jq -r '.coderabbit_original')
-        local addressed=$(echo "$stats" | jq -r '.addressed')
-        local analyzed=$(echo "$stats" | jq -r '.analyzed')
-        local accepted=$(echo "$stats" | jq -r '.accepted')
-        local rejected=$(echo "$stats" | jq -r '.rejected')
-        local deferred=$(echo "$stats" | jq -r '.deferred')
-        local discussed=$(echo "$stats" | jq -r '.discussed')
-        local replied=$(echo "$stats" | jq -r '.replied')
+        local total cr_total cr_orig addressed analyzed accepted rejected deferred discussed replied
+        total=$(echo "$stats" | jq -r '.total_comments')
+        cr_total=$(echo "$stats" | jq -r '.coderabbit_comments')
+        cr_orig=$(echo "$stats" | jq -r '.coderabbit_original')
+        addressed=$(echo "$stats" | jq -r '.addressed')
+        analyzed=$(echo "$stats" | jq -r '.analyzed')
+        accepted=$(echo "$stats" | jq -r '.accepted')
+        rejected=$(echo "$stats" | jq -r '.rejected')
+        deferred=$(echo "$stats" | jq -r '.deferred')
+        discussed=$(echo "$stats" | jq -r '.discussed')
+        replied=$(echo "$stats" | jq -r '.replied')
 
         cat <<EOF
 ## PR #$PR_NUMBER Review Report

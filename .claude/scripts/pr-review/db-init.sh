@@ -67,7 +67,8 @@ if [[ ! -f "$DB_PATH" ]]; then
 else
     # Check if upgrade needed
     CURRENT_VERSION=$(sqlite3 "$DB_PATH" "SELECT COALESCE(MAX(version), 0) FROM schema_version;" 2>/dev/null || echo "0")
-    SCHEMA_VERSION=$(grep -oP "VALUES \(\K\d+" "$SCHEMA_FILE" | head -1 || echo "1")
+    # Extract version from schema_version INSERT statement (portable, works on BSD and GNU grep)
+    SCHEMA_VERSION=$(grep -E "INSERT.*INTO.*schema_version.*VALUES" "$SCHEMA_FILE" | grep -oE '[0-9]+' | head -1 || echo "1")
 
     if [[ "$CURRENT_VERSION" -lt "$SCHEMA_VERSION" ]]; then
         ACTION="upgraded"
