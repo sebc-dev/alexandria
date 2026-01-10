@@ -133,10 +133,10 @@ Branch: `feature/phase-2c-cicd-pipeline` | State: open
 ## Commandes Interactives
 
 ### `analyser`
-Relance `/pr-review-analyze $PR_NUMBER`
+Relance `/custom:pr-review-analyze $PR_NUMBER`
 
 ### `repondre [--dry-run]`
-Execute `/pr-review-reply $PR_NUMBER [--dry-run]`
+Execute `/custom:pr-review-reply $PR_NUMBER [--dry-run]`
 
 ### `sync`
 Execute:
@@ -146,10 +146,10 @@ Execute:
 Detecte les nouveaux commentaires et resolutions CodeRabbit.
 
 ### `workflows`
-Execute `/pr-review-workflows $PR_NUMBER --details`
+Execute `/custom:pr-review-workflows $PR_NUMBER --details`
 
 ### `status`
-Execute `/pr-review-status $PR_NUMBER`
+Execute `/custom:pr-review-status $PR_NUMBER`
 
 ### `creer-issues`
 Pour les DEFER avec `needs_issue`:
@@ -191,7 +191,7 @@ Attente de 60 secondes...
 
 ## Notes
 
-- Cette commande remplace `/review-coderabbit-pr`
+- Cette commande remplace `/custom:review-coderabbit-pr`
 - Les donnees sont stockees dans `~/.local/share/alexandria/pr-reviews.db`
 - Compatible avec tous les reviewers (CodeRabbit, humains, autres bots)
 - Les reponses utilisent des templates standardises
