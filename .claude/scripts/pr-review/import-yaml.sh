@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DB_DIR="${HOME}/.local/share/alexandria"
 DB_PATH="${DB_DIR}/pr-reviews.db"
 
+# Load shared utilities
+source "${SCRIPT_DIR}/lib/utils.sh"
+
 # Parse arguments
 YAML_FILE=""
 DRY_RUN=false
@@ -109,11 +112,6 @@ inc() {
     local val
     val=$(cat "$file")
     echo $((val + 1)) > "$file"
-}
-
-# Helper: Escape for SQL
-escape_sql() {
-    echo "$1" | sed "s/'/''/g"
 }
 
 # Convert YAML to JSON for processing (pass filename as argument to avoid injection)
