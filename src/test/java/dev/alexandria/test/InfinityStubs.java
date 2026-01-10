@@ -1,12 +1,15 @@
 package dev.alexandria.test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
-import java.util.List;
-import java.util.Locale;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.serviceUnavailable;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Stubs WireMock pour l'API Infinity (embeddings et rerank).

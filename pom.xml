@@ -236,11 +236,9 @@
                         <googleJavaFormat>
                             <version>${google-java-format.version}</version>
                             <style>GOOGLE</style>
+                            <reorderImports>true</reorderImports>
                         </googleJavaFormat>
                         <removeUnusedImports/>
-                        <importOrder>
-                            <order>java,javax,jakarta,org,com,dev.alexandria</order>
-                        </importOrder>
                     </java>
                     <upToDateChecking>
                         <enabled>true</enabled>
