@@ -41,7 +41,12 @@ public final class McpTestSupport {
     McpSyncClient client =
         McpClient.sync(transport).clientInfo(CLIENT_INFO).requestTimeout(REQUEST_TIMEOUT).build();
 
-    client.initialize();
+    try {
+      client.initialize();
+    } catch (Exception ex) {
+      client.closeGracefully();
+      throw ex;
+    }
     return client;
   }
 

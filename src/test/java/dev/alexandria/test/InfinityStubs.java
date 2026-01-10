@@ -3,6 +3,7 @@ package dev.alexandria.test;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import java.util.List;
+import java.util.Locale;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
@@ -160,8 +161,13 @@ public final class InfinityStubs {
    *
    * @param statusCode code HTTP (400-499)
    * @param errorMessage message d'erreur
+   * @throws IllegalArgumentException si statusCode n'est pas dans [400, 499]
    */
   public static void stubClientError(int statusCode, String errorMessage) {
+    if (statusCode < 400 || statusCode > 499) {
+      throw new IllegalArgumentException(
+          "statusCode must be in [400, 499], got: " + statusCode);
+    }
     stubFor(
         post(urlPathEqualTo("/embeddings"))
             .willReturn(
@@ -205,7 +211,7 @@ public final class InfinityStubs {
         resultsArray.append(",");
       }
       resultsArray.append(
-          String.format("{\"index\":%d,\"relevance_score\":%.6f}", i, scores.get(i)));
+          String.format(Locale.US, "{\"index\":%d,\"relevance_score\":%.6f}", i, scores.get(i)));
     }
 
     return String.format("{\"results\":[%s]}", resultsArray);
@@ -217,7 +223,7 @@ public final class InfinityStubs {
       if (i > 0) {
         sb.append(",");
       }
-      sb.append(String.format("%.8f", array[i]));
+      sb.append(String.format(Locale.US, "%.8f", array[i]));
     }
     sb.append("]");
     return sb.toString();

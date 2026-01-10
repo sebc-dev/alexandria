@@ -27,9 +27,9 @@ public class PgVectorTestConfiguration {
    */
   @Bean
   @ServiceConnection
-  public PostgreSQLContainer postgresContainer() {
+  public PostgreSQLContainer<?> postgresContainer() {
     DockerImageName imageName =
         DockerImageName.parse(PGVECTOR_IMAGE).asCompatibleSubstituteFor("postgres");
-    return new PostgreSQLContainer(imageName).withReuse(true);
+    return new PostgreSQLContainer<>(imageName).withReuse(true);
   }
 }
