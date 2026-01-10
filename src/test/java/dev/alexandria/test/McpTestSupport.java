@@ -1,11 +1,10 @@
 package dev.alexandria.test;
 
-import java.time.Duration;
-
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.spec.McpSchema.Implementation;
+import java.time.Duration;
 
 /**
  * Support pour les tests du serveur MCP.
