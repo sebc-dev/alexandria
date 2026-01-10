@@ -218,11 +218,12 @@ upsert_comment() {
         cr_addressed_sha=$(parse_addressed "$body")
     fi
 
-    # Escape strings
-    local body_esc=$(escape_sql "$body")
-    local diff_hunk_esc=$(escape_sql "$diff_hunk")
-    local file_path_esc=$(escape_sql "$file_path")
-    local github_url_esc=$(escape_sql "$github_url")
+    # Escape strings (declare and assign separately to not mask exit codes)
+    local body_esc diff_hunk_esc file_path_esc github_url_esc
+    body_esc=$(escape_sql "$body")
+    diff_hunk_esc=$(escape_sql "$diff_hunk")
+    file_path_esc=$(escape_sql "$file_path")
+    github_url_esc=$(escape_sql "$github_url")
 
     # Handle NULL values
     [[ -z "$review_id" ]] && review_id="NULL" || review_id="'$review_id'"
