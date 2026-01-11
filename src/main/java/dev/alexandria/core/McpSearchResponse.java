@@ -121,18 +121,12 @@ public record McpSearchResponse(
    * @param sourceUri URI of the source document
    * @param chunkIndex zero-based index of this chunk within the source document
    * @param score the relevance score (0.0 to 1.0)
-   * @param relevance the categorized relevance level
    * @param breadcrumbs hierarchical path within the document
    */
   public record SearchResult(
-      String content,
-      String sourceUri,
-      int chunkIndex,
-      double score,
-      RelevanceLevel relevance,
-      String breadcrumbs) {
+      String content, String sourceUri, int chunkIndex, double score, String breadcrumbs) {
 
-    /** Compact constructor with validation. */
+    /** Compact constructor with validation and relevance derivation. */
     public SearchResult {
       if (chunkIndex < 0) {
         throw new AlexandriaException(
@@ -142,7 +136,11 @@ public record McpSearchResponse(
         throw new AlexandriaException(
             ErrorCategory.VALIDATION, "score must be between 0.0 and 1.0, but was: " + score);
       }
-      relevance = RelevanceLevel.fromScore(score);
+    }
+
+    /** Returns the relevance level derived from the score. */
+    public RelevanceLevel relevance() {
+      return RelevanceLevel.fromScore(score);
     }
   }
 

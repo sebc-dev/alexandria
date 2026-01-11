@@ -11,6 +11,7 @@ import dev.alexandria.core.exception.AlexandriaException;
 import dev.alexandria.core.exception.ErrorCategory;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -20,7 +21,7 @@ class McpSearchResponseTest {
 
   @Test
   void successShouldHaveOkStatus() {
-    var result = new SearchResult("content", "uri", 0, 0.95, RelevanceLevel.HIGH, null);
+    var result = new SearchResult("content", "uri", 0, 0.95, null);
     var metadata = new SearchMetadata("test query", 100, 1);
 
     var response = McpSearchResponse.success(List.of(result), metadata);
@@ -32,7 +33,7 @@ class McpSearchResponseTest {
 
   @Test
   void partialShouldHavePartialStatus() {
-    var result = new SearchResult("content", "uri", 0, 0.7, RelevanceLevel.MEDIUM, null);
+    var result = new SearchResult("content", "uri", 0, 0.7, null);
     var metadata = new SearchMetadata("test query", 100, 1);
 
     var response = McpSearchResponse.partial(List.of(result), metadata, "Some results filtered");
@@ -81,12 +82,7 @@ class McpSearchResponseTest {
   void searchResultShouldContainAllFields() {
     var result =
         new SearchResult(
-            "This is the content",
-            "file:///docs/readme.md",
-            3,
-            0.92,
-            RelevanceLevel.HIGH,
-            "Docs > Introduction");
+            "This is the content", "file:///docs/readme.md", 3, 0.92, "Docs > Introduction");
 
     assertThat(result.content()).isEqualTo("This is the content");
     assertThat(result.sourceUri()).isEqualTo("file:///docs/readme.md");
@@ -108,20 +104,20 @@ class McpSearchResponseTest {
   @Test
   void resultsShouldBeImmutableDefensiveCopy() {
     List<SearchResult> mutableList = new ArrayList<>();
-    mutableList.add(new SearchResult("content", "uri", 0, 0.9, RelevanceLevel.HIGH, null));
+    mutableList.add(new SearchResult("content", "uri", 0, 0.9, null));
     var metadata = new SearchMetadata("query", 1, 1);
 
     var response = McpSearchResponse.success(mutableList, metadata);
 
     // Mutating original list should not affect response
-    mutableList.add(new SearchResult("new", "uri2", 1, 0.5, RelevanceLevel.LOW, null));
+    mutableList.add(new SearchResult("new", "uri2", 1, 0.5, null));
 
     assertThat(response.results()).hasSize(1);
   }
 
   @Test
   void searchResultShouldRejectNegativeChunkIndex() {
-    assertThatThrownBy(() -> new SearchResult("content", "uri", -1, 0.9, RelevanceLevel.HIGH, null))
+    assertThatThrownBy(() -> new SearchResult("content", "uri", -1, 0.9, null))
         .isInstanceOf(AlexandriaException.class)
         .hasMessageContaining("chunkIndex must be >= 0")
         .satisfies(
@@ -152,13 +148,34 @@ class McpSearchResponseTest {
   @ParameterizedTest
   @ValueSource(doubles = {-0.1, -1.0, 1.1, 5.0})
   void searchResultShouldRejectInvalidScore(double invalidScore) {
-    assertThatThrownBy(
-            () -> new SearchResult("content", "uri", 0, invalidScore, RelevanceLevel.HIGH, null))
+    assertThatThrownBy(() -> new SearchResult("content", "uri", 0, invalidScore, null))
         .isInstanceOf(AlexandriaException.class)
         .hasMessageContaining("score must be between 0.0 and 1.0")
         .satisfies(
             ex ->
                 assertThat(((AlexandriaException) ex).getCategory())
                     .isEqualTo(ErrorCategory.VALIDATION));
+  }
+
+  @Nested
+  class SearchResultRelevanceDerivation {
+
+    @Test
+    void shouldDeriveHighRelevanceFromHighScore() {
+      var result = new SearchResult("content", "uri", 0, 0.85, null);
+      assertThat(result.relevance()).isEqualTo(RelevanceLevel.HIGH);
+    }
+
+    @Test
+    void shouldDeriveMediumRelevanceFromMediumScore() {
+      var result = new SearchResult("content", "uri", 0, 0.7, null);
+      assertThat(result.relevance()).isEqualTo(RelevanceLevel.MEDIUM);
+    }
+
+    @Test
+    void shouldDeriveLowRelevanceFromLowScore() {
+      var result = new SearchResult("content", "uri", 0, 0.4, null);
+      assertThat(result.relevance()).isEqualTo(RelevanceLevel.LOW);
+    }
   }
 }
