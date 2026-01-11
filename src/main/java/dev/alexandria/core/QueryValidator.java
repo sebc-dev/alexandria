@@ -1,14 +1,14 @@
 package dev.alexandria.core;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /** Validates search queries to ensure they are meaningful and well-formed. */
-public class QueryValidator {
+public final class QueryValidator {
 
   private static final int MIN_CHARS = 3;
-  private static final int MIN_MEANINGFUL_TOKENS = 2;
-
+  private static final int MIN_TOKENS = 2;
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
   /** Common stopwords in English and French that don't contribute to semantic search. */
@@ -105,35 +105,40 @@ public class QueryValidator {
           "dont",
           "où");
 
+  private QueryValidator() {
+    // Utility class
+  }
+
   /**
    * Validates a search query.
    *
    * @param query the query to validate
    * @return validation result indicating if valid or the problem found
    */
-  public ValidationResult validate(final String query) {
+  @SuppressWarnings("PMD.OnlyOneReturn")
+  public static ValidationResult validate(final String query) {
     if (query == null) {
       return ValidationResult.invalid(QueryProblem.TOO_SHORT);
     }
 
-    String trimmed = query.trim();
+    final String trimmed = query.trim();
     if (trimmed.length() < MIN_CHARS) {
       return ValidationResult.invalid(QueryProblem.TOO_SHORT);
     }
 
-    String[] tokens = WHITESPACE.split(trimmed.toLowerCase());
-    long meaningfulTokens = countMeaningfulTokens(tokens);
+    final String[] tokens = WHITESPACE.split(trimmed.toLowerCase(Locale.ROOT));
+    final long meaningfulTokens = countMeaningfulTokens(tokens);
 
-    if (meaningfulTokens < MIN_MEANINGFUL_TOKENS) {
+    if (meaningfulTokens < MIN_TOKENS) {
       return ValidationResult.invalid(QueryProblem.TOO_VAGUE);
     }
 
     return ValidationResult.valid();
   }
 
-  private long countMeaningfulTokens(final String[] tokens) {
+  private static long countMeaningfulTokens(final String... tokens) {
     long count = 0;
-    for (String token : tokens) {
+    for (final String token : tokens) {
       if (!token.isEmpty() && !STOPWORDS.contains(token)) {
         count++;
       }

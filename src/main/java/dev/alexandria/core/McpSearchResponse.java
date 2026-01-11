@@ -65,9 +65,10 @@ public record McpSearchResponse(
   }
 
   /** Status of a search operation. */
+  @SuppressWarnings("PMD.ShortVariable")
   public enum SearchStatus {
     /** Search completed successfully with results. */
-    OK,
+    OK, // NOSONAR - OK is a standard HTTP/status name
     /** Search completed but some results were filtered or limited. */
     PARTIAL,
     /** Search completed but no matching results were found. */
@@ -94,6 +95,7 @@ public record McpSearchResponse(
      * @param score the relevance score (0.0 to 1.0)
      * @return the corresponding relevance level
      */
+    @SuppressWarnings("PMD.OnlyOneReturn")
     public static RelevanceLevel fromScore(final double score) {
       if (score >= HIGH_THRESHOLD) {
         return HIGH;
