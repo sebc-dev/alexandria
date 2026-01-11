@@ -17,10 +17,20 @@ public enum ErrorCategory {
     this.suggestedAction = suggestedAction;
   }
 
+  /**
+   * Returns the human-readable title for this error category.
+   *
+   * @return the title
+   */
   public String title() {
     return title;
   }
 
+  /**
+   * Returns the suggested action for the user when this error occurs.
+   *
+   * @return the suggested action
+   */
   public String suggestedAction() {
     return suggestedAction;
   }
