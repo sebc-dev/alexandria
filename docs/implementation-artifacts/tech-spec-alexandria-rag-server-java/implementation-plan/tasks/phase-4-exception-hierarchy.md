@@ -1,6 +1,6 @@
 # Phase 4: Exception Hierarchy (TDD)
 
-- [ ] **Task 8: Create ErrorCategory enum** (TDD)
+- [x] **Task 8: Create ErrorCategory enum** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/ErrorCategoryTest.java`
     - Test cases:
@@ -12,7 +12,7 @@
     - Action: Enum with 6 categories (VALIDATION, NOT_FOUND, SERVICE_UNAVAILABLE, INGESTION_FAILED, DATABASE_ERROR, TIMEOUT) with title and suggestedAction fields
   - Notes: Copy exact implementation from error-handling research
 
-- [ ] **Task 9: Create AlexandriaException base class** (TDD)
+- [x] **Task 9: Create AlexandriaException base class** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/AlexandriaExceptionTest.java`
     - Test cases:
@@ -24,7 +24,7 @@
     - Action: RuntimeException with ErrorCategory field, two constructors (with/without cause)
   - Notes: All domain exceptions extend this
 
-- [ ] **Task 10: Create specialized exceptions** (TDD)
+- [x] **Task 10: Create specialized exceptions** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/SpecializedExceptionsTest.java`
     - Test cases:
