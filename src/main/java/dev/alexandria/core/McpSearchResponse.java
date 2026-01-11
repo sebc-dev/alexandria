@@ -100,7 +100,7 @@ public record McpSearchResponse(
      */
     @SuppressWarnings("PMD.OnlyOneReturn")
     public static RelevanceLevel fromScore(final double score) {
-      if (score < 0.0 || score > 1.0) {
+      if (!Double.isFinite(score) || score < 0.0 || score > 1.0) {
         throw new AlexandriaException(
             ErrorCategory.VALIDATION, "Score must be between 0.0 and 1.0, but was: " + score);
       }
@@ -138,10 +138,11 @@ public record McpSearchResponse(
         throw new AlexandriaException(
             ErrorCategory.VALIDATION, "chunkIndex must be >= 0, but was: " + chunkIndex);
       }
-      if (score < 0.0 || score > 1.0) {
+      if (!Double.isFinite(score) || score < 0.0 || score > 1.0) {
         throw new AlexandriaException(
             ErrorCategory.VALIDATION, "score must be between 0.0 and 1.0, but was: " + score);
       }
+      relevance = RelevanceLevel.fromScore(score);
     }
   }
 
