@@ -1,6 +1,7 @@
 package dev.alexandria.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.alexandria.core.McpSearchResponse.RelevanceLevel;
 import dev.alexandria.core.McpSearchResponse.SearchMetadata;
@@ -113,5 +114,13 @@ class McpSearchResponseTest {
     mutableList.add(new SearchResult("new", "uri2", 1, 0.5, RelevanceLevel.LOW, null));
 
     assertThat(response.results()).hasSize(1);
+  }
+
+  @Test
+  void searchResultShouldRejectNegativeChunkIndex() {
+    assertThatThrownBy(
+            () -> new SearchResult("content", "uri", -1, 0.9, RelevanceLevel.HIGH, null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("chunkIndex must be >= 0");
   }
 }
