@@ -37,10 +37,24 @@ reviews:
   sequence_diagrams: true
   enable_prompt_for_ai_agents: true
 
-  # ---------------------------------------------------------------------------
-  # PATH FILTERS - Exclusions
+# ---------------------------------------------------------------------------
+  # PATH FILTERS - Inclusions ET Exclusions
   # ---------------------------------------------------------------------------
   path_filters:
+    # === INCLUSIONS (fichiers à reviewer) ===
+    - "src/**/*.java"
+    - "src/**/*.xml"
+    - "src/**/*.yml"
+    - "src/**/*.yaml"
+    - "src/**/*.sql"
+    - "src/**/*.properties"
+    - "pom.xml"
+    - ".coderabbit.yaml"
+    
+    # Scripts shell (sauf dans .claude)
+    - "**/*.sh"
+    
+    # === EXCLUSIONS ===
     # Build et génération
     - "!target/**"
     - "!build/**"
@@ -60,9 +74,8 @@ reviews:
 
     # Claude Code
     - "!.claude/**"
-    - ".claude/**.sh"
 
-    # Documentation
+    # Documentation (exclue sauf si tu veux la reviewer)
     - "!docs/**"
     
     # Dépendances
