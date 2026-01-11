@@ -30,6 +30,10 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --repo)
+            if [[ $# -lt 2 || -z "${2:-}" ]]; then
+                echo '{"error": "Missing value for --repo"}' >&2
+                exit 1
+            fi
             REPO="$2"
             shift 2
             ;;
@@ -136,17 +140,25 @@ fi
 if [[ -z "$NODE_ID" || "$NODE_ID" == "null" ]]; then
     echo "Warning: Comment $COMMENT_ID has no node_id. Attempting to fetch from GitHub..." >&2
 
+    # Validate COMMENT_ID is strictly numeric for inline comments (security)
+    if [[ ! "$COMMENT_ID" =~ ^[0-9]+$ ]]; then
+        jq -n --arg error "Inline comment ID must be numeric" --arg id "$COMMENT_ID" \
+            '{error: $error, comment_id: $id}' >&2
+        exit 1
+    fi
+
     # Try to fetch node_id from GitHub REST API
-    NUMERIC_ID=$(echo "$COMMENT_ID" | grep -oE '[0-9]+' | head -1)
-    COMMENT_JSON=$(gh api "repos/$REPO/pulls/comments/$NUMERIC_ID" 2>/dev/null) || {
-        echo "{\"error\": \"Failed to fetch comment from GitHub\"}" >&2
+    COMMENT_JSON=$(gh api "repos/$REPO/pulls/comments/$COMMENT_ID" 2>/dev/null) || {
+        jq -n --arg error "Failed to fetch comment from GitHub" \
+            '{error: $error}' >&2
         exit 2
     }
 
     NODE_ID=$(echo "$COMMENT_JSON" | jq -r '.node_id // ""')
 
     if [[ -z "$NODE_ID" || "$NODE_ID" == "null" ]]; then
-        echo "{\"error\": \"Could not get node_id for comment $COMMENT_ID\"}" >&2
+        jq -n --arg error "Could not get node_id for comment" --arg id "$COMMENT_ID" \
+            '{error: $error, comment_id: $id}' >&2
         exit 2
     fi
 
@@ -175,7 +187,8 @@ query GetThreadFromComment($nodeId: ID!) {
 echo "Fetching thread for comment $COMMENT_ID (node_id: $NODE_ID)..." >&2
 
 THREAD_RESULT=$(gh api graphql -f query="$GRAPHQL_QUERY" -f nodeId="$NODE_ID" 2>&1) || {
-    echo "{\"error\": \"GraphQL query failed: $THREAD_RESULT\"}" >&2
+    jq -n --arg error "GraphQL query failed" --arg details "$THREAD_RESULT" \
+        '{error: $error, details: $details}' >&2
     exit 2
 }
 
@@ -184,7 +197,8 @@ IS_RESOLVED=$(echo "$THREAD_RESULT" | jq -r '.data.node.pullRequestReviewThread.
 CAN_RESOLVE=$(echo "$THREAD_RESULT" | jq -r '.data.node.pullRequestReviewThread.viewerCanResolve // false')
 
 if [[ -z "$THREAD_ID" || "$THREAD_ID" == "null" ]]; then
-    echo "{\"error\": \"Could not find thread for comment. Response: $THREAD_RESULT\"}" >&2
+    jq -n --arg error "Could not find thread for comment" --arg response "$THREAD_RESULT" \
+        '{error: $error, response: $response}' >&2
     exit 2
 fi
 
@@ -192,8 +206,14 @@ fi
 if [[ "$IS_RESOLVED" == "true" ]]; then
     TIMESTAMP=$(date -Iseconds)
 
-    # Update our database to reflect GitHub state
-    sqlite3 "$DB_PATH" "UPDATE analyses SET resolved_at = '$TIMESTAMP', resolved_by = 'github' WHERE comment_id = '$COMMENT_ID';" 2>/dev/null || true
+    # Update our database to reflect GitHub state (use UPSERT for robustness)
+    sqlite3 "$DB_PATH" "
+        INSERT INTO analyses (comment_id, decision, resolved_at, resolved_by)
+        VALUES ('$COMMENT_ID_ESC', 'SKIP', '$TIMESTAMP', 'github')
+        ON CONFLICT(comment_id) DO UPDATE SET
+            resolved_at = excluded.resolved_at,
+            resolved_by = excluded.resolved_by;
+    " 2>/dev/null || true
 
     jq -n \
         --arg comment_id "$COMMENT_ID" \
@@ -245,9 +265,10 @@ RESOLVE_RESULT=$(gh api graphql -f query="$RESOLVE_MUTATION" -f threadId="$THREA
 
     # Log error event
     sqlite3 "$DB_PATH" "INSERT INTO events (pr_id, comment_id, event_type, event_subtype, error_message)
-        VALUES ($PR_ID, '$COMMENT_ID', 'error', 'resolve_thread', '$(escape_sql "$ERROR_MSG")');" 2>/dev/null || true
+        VALUES ($PR_ID, '$COMMENT_ID_ESC', 'error', 'resolve_thread', '$(escape_sql "$ERROR_MSG")');" 2>/dev/null || true
 
-    echo "{\"error\": \"Failed to resolve thread: $ERROR_MSG\"}" >&2
+    jq -n --arg error "Failed to resolve thread" --arg details "$ERROR_MSG" \
+        '{error: $error, details: $details}' >&2
     exit 2
 }
 
@@ -256,12 +277,19 @@ NEW_IS_RESOLVED=$(echo "$RESOLVE_RESULT" | jq -r '.data.resolveReviewThread.thre
 if [[ "$NEW_IS_RESOLVED" == "true" ]]; then
     TIMESTAMP=$(date -Iseconds)
 
-    # Update database
-    sqlite3 "$DB_PATH" "UPDATE analyses SET resolved_at = '$TIMESTAMP', resolved_by = 'auto' WHERE comment_id = '$COMMENT_ID';" 2>/dev/null || true
+    # Update database (use UPSERT for robustness - row may not exist)
+    sqlite3 "$DB_PATH" "
+        INSERT INTO analyses (comment_id, decision, resolved_at, resolved_by)
+        VALUES ('$COMMENT_ID_ESC', 'SKIP', '$TIMESTAMP', 'auto')
+        ON CONFLICT(comment_id) DO UPDATE SET
+            resolved_at = excluded.resolved_at,
+            resolved_by = excluded.resolved_by;
+    " 2>/dev/null || true
 
     # Log success event
+    THREAD_ID_ESC=$(escape_sql "$THREAD_ID")
     sqlite3 "$DB_PATH" "INSERT INTO events (pr_id, comment_id, event_type, event_subtype, event_data)
-        VALUES ($PR_ID, '$COMMENT_ID', 'reply', 'resolve_thread', '{\"thread_id\": \"$THREAD_ID\"}');" 2>/dev/null || true
+        VALUES ($PR_ID, '$COMMENT_ID_ESC', 'reply', 'resolve_thread', '{\"thread_id\": \"$THREAD_ID_ESC\"}');" 2>/dev/null || true
 
     jq -n \
         --arg comment_id "$COMMENT_ID" \
