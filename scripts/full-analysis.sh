@@ -65,9 +65,9 @@ START_TIME=$(date +%s)
 
 # Compteur d'étapes
 if [ "$SKIP_PIT" = true ]; then
-    TOTAL_STEPS=5
-else
     TOTAL_STEPS=6
+else
+    TOTAL_STEPS=7
 fi
 CURRENT_STEP=0
 
@@ -77,7 +77,20 @@ next_step() {
 }
 
 # ============================================================
-# Étape 1: Compilation avec Error Prone
+# Étape 1: Vérification du formatage (Spotless)
+# ============================================================
+next_step "Checking code formatting (Spotless)..."
+if mvn spotless:check $MVN_QUIET; then
+    echo -e "${GREEN}  ✓ Formatting OK${NC}"
+else
+    echo -e "${RED}❌ Formatting violations found${NC}"
+    echo ""
+    echo "Run 'mvn spotless:apply' or 'make format' to fix."
+    exit 1
+fi
+
+# ============================================================
+# Étape 2: Compilation avec Error Prone
 # ============================================================
 next_step "Compiling with Error Prone..."
 if mvn clean compile -Perror-prone $MVN_QUIET; then
@@ -90,7 +103,7 @@ else
 fi
 
 # ============================================================
-# Étape 2: Tests unitaires
+# Étape 3: Tests unitaires
 # ============================================================
 next_step "Running unit tests..."
 if mvn test -Dtest='!**/*IT.java' $MVN_QUIET; then
@@ -103,7 +116,7 @@ else
 fi
 
 # ============================================================
-# Étape 3: PMD + CPD (Copy-Paste Detection)
+# Étape 4: PMD + CPD (Copy-Paste Detection)
 # ============================================================
 next_step "Running PMD analysis..."
 if mvn pmd:check pmd:cpd-check $MVN_QUIET; then
@@ -116,7 +129,7 @@ else
 fi
 
 # ============================================================
-# Étape 4: SpotBugs
+# Étape 5: SpotBugs
 # ============================================================
 next_step "Running SpotBugs..."
 if mvn spotbugs:check $MVN_QUIET; then
@@ -129,7 +142,7 @@ else
 fi
 
 # ============================================================
-# Étape 5: Checkstyle
+# Étape 6: Checkstyle
 # ============================================================
 next_step "Running Checkstyle..."
 if mvn checkstyle:check $MVN_QUIET; then
@@ -142,7 +155,7 @@ else
 fi
 
 # ============================================================
-# Étape 6: Mutation Testing (PIT) - Optionnel
+# Étape 7: Mutation Testing (PIT) - Optionnel
 # ============================================================
 if [ "$SKIP_PIT" = false ]; then
     next_step "Running PIT Mutation Testing..."
