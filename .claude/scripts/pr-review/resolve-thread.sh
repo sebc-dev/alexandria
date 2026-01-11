@@ -89,14 +89,17 @@ if [[ ! -f "$DB_PATH" ]]; then
     exit 3
 fi
 
+# Escape comment ID for SQL (prevents injection from user input)
+COMMENT_ID_ESC=$(escape_sql "$COMMENT_ID")
+
 # Get comment info from database
 COMMENT_DATA=$(sqlite3 -json "$DB_PATH" "
-SELECT c.id, c.node_id, c.source, c.pr_id, c.file_path, c.line_number, p.pr_number,
+SELECT c.id, c.node_id, c.source, c.pr_id, c.file_path, c.line_number,
        a.decision, a.resolved_at
 FROM comments c
 JOIN prs p ON c.pr_id = p.id
 LEFT JOIN analyses a ON c.id = a.comment_id
-WHERE c.id = '$COMMENT_ID';
+WHERE c.id = '$COMMENT_ID_ESC';
 " 2>/dev/null)
 
 if [[ -z "$COMMENT_DATA" ]] || [[ "$COMMENT_DATA" == "[]" ]]; then
@@ -107,7 +110,6 @@ fi
 SOURCE=$(echo "$COMMENT_DATA" | jq -r '.[0].source')
 NODE_ID=$(echo "$COMMENT_DATA" | jq -r '.[0].node_id // ""')
 PR_ID=$(echo "$COMMENT_DATA" | jq -r '.[0].pr_id')
-PR_NUMBER=$(echo "$COMMENT_DATA" | jq -r '.[0].pr_number')
 FILE_PATH=$(echo "$COMMENT_DATA" | jq -r '.[0].file_path // ""')
 DECISION=$(echo "$COMMENT_DATA" | jq -r '.[0].decision // ""')
 ALREADY_RESOLVED=$(echo "$COMMENT_DATA" | jq -r '.[0].resolved_at // ""')
@@ -148,8 +150,9 @@ if [[ -z "$NODE_ID" || "$NODE_ID" == "null" ]]; then
         exit 2
     fi
 
-    # Update node_id in database
-    sqlite3 "$DB_PATH" "UPDATE comments SET node_id = '$NODE_ID' WHERE id = '$COMMENT_ID';" 2>/dev/null || true
+    # Update node_id in database (escape for defense in depth)
+    NODE_ID_ESC=$(escape_sql "$NODE_ID")
+    sqlite3 "$DB_PATH" "UPDATE comments SET node_id = '$NODE_ID_ESC' WHERE id = '$COMMENT_ID_ESC';" 2>/dev/null || true
     echo "  Updated node_id in database: $NODE_ID" >&2
 fi
 
