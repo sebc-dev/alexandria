@@ -1,6 +1,6 @@
 # Phase 5: Core Entities (TDD)
 
-- [ ] **Task 11: Create ChunkMetadata record** (TDD)
+- [x] **Task 11: Create ChunkMetadata record** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/ChunkMetadataTest.java`
     - Test cases:
@@ -14,7 +14,7 @@
     - Action: Record with 10 fields (sourceUri, documentHash, chunkIndex, breadcrumbs, documentTitle, contentHash, createdAt, documentType, fileSize, fileModifiedAt) + static helper methods
   - Notes: computeHash uses NFKC normalization + SHA-256. F4 Remediation: fileSize + fileModifiedAt for two-phase change detection
 
-- [ ] **Task 12: Create QueryValidator** (TDD)
+- [x] **Task 12: Create QueryValidator** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/QueryValidatorTest.java`
     - Test cases (parameterized):
@@ -29,7 +29,7 @@
     - Action: Validation class with MIN_CHARS=3, MIN_MEANINGFUL_TOKENS=2, STOPWORDS set (EN + FR). Returns ValidationResult record with QueryProblem enum
   - Notes: F16 Remediation - Include French stopwords
 
-- [ ] **Task 13: Create McpSearchResponse** (TDD)
+- [x] **Task 13: Create McpSearchResponse** (TDD)
   - **RED**:
     - Test file: `src/test/java/dev/alexandria/core/McpSearchResponseTest.java`
     - Test cases:
@@ -42,3 +42,9 @@
     - File: `src/main/java/dev/alexandria/core/McpSearchResponse.java`
     - Action: Record with results list + SearchMetadata. Include nested records: SearchResult, SearchMetadata. Enums: SearchStatus, RelevanceLevel. Factory methods: success, partial, noResults, error
   - Notes: This is the contract for all search responses
+
+## Review Notes
+- Adversarial review completed
+- Findings: 13 total, 5 fixed (HIGH priority), 8 skipped (noise/design decisions)
+- Resolution approach: auto-fix
+- Fixes applied: null-safety, record validation, whitespace validation, chunkIndex field, defensive copy
