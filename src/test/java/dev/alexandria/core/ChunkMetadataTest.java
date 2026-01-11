@@ -70,11 +70,11 @@ class ChunkMetadataTest {
   @Test
   void computeHashShouldNormalizeUnicode() {
     // U+00E9 (é as single code point) vs U+0065 U+0301 (e + combining acute accent)
-    String eAccentSingle = "\u00e9"; // é
-    String eAccentCombined = "e\u0301"; // e + ́
+    String accentSingle = "\u00e9"; // é
+    String accentCombined = "e\u0301"; // e + ́
 
-    String hash1 = ChunkMetadata.computeHash(eAccentSingle);
-    String hash2 = ChunkMetadata.computeHash(eAccentCombined);
+    String hash1 = ChunkMetadata.computeHash(accentSingle);
+    String hash2 = ChunkMetadata.computeHash(accentCombined);
 
     assertThat(hash1)
         .as("NFKC normalization should make equivalent Unicode sequences produce same hash")
