@@ -85,7 +85,7 @@ if mvn spotless:check $MVN_QUIET; then
 else
     echo -e "${RED}❌ Formatting violations found${NC}"
     echo ""
-    echo "Run 'mvn spotless:apply' or 'make format' to fix."
+    echo "Run 'mvn spotless:apply' to fix."
     exit 1
 fi
 
