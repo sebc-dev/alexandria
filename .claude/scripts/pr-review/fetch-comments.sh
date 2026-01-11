@@ -211,12 +211,17 @@ upsert_comment() {
     fi
 
     # Escape strings (declare and assign separately to not mask exit codes)
-    local body_esc diff_hunk_esc file_path_esc github_url_esc node_id_sql
+    local body_esc diff_hunk_esc file_path_esc github_url_esc node_id_sql node_id_esc
     body_esc=$(escape_sql "$body")
     diff_hunk_esc=$(escape_sql "$diff_hunk")
     file_path_esc=$(escape_sql "$file_path")
     github_url_esc=$(escape_sql "$github_url")
-    [[ -z "$node_id" || "$node_id" == "null" ]] && node_id_sql="NULL" || node_id_sql="'$node_id'"
+    if [[ -z "$node_id" || "$node_id" == "null" ]]; then
+        node_id_sql="NULL"
+    else
+        node_id_esc=$(escape_sql "$node_id")
+        node_id_sql="'$node_id_esc'"
+    fi
 
     # Handle NULL values
     [[ -z "$review_id" ]] && review_id="NULL" || review_id="'$review_id'"
