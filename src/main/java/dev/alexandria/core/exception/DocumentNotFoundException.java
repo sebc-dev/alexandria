@@ -6,6 +6,11 @@ import org.springframework.lang.NonNull;
 /** Thrown when a requested document cannot be found. */
 public class DocumentNotFoundException extends AlexandriaException {
 
+  /**
+   * Creates a document not found exception.
+   *
+   * @param documentId the ID of the document that was not found
+   */
   public DocumentNotFoundException(@NonNull String documentId) {
     super(
         ErrorCategory.NOT_FOUND,
