@@ -123,7 +123,15 @@ public record McpSearchResponse(
       int chunkIndex,
       double score,
       RelevanceLevel relevance,
-      String breadcrumbs) {}
+      String breadcrumbs) {
+
+    /** Compact constructor with validation. */
+    public SearchResult {
+      if (chunkIndex < 0) {
+        throw new IllegalArgumentException("chunkIndex must be >= 0");
+      }
+    }
+  }
 
   /**
    * Metadata about a search query and its results.
