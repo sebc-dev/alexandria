@@ -1,7 +1,7 @@
 package dev.alexandria.core.exception;
 
 /** Categorizes errors for consistent error handling and user messaging. */
-@SuppressWarnings({"PMD.LongVariable", "PMD.AvoidFieldNameMatchingMethodName"})
+@SuppressWarnings("PMD.LongVariable")
 public enum ErrorCategory {
   VALIDATION("Validation Error", "Check your query and try again"),
   NOT_FOUND("Not Found", "The requested resource doesn't exist"),
