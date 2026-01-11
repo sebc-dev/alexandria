@@ -78,6 +78,21 @@ Pour chaque reponse generee:
 
 En mode `--dry-run`, affiche ce qui serait poste sans le faire.
 
+### 3b. Resoudre les threads (REJECT/DUPLICATE)
+
+Apres avoir poste une reponse pour un commentaire REJECT ou DUPLICATE, resoudre le thread GitHub automatiquement:
+
+```bash
+# Pour les decisions REJECT et DUPLICATE, resoudre le thread
+if [[ "$DECISION" == "REJECT" ]] || [[ "$DECISION" == "DUPLICATE" ]]; then
+    .claude/scripts/pr-review/resolve-thread.sh "$COMMENT_ID" [--dry-run]
+fi
+```
+
+Cela rend la PR plus lisible en masquant les faux positifs et doublons resolus.
+
+**Note:** Seuls les commentaires `inline` (review comments) peuvent etre resolus. Les `review_body` et `issue_comment` n'ont pas de threads resolubles.
+
 ### 4. Afficher le resultat
 
 ```
@@ -87,15 +102,17 @@ En mode `--dry-run`, affiche ce qui serait poste sans le faire.
 - Posted: 18
 - Skipped: 5 (already replied or SKIP decision)
 - Failed: 0
+- Threads Resolved: 8 (REJECT/DUPLICATE)
 
 ### Details
 
-| Comment | Decision | Status |
-|---------|----------|--------|
-| #2673846370 | ACCEPT | Posted |
-| #2673846371 | REJECT | Posted |
-| #2673846372 | DEFER | Posted (Issue #12) |
-| ... | ... | ... |
+| Comment | Decision | Status | Thread |
+|---------|----------|--------|--------|
+| #2673846370 | ACCEPT | Posted | - |
+| #2673846371 | REJECT | Posted | Resolved |
+| #2673846372 | DEFER | Posted (Issue #12) | - |
+| #2673846373 | DUPLICATE | Posted | Resolved |
+| ... | ... | ... | ... |
 ```
 
 ## Mode Dry-Run
@@ -116,7 +133,7 @@ En `--dry-run`, afficher un apercu:
 
 ---
 
-**Comment #2673846371** (coderabbitai[bot])
+**Comment #2673846371** (coderabbitai[bot]) [REJECT - Would resolve thread]
 > Utiliser Optional.orElseThrow()...
 
 **Reply:**
@@ -126,7 +143,16 @@ En `--dry-run`, afficher un apercu:
 
 ---
 
+**Comment #2673846373** (coderabbitai[bot]) [DUPLICATE - Would resolve thread]
+> Code smell detecte...
+
+**Reply:**
+> Duplicata du commentaire #2673846370. Voir la reponse sur ce commentaire.
+
+---
+
 Total: 18 replies would be posted.
+Threads to resolve: 8 (REJECT/DUPLICATE)
 Run without --dry-run to post.
 ```
 
@@ -135,3 +161,8 @@ Run without --dry-run to post.
 - Si post echoue: logger l'erreur, continuer avec les autres
 - Rate limit GitHub: backoff exponentiel
 - Reponse deja postee: skip silencieusement
+- Thread resolution:
+  - Si le thread est deja resolu: skip silencieusement
+  - Si le commentaire n'est pas `inline`: skip (non resolvable)
+  - Si l'utilisateur n'a pas les droits: logger warning, continuer
+  - Si la resolution echoue: logger l'erreur, continuer avec les autres
