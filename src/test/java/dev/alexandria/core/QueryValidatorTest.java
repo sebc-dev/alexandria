@@ -10,12 +10,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class QueryValidatorTest {
 
-  private final QueryValidator validator = new QueryValidator();
-
   @ParameterizedTest
   @ValueSource(strings = {"ab", "a", "", "   ", "  "})
   void shouldRejectTooShortQuery(String query) {
-    ValidationResult result = validator.validate(query);
+    ValidationResult result = QueryValidator.validate(query);
 
     assertThat(result.isValid()).isFalse();
     assertThat(result.problem()).isEqualTo(QueryProblem.TOO_SHORT);
@@ -24,7 +22,7 @@ class QueryValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"the a an", "a the an", "an a"})
   void shouldRejectStopwordsOnlyEnglish(String query) {
-    ValidationResult result = validator.validate(query);
+    ValidationResult result = QueryValidator.validate(query);
 
     assertThat(result.isValid()).isFalse();
     assertThat(result.problem()).isEqualTo(QueryProblem.TOO_VAGUE);
@@ -33,7 +31,7 @@ class QueryValidatorTest {
   @ParameterizedTest
   @ValueSource(strings = {"le la les", "un une des", "du de la"})
   void shouldRejectStopwordsOnlyFrench(String query) {
-    ValidationResult result = validator.validate(query);
+    ValidationResult result = QueryValidator.validate(query);
 
     assertThat(result.isValid()).isFalse();
     assertThat(result.problem()).isEqualTo(QueryProblem.TOO_VAGUE);
@@ -41,7 +39,7 @@ class QueryValidatorTest {
 
   @Test
   void shouldAcceptValidQuery() {
-    ValidationResult result = validator.validate("how to configure PostgreSQL");
+    ValidationResult result = QueryValidator.validate("how to configure PostgreSQL");
 
     assertThat(result.isValid()).isTrue();
     assertThat(result.problem()).isNull();
@@ -49,7 +47,7 @@ class QueryValidatorTest {
 
   @Test
   void shouldAcceptMinimalValidQuery() {
-    ValidationResult result = validator.validate("PostgreSQL config");
+    ValidationResult result = QueryValidator.validate("PostgreSQL config");
 
     assertThat(result.isValid()).isTrue();
     assertThat(result.problem()).isNull();
@@ -57,7 +55,7 @@ class QueryValidatorTest {
 
   @Test
   void shouldRejectNullQuery() {
-    ValidationResult result = validator.validate(null);
+    ValidationResult result = QueryValidator.validate(null);
 
     assertThat(result.isValid()).isFalse();
     assertThat(result.problem()).isEqualTo(QueryProblem.TOO_SHORT);
@@ -65,7 +63,7 @@ class QueryValidatorTest {
 
   @Test
   void shouldAcceptQueryWithMixedStopwordsAndMeaningfulWords() {
-    ValidationResult result = validator.validate("the PostgreSQL configuration guide");
+    ValidationResult result = QueryValidator.validate("the PostgreSQL configuration guide");
 
     assertThat(result.isValid()).isTrue();
     assertThat(result.problem()).isNull();

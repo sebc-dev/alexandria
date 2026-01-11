@@ -67,10 +67,10 @@ public record ChunkMetadata(
     if (content == null) {
       throw new IllegalArgumentException("Content cannot be null");
     }
-    String normalized = Normalizer.normalize(content, Normalizer.Form.NFKC);
+    final String normalized = Normalizer.normalize(content, Normalizer.Form.NFKC);
     try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hashBytes = digest.digest(normalized.getBytes(StandardCharsets.UTF_8));
+      final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      final byte[] hashBytes = digest.digest(normalized.getBytes(StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(hashBytes);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 algorithm not available", e);
