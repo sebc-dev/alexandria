@@ -87,7 +87,7 @@ class AlexandriaExceptionTest {
   void hashCodeShouldBeConsistentWithEquals() {
     var ex1 = new AlexandriaException(ErrorCategory.VALIDATION, "msg");
     var ex2 = new AlexandriaException(ErrorCategory.VALIDATION, "msg");
-    assertThat(ex1.hashCode()).isEqualTo(ex2.hashCode());
+    assertThat(ex1).hasSameHashCodeAs(ex2);
   }
 
   @Test
