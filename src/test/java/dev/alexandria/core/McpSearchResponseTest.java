@@ -118,8 +118,7 @@ class McpSearchResponseTest {
 
   @Test
   void searchResultShouldRejectNegativeChunkIndex() {
-    assertThatThrownBy(
-            () -> new SearchResult("content", "uri", -1, 0.9, RelevanceLevel.HIGH, null))
+    assertThatThrownBy(() -> new SearchResult("content", "uri", -1, 0.9, RelevanceLevel.HIGH, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("chunkIndex must be >= 0");
   }
