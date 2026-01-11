@@ -1,5 +1,7 @@
 package dev.alexandria.core;
 
+import dev.alexandria.core.exception.AlexandriaException;
+import dev.alexandria.core.exception.ErrorCategory;
 import java.util.List;
 
 /**
@@ -90,13 +92,18 @@ public record McpSearchResponse(
     private static final double MEDIUM_THRESHOLD = 0.6;
 
     /**
-     * Détermine le niveau de pertinence correspondant à un score (échelle 0.0–1.0).
+     * Determines the relevance level corresponding to a score (scale 0.0–1.0).
      *
-     * @param score le score de pertinence, attendu entre 0.0 et 1.0
-     * @return `HIGH` si le score est >= 0.8, `MEDIUM` si le score est >= 0.6 et < 0.8, `LOW` sinon
+     * @param score the relevance score, must be between 0.0 and 1.0 inclusive
+     * @return HIGH if score >= 0.8, MEDIUM if score >= 0.6 and < 0.8, LOW otherwise
+     * @throws AlexandriaException if score is outside the valid range [0.0, 1.0]
      */
     @SuppressWarnings("PMD.OnlyOneReturn")
     public static RelevanceLevel fromScore(final double score) {
+      if (score < 0.0 || score > 1.0) {
+        throw new AlexandriaException(
+            ErrorCategory.VALIDATION, "Score must be between 0.0 and 1.0, but was: " + score);
+      }
       if (score >= HIGH_THRESHOLD) {
         return HIGH;
       } else if (score >= MEDIUM_THRESHOLD) {
@@ -128,7 +135,8 @@ public record McpSearchResponse(
     /** Compact constructor with validation. */
     public SearchResult {
       if (chunkIndex < 0) {
-        throw new IllegalArgumentException("chunkIndex must be >= 0");
+        throw new AlexandriaException(
+            ErrorCategory.VALIDATION, "chunkIndex must be >= 0, but was: " + chunkIndex);
       }
     }
   }
