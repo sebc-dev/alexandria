@@ -138,6 +138,10 @@ public record McpSearchResponse(
         throw new AlexandriaException(
             ErrorCategory.VALIDATION, "chunkIndex must be >= 0, but was: " + chunkIndex);
       }
+      if (score < 0.0 || score > 1.0) {
+        throw new AlexandriaException(
+            ErrorCategory.VALIDATION, "score must be between 0.0 and 1.0, but was: " + score);
+      }
     }
   }
 

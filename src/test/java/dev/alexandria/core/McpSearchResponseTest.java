@@ -148,4 +148,17 @@ class McpSearchResponseTest {
     RelevanceLevel level = RelevanceLevel.fromScore(validScore);
     assertThat(level).isNotNull();
   }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {-0.1, -1.0, 1.1, 5.0})
+  void searchResultShouldRejectInvalidScore(double invalidScore) {
+    assertThatThrownBy(
+            () -> new SearchResult("content", "uri", 0, invalidScore, RelevanceLevel.HIGH, null))
+        .isInstanceOf(AlexandriaException.class)
+        .hasMessageContaining("score must be between 0.0 and 1.0")
+        .satisfies(
+            ex ->
+                assertThat(((AlexandriaException) ex).getCategory())
+                    .isEqualTo(ErrorCategory.VALIDATION));
+  }
 }
