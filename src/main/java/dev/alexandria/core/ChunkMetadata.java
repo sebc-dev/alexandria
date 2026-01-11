@@ -47,21 +47,22 @@ public record ChunkMetadata(
   }
 
   /**
-   * Creates a logical URI combining the source URI with the chunk index. Useful for referencing a
-   * specific chunk within a document.
+   * Construit une URI logique identifiant ce chunk du document.
    *
-   * @return the logical URI in format "sourceUri#chunk-N"
+   * @return l'URI logique au format "sourceUri#chunk-N", où N est l'index du chunk
    */
   public String toLogicalUri() {
     return sourceUri + "#chunk-" + chunkIndex;
   }
 
   /**
-   * Computes a deterministic SHA-256 hash of the given content. Uses NFKC Unicode normalization to
-   * ensure equivalent Unicode sequences produce the same hash.
+   * Calcule un hachage SHA‑256 déterministe d'une chaîne après normalisation Unicode NFKC.
+   * La normalisation NFKC garantit que des séquences Unicode équivalentes produisent le même hachage.
    *
-   * @param content the content to hash
-   * @return lowercase hexadecimal representation of the SHA-256 hash
+   * @param content la chaîne à hacher ; ne peut pas être null
+   * @return la représentation hexadécimale en minuscules du hachage SHA‑256
+   * @throws IllegalArgumentException si {@code content} est null
+   * @throws IllegalStateException si l'algorithme SHA‑256 n'est pas disponible
    */
   public static String computeHash(final String content) {
     if (content == null) {

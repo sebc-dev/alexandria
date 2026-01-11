@@ -105,15 +105,18 @@ public final class QueryValidator {
           "dont",
           "où");
 
+  /**
+   * Empêche l'instanciation de cette classe utilitaire.
+   */
   private QueryValidator() {
     // Utility class
   }
 
   /**
-   * Validates a search query.
+   * Vérifie qu'une requête de recherche contient au moins le nombre minimal de caractères et suffisamment de tokens significatifs.
    *
-   * @param query the query to validate
-   * @return validation result indicating if valid or the problem found
+   * @param query la requête à valider ; `null` est considéré comme trop courte et produit le problème `TOO_SHORT`
+   * @return un ValidationResult indiquant si la requête est valide ; si invalide, le champ `problem` vaut `TOO_SHORT` ou `TOO_VAGUE`
    */
   @SuppressWarnings("PMD.OnlyOneReturn")
   public static ValidationResult validate(final String query) {
@@ -136,6 +139,12 @@ public final class QueryValidator {
     return ValidationResult.valid();
   }
 
+  /**
+   * Compte le nombre de tokens significatifs dans le tableau fourni.
+   *
+   * @param tokens le tableau de tokens à évaluer
+   * @return le nombre de tokens qui sont non vides et qui ne figurent pas dans {@code STOPWORDS}
+   */
   private static long countMeaningfulTokens(final String... tokens) {
     long count = 0;
     for (final String token : tokens) {
@@ -162,12 +171,21 @@ public final class QueryValidator {
    */
   public record ValidationResult(boolean isValid, QueryProblem problem) {
 
-    /** Creates a valid result. */
+    /**
+     * Crée un objet ValidationResult représentant une validation réussie.
+     *
+     * @return une ValidationResult indiquant que la requête est valide (isValid = true, problem = null)
+     */
     public static ValidationResult valid() {
       return new ValidationResult(true, null);
     }
 
-    /** Creates an invalid result with the specified problem. */
+    /**
+     * Construit un ValidationResult indiquant que la requête est invalide pour le problème fourni.
+     *
+     * @param problem le motif d'invalidité associé au résultat
+     * @return un ValidationResult dont `isValid` vaut `false` et `problem` vaut la valeur fournie
+     */
     public static ValidationResult invalid(final QueryProblem problem) {
       return new ValidationResult(false, problem);
     }
