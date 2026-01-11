@@ -104,7 +104,15 @@ class ChunkMetadataTest {
     assertThatThrownBy(
             () ->
                 new ChunkMetadata(
-                    null, "hash", 0, "breadcrumbs", "title", "content", Instant.now(), "md", 100L,
+                    null,
+                    "hash",
+                    0,
+                    "breadcrumbs",
+                    "title",
+                    "content",
+                    Instant.now(),
+                    "md",
+                    100L,
                     Instant.now()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("sourceUri cannot be null or blank");
@@ -115,8 +123,16 @@ class ChunkMetadataTest {
     assertThatThrownBy(
             () ->
                 new ChunkMetadata(
-                    "file:///test.md", "hash", -1, "breadcrumbs", "title", "content", Instant.now(),
-                    "md", 100L, Instant.now()))
+                    "file:///test.md",
+                    "hash",
+                    -1,
+                    "breadcrumbs",
+                    "title",
+                    "content",
+                    Instant.now(),
+                    "md",
+                    100L,
+                    Instant.now()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("chunkIndex must be >= 0");
   }
@@ -126,8 +142,16 @@ class ChunkMetadataTest {
     assertThatThrownBy(
             () ->
                 new ChunkMetadata(
-                    "file:///test.md", "hash", 0, "breadcrumbs", "title", "content", Instant.now(),
-                    "md", -1L, Instant.now()))
+                    "file:///test.md",
+                    "hash",
+                    0,
+                    "breadcrumbs",
+                    "title",
+                    "content",
+                    Instant.now(),
+                    "md",
+                    -1L,
+                    Instant.now()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("fileSize must be >= 0");
   }
