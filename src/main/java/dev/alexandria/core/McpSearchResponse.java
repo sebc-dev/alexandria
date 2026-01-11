@@ -20,11 +20,11 @@ public record McpSearchResponse(
   }
 
   /**
-   * Construit une réponse de recherche indiquant un succès contenant les résultats fournis.
+   * Creates a successful search response containing the provided results.
    *
-   * @param results la liste des résultats de recherche à inclure dans la réponse
-   * @param metadata les métadonnées associées à la recherche
-   * @return une instance de McpSearchResponse avec le statut OK et sans message
+   * @param results the list of search results to include in the response
+   * @param metadata the metadata associated with the search
+   * @return a McpSearchResponse instance with OK status and no message
    */
   public static McpSearchResponse success(
       final List<SearchResult> results, final SearchMetadata metadata) {
@@ -32,12 +32,12 @@ public record McpSearchResponse(
   }
 
   /**
-   * Construit une réponse partielle indiquant que certains résultats ont été filtrés ou limités.
+   * Creates a partial response indicating some results were filtered or limited.
    *
-   * @param results la liste des résultats de recherche à inclure dans la réponse
-   * @param metadata les métadonnées associées à la recherche
-   * @param message message expliquant pourquoi les résultats sont partiels
-   * @return une instance de {@code McpSearchResponse} ayant le statut {@code PARTIAL} et le message fourni
+   * @param results the list of search results to include in the response
+   * @param metadata the metadata associated with the search
+   * @param message explanation of why results are partial
+   * @return a McpSearchResponse instance with PARTIAL status and the provided message
    */
   public static McpSearchResponse partial(
       final List<SearchResult> results, final SearchMetadata metadata, final String message) {
@@ -45,20 +45,20 @@ public record McpSearchResponse(
   }
 
   /**
-   * Construit une réponse indiquant qu'aucun résultat n'a été trouvé pour la recherche.
+   * Creates a response indicating no results were found for the search.
    *
-   * @param metadata métadonnées de la recherche (requête et compteurs)
-   * @return une instance de McpSearchResponse avec le statut NO_RESULTS, une liste de résultats vide et sans message
+   * @param metadata search metadata (query and counters)
+   * @return a McpSearchResponse instance with NO_RESULTS status, empty results list, and no message
    */
   public static McpSearchResponse noResults(final SearchMetadata metadata) {
     return new McpSearchResponse(SearchStatus.NO_RESULTS, List.of(), metadata, null);
   }
 
   /**
-   * Crée une réponse de recherche indiquant une erreur et contenant un message contextuel.
+   * Creates a search response indicating an error with a contextual message.
    *
-   * @param message le message d'erreur à inclure dans la réponse
-   * @return une instance de McpSearchResponse avec le statut ERROR et le message fourni
+   * @param message the error message to include in the response
+   * @return a McpSearchResponse instance with ERROR status and the provided message
    */
   public static McpSearchResponse error(final String message) {
     return new McpSearchResponse(SearchStatus.ERROR, List.of(), null, message);
