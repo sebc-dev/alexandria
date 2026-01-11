@@ -7,11 +7,14 @@ import dev.alexandria.core.McpSearchResponse.RelevanceLevel;
 import dev.alexandria.core.McpSearchResponse.SearchMetadata;
 import dev.alexandria.core.McpSearchResponse.SearchResult;
 import dev.alexandria.core.McpSearchResponse.SearchStatus;
+import dev.alexandria.core.exception.AlexandriaException;
+import dev.alexandria.core.exception.ErrorCategory;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class McpSearchResponseTest {
 
@@ -119,7 +122,30 @@ class McpSearchResponseTest {
   @Test
   void searchResultShouldRejectNegativeChunkIndex() {
     assertThatThrownBy(() -> new SearchResult("content", "uri", -1, 0.9, RelevanceLevel.HIGH, null))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("chunkIndex must be >= 0");
+        .isInstanceOf(AlexandriaException.class)
+        .hasMessageContaining("chunkIndex must be >= 0")
+        .satisfies(
+            ex ->
+                assertThat(((AlexandriaException) ex).getCategory())
+                    .isEqualTo(ErrorCategory.VALIDATION));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {-0.1, -1.0, 1.1, 2.0, Double.MAX_VALUE, Double.NEGATIVE_INFINITY})
+  void fromScoreShouldRejectInvalidScores(double invalidScore) {
+    assertThatThrownBy(() -> RelevanceLevel.fromScore(invalidScore))
+        .isInstanceOf(AlexandriaException.class)
+        .hasMessageContaining("Score must be between 0.0 and 1.0")
+        .satisfies(
+            ex ->
+                assertThat(((AlexandriaException) ex).getCategory())
+                    .isEqualTo(ErrorCategory.VALIDATION));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {0.0, 0.5, 1.0})
+  void fromScoreShouldAcceptValidBoundaryScores(double validScore) {
+    RelevanceLevel level = RelevanceLevel.fromScore(validScore);
+    assertThat(level).isNotNull();
   }
 }
