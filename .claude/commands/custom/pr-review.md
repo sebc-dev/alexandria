@@ -1,12 +1,12 @@
 ---
 description: 'Review PR comments with AI analysis, GitHub replies, and workflow tracking. Replaces /review-coderabbit-pr with support for all reviewers.'
-allowed-tools: Read, Bash(scripts/*), Bash(sqlite3:*), Task, Skill
-argument-hint: <PR_NUMBER> [--filter coderabbit|all] [--auto-reply] [--dry-run]
+allowed-tools: Read, Write, Edit, Bash(scripts/*), Bash(sqlite3:*), Bash(git:*), Bash(make:*), Task, Skill
+argument-hint: <PR_NUMBER> [--filter coderabbit|all] [--auto] [--dry-run]
 ---
 
 # PR Review
 
-Workflow principal de review de PR avec analyse IA, reponses GitHub automatiques, et suivi des workflows CI.
+Workflow principal de review de PR avec analyse IA, corrections, reponses GitHub, et push.
 
 ## Usage
 
@@ -17,10 +17,14 @@ Workflow principal de review de PR avec analyse IA, reponses GitHub automatiques
 **Arguments:**
 - `PR_NUMBER` - Numero de la PR ou URL GitHub
 - `--filter coderabbit|all` - Filtrer les commentaires (defaut: all)
-- `--auto-reply` - Poster automatiquement les reponses apres analyse
+- `--auto` - Mode automatique: analyse -> corrections -> reponses -> push
 - `--dry-run` - Mode simulation (n'effectue aucune action)
 
-## Workflow
+## Workflow Principal
+
+```
+Analyse -> Corrections -> Reponses -> Push
+```
 
 ### Phase 1: Initialisation
 
@@ -57,30 +61,93 @@ Afficher un resume initial.
 2. **Analyse des commentaires** (pr-comment-analyzer) - en parallele
 3. **Analyse des DEFER** (pr-defer-analyzer)
 
-Afficher le dashboard des resultats.
+Afficher le dashboard des resultats avec les decisions:
+- **ACCEPT**: Corrections a appliquer
+- **REJECT**: Faux positifs a ignorer (thread sera resolu)
+- **DEFER**: Reporter a plus tard (issue a creer si besoin)
+- **DUPLICATE**: Doublon d'un autre commentaire (thread sera resolu)
+- **DISCUSS**: Necessite discussion avec l'equipe
 
-### Phase 4: Reponses (si --auto-reply)
+### Phase 4: Corrections (ACCEPT)
 
-1. **Generer les reponses** (pr-reply-generator)
+Pour chaque commentaire ACCEPT:
+
+1. **Lire le fichier concerne**
+2. **Appliquer la correction** selon `code_suggestion` ou `rationale`
+3. **Valider** que la correction compile:
+   ```bash
+   make dev  # Compilation rapide
+   ```
+4. **Committer** la correction:
+   ```bash
+   git add -A
+   git commit -m "fix(review): $FILE_PATH - $SUMMARY
+
+   Addresses PR #$PR_NUMBER comment #$COMMENT_ID
+
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+   ```
+5. **Tracker** la correction dans la DB:
+   ```sql
+   UPDATE analyses SET applied_at = datetime('now') WHERE comment_id = '...';
+   ```
+
+**Important**: Committer apres chaque correction pour un historique granulaire. Le push est fait a la fin.
+
+### Phase 5: Validation
+
+Avant de poster les reponses:
+
+1. **Executer les tests**:
+   ```bash
+   make test
+   ```
+2. **Verifier la qualite** (optionnel):
+   ```bash
+   make analyse
+   ```
+
+Si les tests echouent, revenir en arriere et revoir les corrections.
+
+### Phase 6: Reponses GitHub
+
+Une fois les corrections validees:
+
+1. **Generer les reponses** (pr-reply-generator) pour tous les commentaires analyses
 2. **Poster sur GitHub** (post-reply.sh)
+3. **Resoudre les threads** pour REJECT et DUPLICATE:
+   ```bash
+   .claude/scripts/pr-review/resolve-thread.sh "$COMMENT_ID"
+   ```
 
-Si `--dry-run`, afficher les reponses sans les poster.
+### Phase 7: Push
 
-### Phase 5: Mode Interactif
+Apres avoir poste les reponses, pusher tous les commits de correction:
 
-Si pas `--auto-reply`, proposer un menu:
+```bash
+git push
+```
+
+Les commits individuels ont deja ete crees dans la Phase 4. Le push envoie tous les commits d'un coup.
+
+### Phase 8: Mode Interactif
+
+Si pas `--auto`, proposer un menu:
 
 ```
 ## Actions Disponibles
 
 1. `analyser` - Relancer l'analyse des commentaires pending
-2. `repondre` - Poster toutes les reponses pending
-3. `repondre --dry-run` - Apercu des reponses
-4. `sync` - Synchroniser avec GitHub (incremental)
-5. `sync --full` - Re-synchroniser completement (tous les commentaires)
-6. `workflows` - Voir le status des workflows
-7. `status` - Afficher le dashboard
-8. `terminer` - Quitter
+2. `corriger` - Appliquer les corrections ACCEPT
+3. `corriger --preview` - Apercu des corrections sans les appliquer
+4. `valider` - Executer tests et qualite
+5. `repondre` - Poster toutes les reponses
+6. `repondre --dry-run` - Apercu des reponses
+7. `push` - Pusher les commits
+8. `auto` - Executer: corriger -> valider -> repondre -> push
+9. `sync` - Synchroniser avec GitHub
+10. `status` - Afficher le dashboard
+11. `terminer` - Quitter
 
 Votre choix:
 ```
@@ -112,12 +179,12 @@ Branch: `feature/phase-2c-cicd-pipeline` | State: open
 
 ### Decisions
 
-| Decision | Count | Replied |
-|----------|-------|---------|
-| ACCEPT | 16 | 16 |
-| REJECT | 4 | 4 |
-| DEFER | 3 | 3 |
-| DUPLICATE | 6 | - |
+| Decision | Count | Applied | Replied | Resolved |
+|----------|-------|---------|---------|----------|
+| ACCEPT | 12 | 12 | 12 | - |
+| REJECT | 4 | - | 4 | 4 |
+| DEFER | 3 | - | 3 | - |
+| DUPLICATE | 4 | - | - | 4 |
 
 ### DEFER Items
 - 2 already planned
@@ -125,10 +192,16 @@ Branch: `feature/phase-2c-cicd-pipeline` | State: open
 
 ---
 
-### Pending Actions
-- [ ] Aucune action pending
+### Progression
 
-**Status**: Review complete
+[x] Analyse complete (23/23)
+[x] Corrections appliquees (12/12 ACCEPT)
+[x] Tests passes
+[x] Reponses postees (19/19)
+[x] Threads resolus (8/8 REJECT+DUPLICATE)
+[ ] Push effectue
+
+**Status**: Pret pour push
 ```
 
 ## Commandes Interactives
@@ -136,8 +209,78 @@ Branch: `feature/phase-2c-cicd-pipeline` | State: open
 ### `analyser`
 Relance `/custom:pr-review-analyze $PR_NUMBER`
 
+### `corriger [--preview]`
+Applique les corrections pour tous les commentaires ACCEPT non encore appliques.
+
+1. Recuperer les ACCEPT sans `applied_at`:
+   ```sql
+   SELECT a.comment_id, a.code_suggestion, a.rationale, c.file_path, c.line_number, c.body
+   FROM analyses a
+   JOIN comments c ON a.comment_id = c.id
+   WHERE a.decision = 'ACCEPT' AND a.applied_at IS NULL;
+   ```
+2. Pour chaque correction:
+   - Lire le fichier
+   - Appliquer la modification (Edit tool)
+   - Verifier la compilation (`make dev`)
+   - Committer avec message specifique:
+     ```
+     fix(review): path/to/file.java - description courte
+
+     Addresses PR #11 comment #123456
+     ```
+3. Mettre a jour `applied_at` dans la DB
+
+Avec `--preview`: affiche les corrections sans les appliquer.
+
+### `valider`
+Execute les tests et l'analyse de qualite:
+
+```bash
+make test      # Tests unitaires
+make analyse   # PMD + SpotBugs + Checkstyle (optionnel)
+```
+
+Affiche un resume:
+```
+## Validation
+
+Tests: 142 passed, 0 failed
+Quality: 0 violations
+
+Pret pour repondre et push.
+```
+
 ### `repondre [--dry-run]`
 Execute `/custom:pr-review-reply $PR_NUMBER [--dry-run]`
+
+Poste les reponses GitHub et resout les threads REJECT/DUPLICATE.
+
+### `push`
+Pushe tous les commits de correction vers le remote:
+
+```bash
+git push
+```
+
+Affiche un resume des commits pushes:
+```
+Pushed 5 commits to origin/feature-branch:
+- fix(review): File1.java - Added null check
+- fix(review): File2.java - Added validation
+- fix(review): File3.java - Fixed exception handling
+- fix(review): File4.java - Improved logging
+- fix(review): File5.java - Updated documentation
+```
+
+### `auto`
+Execute la sequence complete:
+
+```
+corriger -> valider -> repondre -> push
+```
+
+S'arrete si une etape echoue (tests, qualite, etc.).
 
 ### `sync [--full]`
 Execute `/custom:pr-review-sync $PR_NUMBER [--full]`

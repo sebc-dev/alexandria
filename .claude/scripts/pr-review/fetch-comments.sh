@@ -193,7 +193,7 @@ upsert_comment() {
     local id="$1" source="$2" review_id="$3" user_login="$4" user_type="$5"
     local file_path="$6" line_number="$7" side="$8" diff_hunk="$9"
     local body="${10}" in_reply_to="${11}" created_at="${12}" updated_at="${13}"
-    local github_url="${14}"
+    local github_url="${14}" node_id="${15:-}"
 
     local is_bot=0
     if [[ "$user_type" == "Bot" ]] || [[ "$user_login" == *"[bot]"* ]]; then
@@ -211,11 +211,12 @@ upsert_comment() {
     fi
 
     # Escape strings (declare and assign separately to not mask exit codes)
-    local body_esc diff_hunk_esc file_path_esc github_url_esc
+    local body_esc diff_hunk_esc file_path_esc github_url_esc node_id_sql
     body_esc=$(escape_sql "$body")
     diff_hunk_esc=$(escape_sql "$diff_hunk")
     file_path_esc=$(escape_sql "$file_path")
     github_url_esc=$(escape_sql "$github_url")
+    [[ -z "$node_id" || "$node_id" == "null" ]] && node_id_sql="NULL" || node_id_sql="'$node_id'"
 
     # Handle NULL values
     [[ -z "$review_id" ]] && review_id="NULL" || review_id="'$review_id'"
@@ -231,15 +232,16 @@ upsert_comment() {
     local exists
     exists=$(sqlite3 "$DB_PATH" "SELECT 1 FROM comments WHERE id = '$id';" 2>/dev/null || echo "")
 
-    local sql="INSERT INTO comments (id, pr_id, github_url, source, review_id, user_login, user_type, is_bot,
+    local sql="INSERT INTO comments (id, pr_id, github_url, node_id, source, review_id, user_login, user_type, is_bot,
         file_path, line_number, side, diff_hunk, body, in_reply_to_id, created_at, updated_at,
         cr_severity, cr_category, cr_type, cr_has_suggestion, cr_addressed_sha, fetched_at)
-    VALUES ('$id', $PR_ID, '$github_url_esc', '$source', $review_id, '$user_login', '$user_type', $is_bot,
+    VALUES ('$id', $PR_ID, '$github_url_esc', $node_id_sql, '$source', $review_id, '$user_login', '$user_type', $is_bot,
         '$file_path_esc', $line_number, $side, '$diff_hunk_esc', '$body_esc', $in_reply_to, '$created_at', '$updated_at',
         $cr_severity_sql, $cr_category_sql, $cr_type_sql, $cr_has_suggestion, $cr_addressed_sql, '$TIMESTAMP')
     ON CONFLICT(id) DO UPDATE SET
         body = excluded.body,
         updated_at = excluded.updated_at,
+        node_id = COALESCE(excluded.node_id, comments.node_id),
         cr_severity = COALESCE(excluded.cr_severity, comments.cr_severity),
         cr_category = COALESCE(excluded.cr_category, comments.cr_category),
         cr_type = COALESCE(excluded.cr_type, comments.cr_type),
@@ -282,6 +284,7 @@ while read -r comment; do
     [[ -z "$comment" ]] && continue
 
     id=$(echo "$comment" | jq -r '.id')
+    node_id=$(echo "$comment" | jq -r '.node_id // null')
     user_login=$(echo "$comment" | jq -r '.user.login // ""')
     user_type=$(echo "$comment" | jq -r '.user.type // "User"')
     file_path=$(echo "$comment" | jq -r '.path // ""')
@@ -305,7 +308,7 @@ while read -r comment; do
     upsert_comment "$id" "inline" "" "$user_login" "$user_type" \
         "$file_path" "$line_number" "$side" "$diff_hunk" \
         "$body" "$in_reply_to" "$created_at" "$updated_at" \
-        "$github_url"
+        "$github_url" "$node_id"
 
 done < <(echo "$INLINE_COMMENTS" | jq -c '.[]')
 
@@ -341,10 +344,11 @@ while read -r review; do
     hash=$(echo -n "$review_id$body" | sha256sum | cut -c1-8)
     comment_id="review-${review_id}-${hash}"
 
+    # Note: review_body comments don't have node_id (they're not in a resolvable thread)
     upsert_comment "$comment_id" "review_body" "$review_id" "$user_login" "$user_type" \
         "" "" "" "" \
         "$body" "" "$submitted_at" "$submitted_at" \
-        "$github_url"
+        "$github_url" ""
 
 done < <(echo "$REVIEWS" | jq -c '.[] | select(.body != null and .body != "")')
 
@@ -380,10 +384,11 @@ while read -r comment; do
         continue
     fi
 
+    # Note: issue_comment don't have node_id (they're not in a resolvable thread)
     upsert_comment "issue-$id" "issue_comment" "" "$user_login" "$user_type" \
         "" "" "" "" \
         "$body" "" "$created_at" "$updated_at" \
-        "$github_url"
+        "$github_url" ""
 
 done < <(echo "$ISSUE_COMMENTS" | jq -c '.[]')
 

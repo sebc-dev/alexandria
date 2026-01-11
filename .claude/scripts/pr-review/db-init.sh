@@ -84,6 +84,39 @@ if ! sqlite3 "$DB_PATH" < "$SCHEMA_FILE" 2>&1; then
     exit 3
 fi
 
+# Apply migrations for existing databases
+# Migration v2: Add node_id, resolved_at, resolved_by, applied_at columns
+migrate_v2() {
+    local has_node_id has_resolved_at has_resolved_by has_applied_at
+
+    # Check if columns exist
+    has_node_id=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM pragma_table_info('comments') WHERE name = 'node_id';")
+    has_resolved_at=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM pragma_table_info('analyses') WHERE name = 'resolved_at';")
+    has_resolved_by=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM pragma_table_info('analyses') WHERE name = 'resolved_by';")
+    has_applied_at=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM pragma_table_info('analyses') WHERE name = 'applied_at';")
+
+    # Add missing columns
+    if [[ "$has_node_id" == "0" ]]; then
+        echo "  Adding column: comments.node_id" >&2
+        sqlite3 "$DB_PATH" "ALTER TABLE comments ADD COLUMN node_id TEXT;"
+    fi
+    if [[ "$has_applied_at" == "0" ]]; then
+        echo "  Adding column: analyses.applied_at" >&2
+        sqlite3 "$DB_PATH" "ALTER TABLE analyses ADD COLUMN applied_at TEXT;"
+    fi
+    if [[ "$has_resolved_at" == "0" ]]; then
+        echo "  Adding column: analyses.resolved_at" >&2
+        sqlite3 "$DB_PATH" "ALTER TABLE analyses ADD COLUMN resolved_at TEXT;"
+    fi
+    if [[ "$has_resolved_by" == "0" ]]; then
+        echo "  Adding column: analyses.resolved_by" >&2
+        sqlite3 "$DB_PATH" "ALTER TABLE analyses ADD COLUMN resolved_by TEXT;"
+    fi
+}
+
+# Run migrations
+migrate_v2
+
 # Get final version
 FINAL_VERSION=$(sqlite3 "$DB_PATH" "SELECT MAX(version) FROM schema_version;")
 

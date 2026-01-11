@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS comments (
     id TEXT PRIMARY KEY,                    -- GitHub comment ID (string for review_body synthetic IDs)
     pr_id INTEGER NOT NULL REFERENCES prs(id) ON DELETE CASCADE,
     github_url TEXT,
+    node_id TEXT,                           -- GitHub GraphQL node_id (for resolving threads)
     source TEXT CHECK(source IN ('inline', 'review_body', 'issue_comment')) NOT NULL,
     review_id TEXT,                         -- Parent review ID if from review_body
     user_login TEXT NOT NULL,               -- coderabbitai[bot], human reviewer, etc.
@@ -69,6 +70,11 @@ CREATE TABLE IF NOT EXISTS analyses (
     duplicate_of TEXT,                      -- Reference to original comment if DUPLICATE
     analyzed_at TEXT,
     analyzer_model TEXT DEFAULT 'sonnet',
+    -- Correction tracking
+    applied_at TEXT,                        -- When correction was applied (for ACCEPT)
+    -- Thread resolution tracking
+    resolved_at TEXT,                       -- When thread was resolved on GitHub
+    resolved_by TEXT,                       -- Who resolved it (user or 'auto')
     UNIQUE(comment_id)
 );
 
@@ -168,6 +174,10 @@ CREATE TABLE IF NOT EXISTS schema_version (
 
 -- Insert initial version
 INSERT OR IGNORE INTO schema_version (version, description) VALUES (1, 'Initial schema');
+
+-- Version 2: Add node_id for GraphQL thread resolution
+-- Note: Migration handled by db-init.sh for existing databases
+INSERT OR IGNORE INTO schema_version (version, description) VALUES (2, 'Add node_id for GraphQL thread resolution');
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_comments_pr ON comments(pr_id);
