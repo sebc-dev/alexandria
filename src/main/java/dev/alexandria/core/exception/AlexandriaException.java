@@ -16,7 +16,7 @@ public class AlexandriaException extends RuntimeException {
    * @param category the error category
    * @param message the error message
    */
-  public AlexandriaException(@NonNull ErrorCategory category, @NonNull String message) {
+  public AlexandriaException(@NonNull final ErrorCategory category, @NonNull final String message) {
     super(message);
     this.category = Objects.requireNonNull(category, "category must not be null");
   }
@@ -29,7 +29,9 @@ public class AlexandriaException extends RuntimeException {
    * @param cause the underlying cause
    */
   public AlexandriaException(
-      @NonNull ErrorCategory category, @NonNull String message, @NonNull Throwable cause) {
+      @NonNull final ErrorCategory category,
+      @NonNull final String message,
+      @NonNull final Throwable cause) {
     super(message, cause);
     this.category = Objects.requireNonNull(category, "category must not be null");
   }
@@ -39,14 +41,14 @@ public class AlexandriaException extends RuntimeException {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(final Object other) {
+    if (this == other) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
-    AlexandriaException that = (AlexandriaException) o;
+    final AlexandriaException that = (AlexandriaException) other;
     return category == that.category && Objects.equals(getMessage(), that.getMessage());
   }
 

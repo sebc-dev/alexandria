@@ -1,6 +1,7 @@
 package dev.alexandria.core.exception;
 
 /** Categorizes errors for consistent error handling and user messaging. */
+@SuppressWarnings({"PMD.LongVariable", "PMD.AvoidFieldNameMatchingMethodName"})
 public enum ErrorCategory {
   VALIDATION("Validation Error", "Check your query and try again"),
   NOT_FOUND("Not Found", "The requested resource doesn't exist"),
@@ -9,12 +10,12 @@ public enum ErrorCategory {
   DATABASE_ERROR("Database Error", "Contact support if the problem persists"),
   TIMEOUT("Timeout", "Try with a simpler query");
 
-  private final String title;
-  private final String suggestedAction;
+  private final String categoryTitle;
+  private final String categorySuggestedAction;
 
-  ErrorCategory(String title, String suggestedAction) {
-    this.title = title;
-    this.suggestedAction = suggestedAction;
+  ErrorCategory(final String title, final String suggestedAction) {
+    this.categoryTitle = title;
+    this.categorySuggestedAction = suggestedAction;
   }
 
   /**
@@ -23,7 +24,7 @@ public enum ErrorCategory {
    * @return the title
    */
   public String title() {
-    return title;
+    return categoryTitle;
   }
 
   /**
@@ -32,6 +33,6 @@ public enum ErrorCategory {
    * @return the suggested action
    */
   public String suggestedAction() {
-    return suggestedAction;
+    return categorySuggestedAction;
   }
 }
