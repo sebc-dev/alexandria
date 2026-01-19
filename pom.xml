@@ -103,9 +103,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <release>21</release>
-                    <compilerArgs>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
@@ -115,7 +112,6 @@
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                     </excludes>
-                    <argLine>--enable-preview</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -125,7 +121,6 @@
                     <includes>
                         <include>**/*IT.java</include>
                     </includes>
-                    <argLine>--enable-preview</argLine>
                 </configuration>
                 <executions>
                     <execution>

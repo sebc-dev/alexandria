@@ -1,0 +1,28 @@
+spring:
+  # Enable Java 21 virtual threads for I/O-bound operations
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/alexandria
+    username: alexandria
+    password: alexandria
+    hikari:
+      # Critical: Load AGE and set search_path on every connection
+      connection-init-sql: "LOAD 'age'; SET search_path = ag_catalog, \"$user\", public"
+      # With virtual threads, smaller pool is sufficient (virtual threads are cheap)
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    # Don't run Liquibase on startup - migrations handled by init scripts
+    enabled: false
+
+logging:
+  level:
+    fr.kalifazzia.alexandria: DEBUG
+    org.springframework.jdbc: DEBUG
