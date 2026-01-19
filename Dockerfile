@@ -6,8 +6,9 @@
 # ============================================
 FROM pgvector/pgvector:0.8.1-pg17 AS builder
 
-# Install build dependencies
+# Install build dependencies (ca-certificates needed for git https)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     git \
     build-essential \
     postgresql-server-dev-17 \
