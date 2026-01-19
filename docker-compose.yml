@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: .
+    container_name: rag-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: alexandria
+      POSTGRES_PASSWORD: alexandria
+      POSTGRES_DB: alexandria
+    volumes:
+      # Data persistence
+      - ./data:/var/lib/postgresql/data
+      # Liquibase changelogs for init scripts
+      - ./src/main/resources/db/changelog:/docker-entrypoint-initdb.d/changelog:ro
+      # Init script to run Liquibase changelogs
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh:ro
+    # Shared memory for HNSW index operations
+    # Must be >= maintenance_work_mem in postgresql.conf
+    shm_size: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alexandria -d alexandria"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
