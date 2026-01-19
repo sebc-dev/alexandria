@@ -29,11 +29,11 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
   2. Le schema de base (tables documents, chunks, embeddings) est cree par un script
   3. Le projet Maven compile avec toutes les dependances LangChain4j
   4. Un test de connexion valide que pgvector et AGE repondent correctement
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Docker et schema de base
-- [ ] 01-02: Projet Maven et dependances
+- [ ] 01-01-PLAN.md — Docker et schema de base (Dockerfile, docker-compose, Liquibase migrations)
+- [ ] 01-02-PLAN.md — Projet Maven et dependances (pom.xml, project structure, integration tests)
 
 ### Phase 2: Ingestion Core
 **Goal**: Les fichiers markdown sont indexes avec embeddings et metadata stockes
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 0/2 | Not started | - |
+| 1. Infrastructure | 0/2 | Planned | - |
 | 2. Ingestion Core | 0/3 | Not started | - |
 | 3. Graph Relations | 0/2 | Not started | - |
 | 4. Recherche Base | 0/2 | Not started | - |
