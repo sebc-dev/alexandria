@@ -10,7 +10,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Infrastructure** - PostgreSQL 17 avec pgvector et Apache AGE pret au dev
+- [x] **Phase 1: Infrastructure** - PostgreSQL 17 avec pgvector et Apache AGE pret au dev
 - [ ] **Phase 2: Ingestion Core** - Pipeline d'indexation markdown avec embeddings locaux
 - [ ] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
 - [ ] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
@@ -32,8 +32,8 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Docker et schema de base (Dockerfile, docker-compose, Liquibase migrations)
-- [ ] 01-02-PLAN.md — Projet Maven et dependances (pom.xml, project structure, integration tests)
+- [x] 01-01-PLAN.md — Docker et schema de base (Dockerfile, docker-compose, Liquibase migrations)
+- [x] 01-02-PLAN.md — Projet Maven et dependances (pom.xml, project structure, integration tests)
 
 ### Phase 2: Ingestion Core
 **Goal**: Les fichiers markdown sont indexes avec embeddings et metadata stockes
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 0/2 | Planned | - |
+| 1. Infrastructure | 2/2 | ✓ Complete | 2026-01-19 |
 | 2. Ingestion Core | 0/3 | Not started | - |
 | 3. Graph Relations | 0/2 | Not started | - |
 | 4. Recherche Base | 0/2 | Not started | - |

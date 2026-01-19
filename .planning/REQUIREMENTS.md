@@ -40,10 +40,10 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Configuration PostgreSQL 17 avec pgvector et Apache AGE
-- [ ] **INFRA-02**: Schema de base de donnees (tables, index, graph)
-- [ ] **INFRA-03**: Configuration Maven/Gradle avec dependances LangChain4j
-- [ ] **INFRA-04**: Docker Compose pour PostgreSQL (dev environment)
+- [x] **INFRA-01**: Configuration PostgreSQL 17 avec pgvector et Apache AGE
+- [x] **INFRA-02**: Schema de base de donnees (tables, index, graph)
+- [x] **INFRA-03**: Configuration Maven/Gradle avec dependances LangChain4j
+- [x] **INFRA-04**: Docker Compose pour PostgreSQL (dev environment)
 
 ## v2 Requirements
 
@@ -79,10 +79,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
 | ING-01 | Phase 2 | Pending |
 | ING-02 | Phase 2 | Pending |
 | ING-03 | Phase 2 | Pending |
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after roadmap creation*
+*Last updated: 2026-01-19 - Phase 1 complete (INFRA-01 through INFRA-04)*
