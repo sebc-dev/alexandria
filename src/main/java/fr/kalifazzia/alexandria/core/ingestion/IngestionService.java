@@ -6,6 +6,7 @@ import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.ChunkerPort;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
+import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
  *   <li>Chunk content hierarchically (parent/child)</li>
  *   <li>Generate embeddings for all chunks</li>
  *   <li>Store chunks with embeddings in database</li>
+ *   <li>Create graph vertices and HAS_CHILD edges in Apache AGE</li>
  * </ol>
  */
 @Service
@@ -52,18 +54,21 @@ public class IngestionService {
     private final EmbeddingGenerator embeddingGenerator;
     private final DocumentRepository documentRepository;
     private final ChunkRepository chunkRepository;
+    private final GraphRepository graphRepository;
 
     public IngestionService(
             MarkdownParserPort markdownParser,
             ChunkerPort chunker,
             EmbeddingGenerator embeddingGenerator,
             DocumentRepository documentRepository,
-            ChunkRepository chunkRepository) {
+            ChunkRepository chunkRepository,
+            GraphRepository graphRepository) {
         this.markdownParser = markdownParser;
         this.chunker = chunker;
         this.embeddingGenerator = embeddingGenerator;
         this.documentRepository = documentRepository;
         this.chunkRepository = chunkRepository;
+        this.graphRepository = graphRepository;
     }
 
     /**
@@ -122,6 +127,10 @@ public class IngestionService {
         if (existing.isPresent()) {
             log.debug("File changed, re-indexing: {}", file);
             UUID existingId = existing.get().id();
+            // Delete graph data first (before PostgreSQL deletion)
+            graphRepository.deleteChunksByDocumentId(existingId);
+            graphRepository.deleteDocumentGraph(existingId);
+            // Then delete from PostgreSQL tables
             chunkRepository.deleteByDocumentId(existingId);
             documentRepository.delete(existingId);
         }
@@ -144,6 +153,9 @@ public class IngestionService {
                 contentHash,
                 convertFrontmatter(parsed.metadata().rawFrontmatter())
         ));
+
+        // Create document vertex in graph
+        graphRepository.createDocumentVertex(document.id(), document.path());
 
         // Chunk content hierarchically
         List<ChunkPair> chunkPairs = chunker.chunk(parsed.content());
@@ -168,11 +180,14 @@ public class IngestionService {
             );
             totalChunks++;
 
+            // Create parent chunk vertex in graph
+            graphRepository.createChunkVertex(parentId, ChunkType.PARENT, document.id());
+
             // Generate and save child chunks
             for (int i = 0; i < pair.childContents().size(); i++) {
                 String childContent = pair.childContents().get(i);
                 float[] childEmbedding = embeddingGenerator.embed(childContent);
-                chunkRepository.saveChunk(
+                UUID childId = chunkRepository.saveChunk(
                         document.id(),
                         parentId,
                         ChunkType.CHILD,
@@ -181,6 +196,10 @@ public class IngestionService {
                         i
                 );
                 totalChunks++;
+
+                // Create child chunk vertex and HAS_CHILD edge in graph
+                graphRepository.createChunkVertex(childId, ChunkType.CHILD, document.id());
+                graphRepository.createParentChildEdge(parentId, childId);
             }
         }
 

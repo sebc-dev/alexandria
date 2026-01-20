@@ -6,6 +6,7 @@ import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.ChunkerPort;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
+import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,6 +59,9 @@ class IngestionServiceTest {
     @Mock
     private ChunkRepository chunkRepository;
 
+    @Mock
+    private GraphRepository graphRepository;
+
     private IngestionService service;
 
     @TempDir
@@ -70,7 +74,8 @@ class IngestionServiceTest {
                 chunker,
                 embeddingGenerator,
                 documentRepository,
-                chunkRepository
+                chunkRepository,
+                graphRepository
         );
     }
 
@@ -294,6 +299,137 @@ class IngestionServiceTest {
             // Then - no document or chunks saved
             verify(documentRepository, never()).save(any());
             verify(chunkRepository, never()).saveChunk(any(), any(), any(), anyString(), any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("should create document vertex in graph after saving document")
+        void createsDocumentVertexInGraph() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nContent here");
+            UUID documentId = UUID.randomUUID();
+            String filePath = file.toAbsolutePath().toString();
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content here")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, filePath, null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - document vertex created
+            verify(graphRepository).createDocumentVertex(documentId, filePath);
+        }
+
+        @Test
+        @DisplayName("should create chunk vertices and HAS_CHILD edges in graph")
+        void createsChunkVerticesAndEdgesInGraph() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nContent here");
+            UUID documentId = UUID.randomUUID();
+            UUID parentChunkId = UUID.randomUUID();
+            UUID child1Id = UUID.randomUUID();
+            UUID child2Id = UUID.randomUUID();
+            float[] embedding = new float[]{0.1f, 0.2f};
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content here")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of(
+                    new ChunkPair("Parent content", List.of("Child 1", "Child 2"), 0)
+            ));
+            when(embeddingGenerator.embed(anyString())).thenReturn(embedding);
+            // Parent chunk save returns parentChunkId
+            when(chunkRepository.saveChunk(eq(documentId), isNull(), eq(ChunkType.PARENT),
+                    eq("Parent content"), any(), eq(0))).thenReturn(parentChunkId);
+            // Child chunks return their IDs
+            when(chunkRepository.saveChunk(eq(documentId), eq(parentChunkId), eq(ChunkType.CHILD),
+                    eq("Child 1"), any(), eq(0))).thenReturn(child1Id);
+            when(chunkRepository.saveChunk(eq(documentId), eq(parentChunkId), eq(ChunkType.CHILD),
+                    eq("Child 2"), any(), eq(1))).thenReturn(child2Id);
+
+            // When
+            service.ingestFile(file);
+
+            // Then - verify graph vertices created
+            verify(graphRepository).createChunkVertex(parentChunkId, ChunkType.PARENT, documentId);
+            verify(graphRepository).createChunkVertex(child1Id, ChunkType.CHILD, documentId);
+            verify(graphRepository).createChunkVertex(child2Id, ChunkType.CHILD, documentId);
+
+            // Then - verify HAS_CHILD edges created
+            verify(graphRepository).createParentChildEdge(parentChunkId, child1Id);
+            verify(graphRepository).createParentChildEdge(parentChunkId, child2Id);
+        }
+
+        @Test
+        @DisplayName("should delete graph data before PostgreSQL data on re-index")
+        void deletesGraphDataBeforePostgresOnReindex() throws IOException {
+            // Given
+            String newContent = "# Updated\n\nNew content";
+            Path file = createTempMarkdownFile(newContent);
+            String filePath = file.toAbsolutePath().toString();
+
+            UUID existingId = UUID.randomUUID();
+            Document existingDoc = new Document(
+                    existingId, filePath, "Old", null, List.of(),
+                    "old-hash", Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+            when(markdownParser.parse(newContent)).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "New content")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(UUID.randomUUID(), filePath, null, null, List.of(),
+                            "new-hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - verify graph deletion happens before PostgreSQL deletion
+            InOrder inOrder = inOrder(graphRepository, chunkRepository, documentRepository);
+            inOrder.verify(graphRepository).deleteChunksByDocumentId(existingId);
+            inOrder.verify(graphRepository).deleteDocumentGraph(existingId);
+            inOrder.verify(chunkRepository).deleteByDocumentId(existingId);
+            inOrder.verify(documentRepository).delete(existingId);
+        }
+
+        @Test
+        @DisplayName("should not call graph operations when file unchanged")
+        void noGraphOperationsWhenUnchanged() throws IOException {
+            // Given
+            String content = "# Test\n\nContent here";
+            Path file = createTempMarkdownFile(content);
+            String filePath = file.toAbsolutePath().toString();
+
+            // Existing document has same content hash
+            String contentHash = computeSha256(content);
+            Document existingDoc = new Document(
+                    UUID.randomUUID(), filePath, "Test", null, List.of(),
+                    contentHash, Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+
+            // When
+            service.ingestFile(file);
+
+            // Then - no graph operations
+            verify(graphRepository, never()).createDocumentVertex(any(), anyString());
+            verify(graphRepository, never()).createChunkVertex(any(), any(), any());
+            verify(graphRepository, never()).createParentChildEdge(any(), any());
+            verify(graphRepository, never()).deleteChunksByDocumentId(any());
+            verify(graphRepository, never()).deleteDocumentGraph(any());
         }
     }
 
