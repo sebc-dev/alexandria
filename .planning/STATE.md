@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 3 - Graph Relations (In Progress)
+**Current focus:** Phase 3 - Graph Relations (Complete)
 
 ## Current Position
 
 Phase: 3 of 7 (Graph Relations)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-20 - Completed 03-01-PLAN.md (Graph Repository and Ingestion Integration)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 - Completed 03-02-PLAN.md (Cross-Reference Extraction)
 
-Progress: [######....] 43%
+Progress: [#######...] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 3.3 min
-- Total execution time: 0.33 hours
+- Total plans completed: 7
+- Average duration: 3.9 min
+- Total execution time: 0.45 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [######....] 43%
 |-------|-------|-------|----------|
 | 01-infrastructure | 2 | 5 min | 2.5 min |
 | 02-ingestion-core | 3 | 13 min | 4.3 min |
-| 03-graph-relations | 1 | 4 min | 4.0 min |
+| 03-graph-relations | 2 | 12 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (4 min), 02-02 (2 min), 02-03 (7 min), 03-01 (4 min)
+- Last 5 plans: 02-02 (2 min), 02-03 (7 min), 03-01 (4 min), 03-02 (8 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -65,6 +65,10 @@ Recent decisions affecting current work:
 - GraphRepository: cypher() function with AS clause for AGE queries
 - DETACH DELETE for cascading vertex/edge deletion in graph
 - Graph data deleted before PostgreSQL data during re-indexing
+- CrossReferenceExtractorPort interface for hexagonal architecture and testability
+- Cross-references extracted even for short files (links provide value)
+- Forward references only in v1 (target must be indexed first)
+- Gson for agtype JSON parsing (Spring Boot managed version)
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 14:39 UTC
-Stopped at: Completed 03-01-PLAN.md (Graph Repository and Ingestion Integration)
+Last session: 2026-01-20 13:47 UTC
+Stopped at: Completed 03-02-PLAN.md (Cross-Reference Extraction)
 Resume file: None
