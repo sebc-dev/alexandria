@@ -1,0 +1,27 @@
+# MCP Server profile - STDIO transport for Claude Code integration
+spring:
+  main:
+    # Disable web server for STDIO transport
+    web-application-type: none
+    # Disable banner to prevent stdout pollution
+    banner-mode: off
+
+  ai:
+    mcp:
+      server:
+        name: alexandria
+        version: 0.1.0
+        # SYNC type for blocking database operations
+        type: SYNC
+        # STDIO transport for Claude Code
+        stdio: true
+
+# File logging only - console output breaks STDIO protocol
+logging:
+  pattern:
+    console: ""
+  file:
+    name: logs/alexandria-mcp.log
+  level:
+    fr.kalifazzia.alexandria: INFO
+    org.springframework.ai.mcp: DEBUG
