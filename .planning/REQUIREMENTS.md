@@ -7,11 +7,11 @@
 
 ### Ingestion
 
-- [ ] **ING-01**: Parser les fichiers markdown depuis un repertoire
-- [ ] **ING-02**: Chunking hierarchique - parent (1000 tokens), child (200 tokens)
-- [ ] **ING-03**: Generer embeddings avec all-MiniLM-L6-v2 (ONNX local)
-- [ ] **ING-04**: Stocker embeddings dans PostgreSQL/pgvector avec index HNSW
-- [ ] **ING-05**: Extraire metadonnees depuis frontmatter YAML (titre, tags, categorie)
+- [x] **ING-01**: Parser les fichiers markdown depuis un repertoire
+- [x] **ING-02**: Chunking hierarchique - parent (1000 tokens), child (200 tokens)
+- [x] **ING-03**: Generer embeddings avec all-MiniLM-L6-v2 (ONNX local)
+- [x] **ING-04**: Stocker embeddings dans PostgreSQL/pgvector avec index HNSW
+- [x] **ING-05**: Extraire metadonnees depuis frontmatter YAML (titre, tags, categorie)
 - [ ] **ING-06**: Stocker relations parent-child dans Apache AGE
 - [ ] **ING-07**: Stocker relations entre documents (references croisees) dans AGE
 
@@ -83,11 +83,11 @@
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Complete |
-| ING-01 | Phase 2 | Pending |
-| ING-02 | Phase 2 | Pending |
-| ING-03 | Phase 2 | Pending |
-| ING-04 | Phase 2 | Pending |
-| ING-05 | Phase 2 | Pending |
+| ING-01 | Phase 2 | Complete |
+| ING-02 | Phase 2 | Complete |
+| ING-03 | Phase 2 | Complete |
+| ING-04 | Phase 2 | Complete |
+| ING-05 | Phase 2 | Complete |
 | ING-06 | Phase 3 | Pending |
 | ING-07 | Phase 3 | Pending |
 | SRCH-01 | Phase 4 | Pending |
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 - Phase 1 complete (INFRA-01 through INFRA-04)*
+*Last updated: 2026-01-20 - Phase 2 complete (ING-01 through ING-05)*
