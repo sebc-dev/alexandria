@@ -87,6 +87,8 @@ class IngestionServiceTest {
                 crossReferenceExtractor,
                 eventPublisher
         );
+        // Set self-reference for ingestDirectory to call ingestFile properly
+        service.setSelf(service);
     }
 
     @Nested

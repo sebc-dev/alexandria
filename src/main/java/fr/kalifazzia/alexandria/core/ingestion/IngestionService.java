@@ -11,7 +11,9 @@ import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +64,16 @@ public class IngestionService {
     private final CrossReferenceExtractorPort crossReferenceExtractor;
     private final ApplicationEventPublisher eventPublisher;
 
+    // Self-injection to call @Transactional methods through proxy
+    // Required because ingestDirectory() calls ingestFile() which needs proxy for transaction
+    private IngestionService self;
+
+    @Autowired
+    @Lazy
+    void setSelf(IngestionService self) {
+        this.self = self;
+    }
+
     public IngestionService(
             MarkdownParserPort markdownParser,
             ChunkerPort chunker,
@@ -100,7 +112,8 @@ public class IngestionService {
 
             for (Path file : markdownFiles) {
                 try {
-                    ingestFile(file);
+                    // Use self-injection to go through proxy for @Transactional
+                    self.ingestFile(file);
                 } catch (Exception e) {
                     log.error("Failed to ingest file: {}", file, e);
                 }
