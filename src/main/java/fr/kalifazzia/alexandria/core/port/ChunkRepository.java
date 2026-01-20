@@ -44,4 +44,18 @@ public interface ChunkRepository {
      * @return List of chunks, ordered by position and type
      */
     List<Chunk> findByDocumentId(UUID documentId);
+
+    /**
+     * Counts total number of chunks across all documents.
+     * Used by CLI status command.
+     *
+     * @return Number of chunks in the repository
+     */
+    long count();
+
+    /**
+     * Deletes all chunks from the repository.
+     * Used by CLI clear command for full re-indexation.
+     */
+    void deleteAll();
 }

@@ -2,6 +2,7 @@ package fr.kalifazzia.alexandria.core.port;
 
 import fr.kalifazzia.alexandria.core.model.Document;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -68,4 +69,26 @@ public interface DocumentRepository {
      * @return List of unique category names (excluding null values)
      */
     List<String> findDistinctCategories();
+
+    /**
+     * Counts total number of indexed documents.
+     * Used by CLI status command.
+     *
+     * @return Number of documents in the repository
+     */
+    long count();
+
+    /**
+     * Finds the most recent update timestamp across all documents.
+     * Used by CLI status command to show last indexation time.
+     *
+     * @return Optional containing the most recent updated_at, or empty if no documents
+     */
+    Optional<Instant> findLastUpdated();
+
+    /**
+     * Deletes all documents from the repository.
+     * Used by CLI clear command for full re-indexation.
+     */
+    void deleteAll();
 }
