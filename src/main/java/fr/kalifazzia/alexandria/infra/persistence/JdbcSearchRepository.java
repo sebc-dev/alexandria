@@ -54,8 +54,8 @@ public class JdbcSearchRepository implements SearchRepository {
                 JOIN chunks parent ON child.parent_chunk_id = parent.id
                 JOIN documents doc ON child.document_id = doc.id
                 WHERE child.chunk_type = 'child'
-                  AND (? IS NULL OR doc.category = ?)
-                  AND (? IS NULL OR doc.tags @> ?::text[])
+                  AND (CAST(? AS text) IS NULL OR doc.category = CAST(? AS text))
+                  AND (CAST(? AS text[]) IS NULL OR doc.tags @> CAST(? AS text[]))
                 ORDER BY child.embedding <=> ?
                 LIMIT ?
                 """,
@@ -147,8 +147,8 @@ public class JdbcSearchRepository implements SearchRepository {
                 JOIN chunks child ON COALESCE(vector_search.chunk_id, text_search.chunk_id) = child.id
                 JOIN chunks parent ON child.parent_chunk_id = parent.id
                 JOIN documents doc ON child.document_id = doc.id
-                WHERE (? IS NULL OR doc.category = ?)
-                  AND (? IS NULL OR doc.tags @> ?::text[])
+                WHERE (CAST(? AS text) IS NULL OR doc.category = CAST(? AS text))
+                  AND (CAST(? AS text[]) IS NULL OR doc.tags @> CAST(? AS text[]))
                 ORDER BY rrf_score DESC
                 LIMIT ?
                 """,
