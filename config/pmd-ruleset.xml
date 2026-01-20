@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PMD Ruleset optimisé pour projet Java 21 RAG
+  Stack: LangChain4j + PostgreSQL/pgvector + Apache AGE
+  Compatible PMD 7.x et CodeRabbit
+-->
+<ruleset name="Java 21 RAG Project Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    
+    <description>
+        Ruleset PMD optimisé pour Java 21 avec focus sur:
+        - Sécurité JDBC (injection SQL, gestion ressources)
+        - Thread-safety (virtual threads Java 21)
+        - Gestion erreurs et exceptions
+        - Bonnes pratiques Java moderne
+    </description>
+
+    <!-- Exclusions globales -->
+    <exclude-pattern>.*/generated/.*</exclude-pattern>
+    <exclude-pattern>.*/generated-sources/.*</exclude-pattern>
+    <exclude-pattern>.*/target/.*</exclude-pattern>
+    <exclude-pattern>.*/build/.*</exclude-pattern>
+    <exclude-pattern>.*Test\.java</exclude-pattern>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SÉCURITÉ (Priorité 1 - Critique)                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <rule ref="category/java/security.xml/HardCodedCryptoKey">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/security.xml/InsecureCryptoIv">
+        <priority>1</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GESTION RESSOURCES JDBC (Priorité 1-2)                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Fermeture obligatoire des ressources -->
+    <rule ref="category/java/errorprone.xml/CloseResource">
+        <priority>1</priority>
+        <properties>
+            <!-- Types à surveiller pour fermeture -->
+            <property name="types" value="
+                java.lang.AutoCloseable,
+                java.sql.Connection,
+                java.sql.Statement,
+                java.sql.PreparedStatement,
+                java.sql.CallableStatement,
+                java.sql.ResultSet,
+                java.io.InputStream,
+                java.io.OutputStream,
+                java.io.Reader,
+                java.io.Writer
+            " />
+            <property name="closeTargets" value="close,closeQuietly,shutdown" />
+            <property name="closeNotInFinally" value="true" />
+        </properties>
+    </rule>
+    
+    <!-- Encourager try-with-resources -->
+    <rule ref="category/java/bestpractices.xml/UseTryWithResources">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Vérifier ResultSet avant lecture -->
+    <rule ref="category/java/bestpractices.xml/CheckResultSet">
+        <priority>2</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MULTITHREADING / VIRTUAL THREADS (Priorité 2-3)                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Éviter synchronized au niveau méthode (bloque virtual threads) -->
+    <rule ref="category/java/multithreading.xml/AvoidSynchronizedAtMethodLevel">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- synchronized bloque les virtual threads Java 21 -->
+    <rule ref="category/java/multithreading.xml/AvoidSynchronizedStatement">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Double-checked locking cassé -->
+    <rule ref="category/java/multithreading.xml/DoubleCheckedLocking">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Singleton non thread-safe -->
+    <rule ref="category/java/multithreading.xml/NonThreadSafeSingleton">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- SimpleDateFormat n'est pas thread-safe -->
+    <rule ref="category/java/multithreading.xml/UnsynchronizedStaticFormatter">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Champs partagés sans synchronisation -->
+    <rule ref="category/java/multithreading.xml/UseConcurrentHashMap">
+        <priority>3</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- ERROR PRONE (Priorité 2-3)                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Catch blocks vides (danger silencieux) -->
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <priority>2</priority>
+        <properties>
+            <property name="allowCommentedBlocks" value="true" />
+            <property name="allowExceptionNameRegex" value="^(ignored|expected|swallowed)$" />
+        </properties>
+    </rule>
+    
+    <!-- Éviter catch(Exception) trop large -->
+    <rule ref="category/java/errorprone.xml/AvoidCatchingGenericException">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Vérification null cassée -->
+    <rule ref="category/java/errorprone.xml/BrokenNullCheck">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Préserver la stack trace lors de re-throw -->
+    <rule ref="category/java/errorprone.xml/PreserveStackTrace">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Return dans finally (écrase les exceptions) -->
+    <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Comparaison de chaînes avec == -->
+    <rule ref="category/java/errorprone.xml/UseEqualsToCompareStrings">
+        <priority>2</priority>
+    </rule>
+    
+    <!-- Constructeur appelle méthode overridable -->
+    <rule ref="category/java/errorprone.xml/ConstructorCallsOverridableMethod">
+        <priority>3</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- JAVA 21 MODERNE (Priorité 3-4)                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Switch non exhaustif (records, sealed classes) -->
+    <rule ref="category/java/bestpractices.xml/NonExhaustiveSwitch">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Fall-through implicite dans switch -->
+    <rule ref="category/java/errorprone.xml/ImplicitSwitchFallThrough">
+        <priority>3</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- BEST PRACTICES (Priorité 3-4)                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- @Override manquant -->
+    <rule ref="category/java/bestpractices.xml/MissingOverride">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Champs privés non utilisés -->
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateField">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Méthodes privées non utilisées -->
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- IP hardcodée -->
+    <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Couplage lâche (interfaces vs implémentations) -->
+    <rule ref="category/java/bestpractices.xml/LooseCoupling">
+        <priority>3</priority>
+    </rule>
+    
+    <!-- Éviter StringBuffer en faveur de StringBuilder -->
+    <rule ref="category/java/bestpractices.xml/AvoidStringBufferField">
+        <priority>4</priority>
+    </rule>
+    
+    <!-- Éviter System.out/err (utiliser logger) -->
+    <rule ref="category/java/bestpractices.xml/SystemPrintln">
+        <priority>3</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- DESIGN / COMPLEXITÉ (Priorité 3-4)                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Complexité cognitive -->
+    <rule ref="category/java/design.xml/CognitiveComplexity">
+        <priority>3</priority>
+        <properties>
+            <property name="reportLevel" value="15" />
+        </properties>
+    </rule>
+    
+    <!-- Trop de paramètres -->
+    <rule ref="category/java/design.xml/ExcessiveParameterList">
+        <priority>3</priority>
+        <properties>
+            <property name="minimum" value="7" />
+        </properties>
+    </rule>
+    
+    <!-- Classe trop grande -->
+    <rule ref="category/java/design.xml/ExcessiveClassLength">
+        <priority>4</priority>
+        <properties>
+            <property name="minimum" value="500" />
+        </properties>
+    </rule>
+    
+    <!-- Méthode trop grande -->
+    <rule ref="category/java/design.xml/ExcessiveMethodLength">
+        <priority>4</priority>
+        <properties>
+            <property name="minimum" value="100" />
+        </properties>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- CODE STYLE JAVA MODERNE (Priorité 4-5)                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Imports inutiles -->
+    <rule ref="category/java/codestyle.xml/UnnecessaryImport">
+        <priority>4</priority>
+    </rule>
+    
+    <!-- Diamond operator manquant -->
+    <rule ref="category/java/codestyle.xml/UseDiamondOperator">
+        <priority>4</priority>
+    </rule>
+    
+    <!-- Lambda peut être method reference -->
+    <rule ref="category/java/codestyle.xml/LambdaCanBeMethodReference">
+        <priority>5</priority>
+    </rule>
+    
+    <!-- Modificateurs dans l'ordre standard -->
+    <rule ref="category/java/codestyle.xml/FieldDeclarationsShouldBeAtStartOfClass">
+        <priority>5</priority>
+    </rule>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- PERFORMANCES (Priorité 4)                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Concaténation dans boucle (utiliser StringBuilder) -->
+    <rule ref="category/java/performance.xml/ConsecutiveLiteralAppends">
+        <priority>4</priority>
+    </rule>
+    
+    <!-- Instanciation inutile dans boucle -->
+    <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops">
+        <priority>4</priority>
+    </rule>
+
+</ruleset>

@@ -1,0 +1,162 @@
+# Règles ast-grep pour détection de fuites de ressources JDBC
+# À placer dans .coderabbit/rules/jdbc-resource-leak.yml
+
+id: connection-not-in-try-with-resources
+language: java
+severity: warning
+message: |
+  Connection JDBC créée hors try-with-resources.
+  Risque de fuite de connexion et épuisement du pool.
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^Connection$
+    - has:
+        kind: variable_declarator
+        has:
+          field: value
+          pattern: DriverManager.getConnection($$$)
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+note: |
+  INCORRECT:
+    Connection conn = DriverManager.getConnection(url);
+    // ... utilisation ...
+    conn.close(); // Peut ne jamais être appelé si exception
+  
+  CORRECT:
+    try (Connection conn = DriverManager.getConnection(url)) {
+        // ... utilisation ...
+    } // Fermé automatiquement
+
+---
+id: connection-from-datasource-not-closed
+language: java
+severity: warning
+message: |
+  Connection obtenue depuis DataSource hors try-with-resources.
+  Risque d'épuisement du pool de connexions.
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^Connection$
+    - has:
+        kind: variable_declarator
+        has:
+          field: value
+          pattern: $DS.getConnection()
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+
+---
+id: statement-not-in-try-with-resources
+language: java
+severity: warning
+message: |
+  Statement/PreparedStatement créé hors try-with-resources.
+  Risque de fuite de ressource.
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^(Statement|PreparedStatement|CallableStatement)$
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+    - not:
+        inside:
+          kind: resource_specification
+          stopBy: end
+note: |
+  CORRECT:
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        // ... utilisation ...
+    }
+
+---
+id: resultset-not-in-try-with-resources
+language: java
+severity: warning
+message: |
+  ResultSet créé hors try-with-resources.
+  Bien que fermé avec Statement, il est recommandé de le gérer explicitement.
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^ResultSet$
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+note: |
+  RECOMMANDÉ:
+    try (PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            // ...
+        }
+    }
+
+---
+id: inputstream-not-closed
+language: java
+severity: warning
+message: |
+  InputStream/Reader créé sans try-with-resources.
+  Fuite de descripteur de fichier possible.
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^(InputStream|FileInputStream|BufferedInputStream|Reader|FileReader|BufferedReader)$
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+note: |
+  CORRECT:
+    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        // ... lecture ...
+    }
+
+---
+id: onnx-embedding-model-not-closed
+language: java
+severity: warning
+message: |
+  Modèle ONNX EmbeddingModel créé sans gestion du cycle de vie.
+  Peut causer des fuites mémoire (~100MB par instance).
+rule:
+  kind: local_variable_declaration
+  all:
+    - has:
+        field: type
+        regex: ^(OnnxEmbeddingModel|AllMiniLmL6V2EmbeddingModel|BgeSmallEnEmbeddingModel)$
+    - not:
+        inside:
+          kind: try_with_resources_statement
+          stopBy: end
+note: |
+  Pour modèles ONNX utilisés ponctuellement:
+    try (var model = new AllMiniLmL6V2EmbeddingModel()) {
+        // utilisation
+    } // libère les ressources ONNX
+  
+  Pour singleton réutilisé:
+    @Bean
+    public EmbeddingModel embeddingModel() {
+        return new AllMiniLmL6V2EmbeddingModel(); // Géré par Spring
+    }
