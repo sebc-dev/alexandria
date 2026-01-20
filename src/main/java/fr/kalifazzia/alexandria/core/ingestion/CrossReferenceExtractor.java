@@ -1,5 +1,6 @@
 package fr.kalifazzia.alexandria.core.ingestion;
 
+import fr.kalifazzia.alexandria.core.port.CrossReferenceExtractorPort;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
@@ -35,7 +36,7 @@ import java.util.Optional;
  * </ul>
  */
 @Component
-public class CrossReferenceExtractor {
+public class CrossReferenceExtractor implements CrossReferenceExtractorPort {
 
     private final Parser parser;
 
@@ -43,12 +44,7 @@ public class CrossReferenceExtractor {
         this.parser = Parser.builder().build();
     }
 
-    /**
-     * Extracts all internal markdown links from content.
-     *
-     * @param markdownContent The markdown content to parse
-     * @return Immutable list of extracted links (relative paths and link text)
-     */
+    @Override
     public List<ExtractedLink> extractLinks(String markdownContent) {
         if (markdownContent == null || markdownContent.isBlank()) {
             return List.of();
@@ -60,13 +56,7 @@ public class CrossReferenceExtractor {
         return visitor.getLinks();
     }
 
-    /**
-     * Resolves a relative link path to an absolute file path.
-     *
-     * @param sourceFile The path of the file containing the link
-     * @param relativePath The relative path from the link destination
-     * @return The resolved absolute path, or empty if resolution fails
-     */
+    @Override
     public Optional<Path> resolveLink(Path sourceFile, String relativePath) {
         if (sourceFile == null || relativePath == null || relativePath.isBlank()) {
             return Optional.empty();
@@ -86,19 +76,11 @@ public class CrossReferenceExtractor {
     }
 
     /**
-     * An extracted link from markdown content.
-     *
-     * @param relativePath The relative path to the target file (e.g., "../other.md")
-     * @param linkText The display text of the link (may be empty)
-     */
-    public record ExtractedLink(String relativePath, String linkText) {}
-
-    /**
      * CommonMark visitor that collects internal markdown links.
      */
     private static class LinkVisitor extends AbstractVisitor {
 
-        private final List<ExtractedLink> links = new ArrayList<>();
+        private final List<CrossReferenceExtractorPort.ExtractedLink> links = new ArrayList<>();
 
         @Override
         public void visit(Link link) {
@@ -106,7 +88,7 @@ public class CrossReferenceExtractor {
 
             if (isInternalMarkdownLink(destination)) {
                 String linkText = extractLinkText(link);
-                links.add(new ExtractedLink(destination, linkText));
+                links.add(new CrossReferenceExtractorPort.ExtractedLink(destination, linkText));
             }
 
             // Continue visiting children to handle nested links
@@ -159,7 +141,7 @@ public class CrossReferenceExtractor {
          *
          * @return List of extracted links
          */
-        public List<ExtractedLink> getLinks() {
+        public List<CrossReferenceExtractorPort.ExtractedLink> getLinks() {
             return List.copyOf(links);
         }
     }

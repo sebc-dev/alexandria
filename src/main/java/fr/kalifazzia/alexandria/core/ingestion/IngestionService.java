@@ -4,6 +4,7 @@ import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.model.Document;
 import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.ChunkerPort;
+import fr.kalifazzia.alexandria.core.port.CrossReferenceExtractorPort;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
@@ -41,6 +42,7 @@ import java.util.stream.Stream;
  *   <li>Generate embeddings for all chunks</li>
  *   <li>Store chunks with embeddings in database</li>
  *   <li>Create graph vertices and HAS_CHILD edges in Apache AGE</li>
+ *   <li>Extract cross-references and create REFERENCES edges</li>
  * </ol>
  */
 @Service
@@ -55,6 +57,7 @@ public class IngestionService {
     private final DocumentRepository documentRepository;
     private final ChunkRepository chunkRepository;
     private final GraphRepository graphRepository;
+    private final CrossReferenceExtractorPort crossReferenceExtractor;
 
     public IngestionService(
             MarkdownParserPort markdownParser,
@@ -62,13 +65,15 @@ public class IngestionService {
             EmbeddingGenerator embeddingGenerator,
             DocumentRepository documentRepository,
             ChunkRepository chunkRepository,
-            GraphRepository graphRepository) {
+            GraphRepository graphRepository,
+            CrossReferenceExtractorPort crossReferenceExtractor) {
         this.markdownParser = markdownParser;
         this.chunker = chunker;
         this.embeddingGenerator = embeddingGenerator;
         this.documentRepository = documentRepository;
         this.chunkRepository = chunkRepository;
         this.graphRepository = graphRepository;
+        this.crossReferenceExtractor = crossReferenceExtractor;
     }
 
     /**
@@ -160,11 +165,6 @@ public class IngestionService {
         // Chunk content hierarchically
         List<ChunkPair> chunkPairs = chunker.chunk(parsed.content());
 
-        if (chunkPairs.isEmpty()) {
-            log.debug("No chunks generated, file may be too short: {}", file);
-            return;
-        }
-
         // Process each parent-child group
         int totalChunks = 0;
         for (ChunkPair pair : chunkPairs) {
@@ -203,11 +203,59 @@ public class IngestionService {
             }
         }
 
-        log.info("Ingested file: {} with {} chunks ({} parents, {} children)",
+        // Extract cross-references and create REFERENCES edges
+        // This runs even for short files with no chunks - links still provide value
+        int referencesCreated = extractAndCreateReferences(file, parsed.content(), document);
+
+        log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references",
                 file.getFileName(),
                 totalChunks,
                 chunkPairs.size(),
-                totalChunks - chunkPairs.size());
+                totalChunks - chunkPairs.size(),
+                referencesCreated);
+    }
+
+    /**
+     * Extracts markdown links from content and creates REFERENCES edges to target documents.
+     * Only creates edges for links where the target document has already been indexed.
+     *
+     * @param sourceFile Path to the source file
+     * @param content Parsed markdown content
+     * @param document The source document
+     * @return Number of REFERENCES edges created
+     */
+    private int extractAndCreateReferences(Path sourceFile, String content, Document document) {
+        List<CrossReferenceExtractorPort.ExtractedLink> links = crossReferenceExtractor.extractLinks(content);
+
+        if (links.isEmpty()) {
+            return 0;
+        }
+
+        int referencesCreated = 0;
+        for (CrossReferenceExtractorPort.ExtractedLink link : links) {
+            Optional<Path> resolvedPath = crossReferenceExtractor.resolveLink(sourceFile, link.relativePath());
+
+            if (resolvedPath.isPresent()) {
+                String targetPath = resolvedPath.get().toString();
+                Optional<Document> targetDoc = documentRepository.findByPath(targetPath);
+
+                if (targetDoc.isPresent()) {
+                    graphRepository.createReferenceEdge(
+                            document.id(),
+                            targetDoc.get().id(),
+                            link.linkText()
+                    );
+                    referencesCreated++;
+                    log.debug("Created reference: {} -> {} ('{}')",
+                            sourceFile.getFileName(), resolvedPath.get().getFileName(), link.linkText());
+                } else {
+                    log.debug("Target document not indexed, skipping reference: {} -> {}",
+                            sourceFile.getFileName(), targetPath);
+                }
+            }
+        }
+
+        return referencesCreated;
     }
 
     /**

@@ -4,6 +4,7 @@ import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.model.Document;
 import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.ChunkerPort;
+import fr.kalifazzia.alexandria.core.port.CrossReferenceExtractorPort;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
@@ -62,6 +63,9 @@ class IngestionServiceTest {
     @Mock
     private GraphRepository graphRepository;
 
+    @Mock
+    private CrossReferenceExtractorPort crossReferenceExtractor;
+
     private IngestionService service;
 
     @TempDir
@@ -75,7 +79,8 @@ class IngestionServiceTest {
                 embeddingGenerator,
                 documentRepository,
                 chunkRepository,
-                graphRepository
+                graphRepository,
+                crossReferenceExtractor
         );
     }
 
@@ -430,6 +435,133 @@ class IngestionServiceTest {
             verify(graphRepository, never()).createParentChildEdge(any(), any());
             verify(graphRepository, never()).deleteChunksByDocumentId(any());
             verify(graphRepository, never()).deleteDocumentGraph(any());
+        }
+
+        @Test
+        @DisplayName("should create REFERENCES edge when link target exists")
+        void createsReferenceEdgeWhenTargetExists() throws IOException {
+            // Given - source file with link to target
+            Path sourceFile = createTempMarkdownFile("# Source\n\nSee [target](target.md)");
+            Path targetFile = tempDir.resolve("target.md");
+            Files.writeString(targetFile, "# Target");
+            String sourceFilePath = sourceFile.toAbsolutePath().toString();
+            String targetFilePath = targetFile.toAbsolutePath().toString();
+
+            UUID sourceDocId = UUID.randomUUID();
+            UUID targetDocId = UUID.randomUUID();
+
+            // First call to findByPath (for source file) returns empty, second call (for target) returns targetDoc
+            Document targetDoc = new Document(targetDocId, targetFilePath, "Target", null,
+                    List.of(), "hash", Map.of(), Instant.now(), Instant.now());
+            when(documentRepository.findByPath(sourceFilePath)).thenReturn(Optional.empty());
+            when(documentRepository.findByPath(targetFilePath)).thenReturn(Optional.of(targetDoc));
+
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "See [target](target.md)")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(sourceDocId, sourceFilePath, null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // Setup cross-reference extraction
+            when(crossReferenceExtractor.extractLinks("See [target](target.md)")).thenReturn(List.of(
+                    new CrossReferenceExtractorPort.ExtractedLink("target.md", "target")
+            ));
+            when(crossReferenceExtractor.resolveLink(sourceFile, "target.md"))
+                    .thenReturn(Optional.of(targetFile.toAbsolutePath()));
+
+            // When
+            service.ingestFile(sourceFile);
+
+            // Then - REFERENCES edge created
+            verify(graphRepository).createReferenceEdge(sourceDocId, targetDocId, "target");
+        }
+
+        @Test
+        @DisplayName("should not create REFERENCES edge when target not found")
+        void noReferenceEdgeWhenTargetNotFound() throws IOException {
+            // Given
+            Path sourceFile = createTempMarkdownFile("# Source\n\nSee [missing](missing.md)");
+            String sourceFilePath = sourceFile.toAbsolutePath().toString();
+            UUID sourceDocId = UUID.randomUUID();
+
+            // Both source file and target not found - use anyString() for simplicity
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "See [missing](missing.md)")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(sourceDocId, sourceFilePath, null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // Setup cross-reference extraction
+            when(crossReferenceExtractor.extractLinks("See [missing](missing.md)")).thenReturn(List.of(
+                    new CrossReferenceExtractorPort.ExtractedLink("missing.md", "missing")
+            ));
+            Path resolvedPath = tempDir.resolve("missing.md").toAbsolutePath();
+            when(crossReferenceExtractor.resolveLink(sourceFile, "missing.md"))
+                    .thenReturn(Optional.of(resolvedPath));
+
+            // When
+            service.ingestFile(sourceFile);
+
+            // Then - no REFERENCES edge created (target not indexed)
+            verify(graphRepository, never()).createReferenceEdge(any(), any(), anyString());
+        }
+
+        @Test
+        @DisplayName("should not process references when content has no links")
+        void noReferenceProcessingWhenNoLinks() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nNo links here");
+            String filePath = file.toAbsolutePath().toString();
+            UUID documentId = UUID.randomUUID();
+
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "No links here")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, filePath, null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // No links extracted
+            when(crossReferenceExtractor.extractLinks("No links here")).thenReturn(List.of());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - resolveLink and createReferenceEdge never called
+            verify(crossReferenceExtractor, never()).resolveLink(any(), anyString());
+            verify(graphRepository, never()).createReferenceEdge(any(), any(), anyString());
+        }
+
+        @Test
+        @DisplayName("should not call cross-reference extractor when file unchanged")
+        void noCrossReferenceExtractionWhenUnchanged() throws IOException {
+            // Given
+            String content = "# Test\n\nSee [other](other.md)";
+            Path file = createTempMarkdownFile(content);
+            String filePath = file.toAbsolutePath().toString();
+
+            String contentHash = computeSha256(content);
+            Document existingDoc = new Document(
+                    UUID.randomUUID(), filePath, "Test", null, List.of(),
+                    contentHash, Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+
+            // When
+            service.ingestFile(file);
+
+            // Then - cross-reference extractor never called
+            verify(crossReferenceExtractor, never()).extractLinks(anyString());
         }
     }
 
