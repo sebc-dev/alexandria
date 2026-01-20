@@ -92,7 +92,11 @@ public class JdbcSearchRepository implements SearchRepository {
 
     private List<String> arrayToList(java.sql.Array sqlArray) throws SQLException {
         if (sqlArray == null) return List.of();
-        String[] arr = (String[]) sqlArray.getArray();
-        return arr != null ? List.of(arr) : List.of();
+        try {
+            String[] arr = (String[]) sqlArray.getArray();
+            return arr != null ? List.of(arr) : List.of();
+        } finally {
+            sqlArray.free();
+        }
     }
 }
