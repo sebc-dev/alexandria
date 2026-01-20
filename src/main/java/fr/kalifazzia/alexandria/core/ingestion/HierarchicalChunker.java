@@ -4,6 +4,8 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
+import fr.kalifazzia.alexandria.core.port.ChunkerPort;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,8 @@ import java.util.List;
  *   <li>Child chunks: 800 chars (~200 tokens), 80 char overlap (10%)</li>
  * </ul>
  */
-public class HierarchicalChunker {
+@Component
+public class HierarchicalChunker implements ChunkerPort {
 
     /**
      * Approximate characters per token for English text.
@@ -67,13 +70,7 @@ public class HierarchicalChunker {
         this.childSplitter = DocumentSplitters.recursive(childChars, childOverlap);
     }
 
-    /**
-     * Chunks the given content into a hierarchical parent-child structure.
-     *
-     * @param content the text content to chunk
-     * @return list of chunk pairs, each containing a parent and its children;
-     *         empty list if content is null or blank
-     */
+    @Override
     public List<ChunkPair> chunk(String content) {
         if (content == null || content.isBlank()) {
             return List.of();

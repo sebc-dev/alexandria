@@ -5,6 +5,9 @@ import org.commonmark.ext.front.matter.YamlFrontMatterVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 
+import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +15,8 @@ import java.util.Map;
  * Parses markdown content with YAML frontmatter extraction.
  * Uses CommonMark parser with YAML front matter extension.
  */
-public class MarkdownParser {
+@Component
+public class MarkdownParser implements MarkdownParserPort {
 
     private final Parser parser;
 
@@ -22,12 +26,7 @@ public class MarkdownParser {
                 .build();
     }
 
-    /**
-     * Parses markdown content and extracts YAML frontmatter.
-     *
-     * @param content Raw markdown content (may include frontmatter)
-     * @return ParsedDocument with extracted metadata and clean content
-     */
+    @Override
     public ParsedDocument parse(String content) {
         if (content == null || content.isBlank()) {
             return ParsedDocument.withoutMetadata("");

@@ -1,0 +1,378 @@
+package fr.kalifazzia.alexandria.core.ingestion;
+
+import fr.kalifazzia.alexandria.core.model.ChunkType;
+import fr.kalifazzia.alexandria.core.model.Document;
+import fr.kalifazzia.alexandria.core.port.ChunkRepository;
+import fr.kalifazzia.alexandria.core.port.ChunkerPort;
+import fr.kalifazzia.alexandria.core.port.DocumentRepository;
+import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
+import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("IngestionService")
+class IngestionServiceTest {
+
+    @Mock
+    private MarkdownParserPort markdownParser;
+
+    @Mock
+    private ChunkerPort chunker;
+
+    @Mock
+    private EmbeddingGenerator embeddingGenerator;
+
+    @Mock
+    private DocumentRepository documentRepository;
+
+    @Mock
+    private ChunkRepository chunkRepository;
+
+    private IngestionService service;
+
+    @TempDir
+    Path tempDir;
+
+    @BeforeEach
+    void setUp() {
+        service = new IngestionService(
+                markdownParser,
+                chunker,
+                embeddingGenerator,
+                documentRepository,
+                chunkRepository
+        );
+    }
+
+    @Nested
+    @DisplayName("ingestFile")
+    class IngestFile {
+
+        @Test
+        @DisplayName("should call components in correct order")
+        void callsComponentsInOrder() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nContent here");
+            UUID documentId = UUID.randomUUID();
+            UUID parentChunkId = UUID.randomUUID();
+            float[] embedding = new float[]{0.1f, 0.2f, 0.3f};
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(
+                            new DocumentMetadata("Test", "category", List.of("tag"), Map.of()),
+                            "Content here"
+                    )
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), "Test", "category",
+                            List.of("tag"), "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of(
+                    new ChunkPair("Parent content", List.of("Child 1", "Child 2"), 0)
+            ));
+            when(embeddingGenerator.embed(anyString())).thenReturn(embedding);
+            when(chunkRepository.saveChunk(any(), any(), any(), anyString(), any(), anyInt()))
+                    .thenReturn(parentChunkId);
+
+            // When
+            service.ingestFile(file);
+
+            // Then - verify call order
+            InOrder inOrder = inOrder(markdownParser, documentRepository, chunker, embeddingGenerator, chunkRepository);
+            inOrder.verify(documentRepository).findByPath(anyString());
+            inOrder.verify(markdownParser).parse(anyString());
+            inOrder.verify(documentRepository).save(any());
+            inOrder.verify(chunker).chunk("Content here");
+            inOrder.verify(embeddingGenerator).embed("Parent content");
+            inOrder.verify(chunkRepository).saveChunk(eq(documentId), isNull(), eq(ChunkType.PARENT),
+                    eq("Parent content"), any(), eq(0));
+            inOrder.verify(embeddingGenerator).embed("Child 1");
+            inOrder.verify(chunkRepository).saveChunk(eq(documentId), eq(parentChunkId), eq(ChunkType.CHILD),
+                    eq("Child 1"), any(), eq(0));
+        }
+
+        @Test
+        @DisplayName("should skip unchanged files based on content hash")
+        void skipsUnchangedFiles() throws IOException {
+            // Given
+            String content = "# Test\n\nContent here";
+            Path file = createTempMarkdownFile(content);
+            String filePath = file.toAbsolutePath().toString();
+
+            // Existing document has same content hash
+            String contentHash = computeSha256(content);
+            Document existingDoc = new Document(
+                    UUID.randomUUID(), filePath, "Test", null, List.of(),
+                    contentHash, Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+
+            // When
+            service.ingestFile(file);
+
+            // Then - nothing else should be called
+            verify(documentRepository, never()).delete(any());
+            verify(chunkRepository, never()).deleteByDocumentId(any());
+            verify(markdownParser, never()).parse(anyString());
+            verify(documentRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should delete old chunks before re-indexing changed file")
+        void deletesOldChunksOnReindex() throws IOException {
+            // Given
+            String newContent = "# Updated\n\nNew content";
+            Path file = createTempMarkdownFile(newContent);
+            String filePath = file.toAbsolutePath().toString();
+
+            UUID existingId = UUID.randomUUID();
+            Document existingDoc = new Document(
+                    existingId, filePath, "Old", null, List.of(),
+                    "old-hash", Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+            when(markdownParser.parse(newContent)).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "New content")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(UUID.randomUUID(), filePath, null, null, List.of(),
+                            "new-hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - old chunks and document deleted
+            verify(chunkRepository).deleteByDocumentId(existingId);
+            verify(documentRepository).delete(existingId);
+        }
+
+        @Test
+        @DisplayName("should save parent and child chunks with embeddings")
+        void savesParentAndChildChunks() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nLong content for chunking...");
+            UUID documentId = UUID.randomUUID();
+            UUID parentChunkId = UUID.randomUUID();
+            float[] parentEmbedding = new float[]{1.0f, 2.0f};
+            float[] child1Embedding = new float[]{3.0f, 4.0f};
+            float[] child2Embedding = new float[]{5.0f, 6.0f};
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Long content for chunking...")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of(
+                    new ChunkPair("Parent 1", List.of("Child A", "Child B"), 0)
+            ));
+            when(embeddingGenerator.embed("Parent 1")).thenReturn(parentEmbedding);
+            when(embeddingGenerator.embed("Child A")).thenReturn(child1Embedding);
+            when(embeddingGenerator.embed("Child B")).thenReturn(child2Embedding);
+            when(chunkRepository.saveChunk(eq(documentId), isNull(), eq(ChunkType.PARENT),
+                    eq("Parent 1"), any(), eq(0))).thenReturn(parentChunkId);
+
+            // When
+            service.ingestFile(file);
+
+            // Then
+            // Parent chunk saved with null parent_chunk_id
+            verify(chunkRepository).saveChunk(
+                    eq(documentId),
+                    isNull(),
+                    eq(ChunkType.PARENT),
+                    eq("Parent 1"),
+                    eq(parentEmbedding),
+                    eq(0)
+            );
+
+            // Child chunks saved with parent_chunk_id reference
+            verify(chunkRepository).saveChunk(
+                    eq(documentId),
+                    eq(parentChunkId),
+                    eq(ChunkType.CHILD),
+                    eq("Child A"),
+                    eq(child1Embedding),
+                    eq(0)
+            );
+            verify(chunkRepository).saveChunk(
+                    eq(documentId),
+                    eq(parentChunkId),
+                    eq(ChunkType.CHILD),
+                    eq("Child B"),
+                    eq(child2Embedding),
+                    eq(1)
+            );
+        }
+
+        @Test
+        @DisplayName("should handle multiple chunk pairs")
+        void handlesMultipleChunkPairs() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nVery long content...");
+            UUID documentId = UUID.randomUUID();
+            UUID parent1Id = UUID.randomUUID();
+            UUID parent2Id = UUID.randomUUID();
+            float[] embedding = new float[]{0.1f};
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Very long content...")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of(
+                    new ChunkPair("Parent 1", List.of("Child 1A"), 0),
+                    new ChunkPair("Parent 2", List.of("Child 2A"), 1)
+            ));
+            when(embeddingGenerator.embed(anyString())).thenReturn(embedding);
+            // Use lenient stubbing for multiple parent chunks
+            when(chunkRepository.saveChunk(any(), any(), any(), anyString(), any(), anyInt()))
+                    .thenReturn(parent1Id)
+                    .thenReturn(UUID.randomUUID())
+                    .thenReturn(parent2Id)
+                    .thenReturn(UUID.randomUUID());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - 2 parent chunks + 2 child chunks = 4 total
+            verify(chunkRepository, times(4)).saveChunk(any(), any(), any(), anyString(), any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("should skip empty content after parsing")
+        void skipsEmptyContent() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("---\ntitle: Empty\n---\n");
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(new DocumentMetadata("Empty", null, List.of(), Map.of()), "")
+            );
+
+            // When
+            service.ingestFile(file);
+
+            // Then - no document or chunks saved
+            verify(documentRepository, never()).save(any());
+            verify(chunkRepository, never()).saveChunk(any(), any(), any(), anyString(), any(), anyInt());
+        }
+    }
+
+    @Nested
+    @DisplayName("ingestDirectory")
+    class IngestDirectory {
+
+        @Test
+        @DisplayName("should process all markdown files in directory")
+        void processesAllMarkdownFiles() throws IOException {
+            // Given
+            Path subdir = tempDir.resolve("docs");
+            Files.createDirectories(subdir);
+
+            createTempMarkdownFile("# Doc 1");
+            Files.writeString(subdir.resolve("doc2.md"), "# Doc 2");
+            Files.writeString(tempDir.resolve("readme.txt"), "Not markdown");
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content")
+            );
+            when(documentRepository.save(any())).thenAnswer(inv -> {
+                Document doc = inv.getArgument(0);
+                return new Document(UUID.randomUUID(), doc.path(), doc.title(), doc.category(),
+                        doc.tags(), doc.contentHash(), doc.frontmatter(), Instant.now(), Instant.now());
+            });
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestDirectory(tempDir);
+
+            // Then - 2 markdown files processed
+            verify(markdownParser, times(2)).parse(anyString());
+            verify(documentRepository, times(2)).save(any());
+        }
+
+        @Test
+        @DisplayName("should continue processing after single file failure")
+        void continuesAfterFailure() throws IOException {
+            // Given
+            createTempMarkdownFile("# Doc 1");
+            Path file2 = tempDir.resolve("doc2.md");
+            Files.writeString(file2, "# Doc 2");
+
+            when(documentRepository.findByPath(anyString()))
+                    .thenThrow(new RuntimeException("DB error"))
+                    .thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content")
+            );
+            when(documentRepository.save(any())).thenAnswer(inv -> {
+                Document doc = inv.getArgument(0);
+                return new Document(UUID.randomUUID(), doc.path(), doc.title(), doc.category(),
+                        doc.tags(), doc.contentHash(), doc.frontmatter(), Instant.now(), Instant.now());
+            });
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestDirectory(tempDir);
+
+            // Then - second file still processed despite first failure
+            verify(documentRepository, times(2)).findByPath(anyString());
+        }
+    }
+
+    private Path createTempMarkdownFile(String content) throws IOException {
+        Path file = tempDir.resolve("test-" + System.nanoTime() + ".md");
+        Files.writeString(file, content);
+        return file;
+    }
+
+    private String computeSha256(String content) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(hash);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
