@@ -12,7 +12,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 
 - [x] **Phase 1: Infrastructure** - PostgreSQL 17 avec pgvector et Apache AGE pret au dev
 - [x] **Phase 2: Ingestion Core** - Pipeline d'indexation markdown avec embeddings locaux
-- [ ] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
+- [x] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
 - [ ] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
 - [ ] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
 - [ ] **Phase 6: MCP Server** - Tools exposes pour Claude Code
@@ -60,11 +60,11 @@ Plans:
   1. Les relations parent-child entre chunks sont stockees comme edges dans AGE
   2. Les references croisees entre documents (liens markdown) sont detectees et stockees
   3. Une requete Cypher peut traverser les relations pour trouver documents lies
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Relations parent-child dans AGE
-- [ ] 03-02: Detection et stockage des references croisees
+- [x] 03-01-PLAN.md — GraphRepository port/adapter, parent-child HAS_CHILD edges
+- [x] 03-02-PLAN.md — CrossReferenceExtractor, REFERENCES edges, traversal queries
 
 ### Phase 4: Recherche Base
 **Goal**: L'utilisateur peut chercher semantiquement avec filtres
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 2/2 | Complete | 2026-01-19 |
 | 2. Ingestion Core | 3/3 | Complete | 2026-01-20 |
-| 3. Graph Relations | 0/2 | Not started | - |
+| 3. Graph Relations | 2/2 | Complete | 2026-01-20 |
 | 4. Recherche Base | 0/2 | Not started | - |
 | 5. Recherche Avancee | 0/2 | Not started | - |
 | 6. MCP Server | 0/2 | Not started | - |
@@ -142,5 +142,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 2 complete: 2026-01-20*
+*Phase 3 complete: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*

@@ -4,11 +4,16 @@ import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.model.Document;
 import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.ChunkerPort;
+import fr.kalifazzia.alexandria.core.port.CrossReferenceExtractorPort;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
+import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +45,8 @@ import java.util.stream.Stream;
  *   <li>Chunk content hierarchically (parent/child)</li>
  *   <li>Generate embeddings for all chunks</li>
  *   <li>Store chunks with embeddings in database</li>
+ *   <li>Create graph vertices and HAS_CHILD edges in Apache AGE</li>
+ *   <li>Extract cross-references and create REFERENCES edges</li>
  * </ol>
  */
 @Service
@@ -52,18 +60,37 @@ public class IngestionService {
     private final EmbeddingGenerator embeddingGenerator;
     private final DocumentRepository documentRepository;
     private final ChunkRepository chunkRepository;
+    private final GraphRepository graphRepository;
+    private final CrossReferenceExtractorPort crossReferenceExtractor;
+    private final ApplicationEventPublisher eventPublisher;
+
+    // Self-injection to call @Transactional methods through proxy
+    // Required because ingestDirectory() calls ingestFile() which needs proxy for transaction
+    private IngestionService self;
+
+    @Autowired
+    @Lazy
+    void setSelf(IngestionService self) {
+        this.self = self;
+    }
 
     public IngestionService(
             MarkdownParserPort markdownParser,
             ChunkerPort chunker,
             EmbeddingGenerator embeddingGenerator,
             DocumentRepository documentRepository,
-            ChunkRepository chunkRepository) {
+            ChunkRepository chunkRepository,
+            GraphRepository graphRepository,
+            CrossReferenceExtractorPort crossReferenceExtractor,
+            ApplicationEventPublisher eventPublisher) {
         this.markdownParser = markdownParser;
         this.chunker = chunker;
         this.embeddingGenerator = embeddingGenerator;
         this.documentRepository = documentRepository;
         this.chunkRepository = chunkRepository;
+        this.graphRepository = graphRepository;
+        this.crossReferenceExtractor = crossReferenceExtractor;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -85,7 +112,8 @@ public class IngestionService {
 
             for (Path file : markdownFiles) {
                 try {
-                    ingestFile(file);
+                    // Use self-injection to go through proxy for @Transactional
+                    self.ingestFile(file);
                 } catch (Exception e) {
                     log.error("Failed to ingest file: {}", file, e);
                 }
@@ -122,8 +150,12 @@ public class IngestionService {
         if (existing.isPresent()) {
             log.debug("File changed, re-indexing: {}", file);
             UUID existingId = existing.get().id();
+            // Delete from PostgreSQL first (transactional - will rollback on failure)
             chunkRepository.deleteByDocumentId(existingId);
             documentRepository.delete(existingId);
+            // Then delete graph data (if PostgreSQL succeeds, graph cleanup is safe)
+            graphRepository.deleteChunksByDocumentId(existingId);
+            graphRepository.deleteDocumentGraph(existingId);
         }
 
         // Parse markdown and extract frontmatter
@@ -145,13 +177,11 @@ public class IngestionService {
                 convertFrontmatter(parsed.metadata().rawFrontmatter())
         ));
 
+        // Collect graph operations to execute after PostgreSQL commit
+        List<DocumentIngestedEvent.ChunkGraphOperation> chunkOps = new ArrayList<>();
+
         // Chunk content hierarchically
         List<ChunkPair> chunkPairs = chunker.chunk(parsed.content());
-
-        if (chunkPairs.isEmpty()) {
-            log.debug("No chunks generated, file may be too short: {}", file);
-            return;
-        }
 
         // Process each parent-child group
         int totalChunks = 0;
@@ -168,11 +198,15 @@ public class IngestionService {
             );
             totalChunks++;
 
+            // Queue parent chunk vertex creation (no parent edge)
+            chunkOps.add(new DocumentIngestedEvent.ChunkGraphOperation(
+                    parentId, ChunkType.PARENT, document.id(), null));
+
             // Generate and save child chunks
             for (int i = 0; i < pair.childContents().size(); i++) {
                 String childContent = pair.childContents().get(i);
                 float[] childEmbedding = embeddingGenerator.embed(childContent);
-                chunkRepository.saveChunk(
+                UUID childId = chunkRepository.saveChunk(
                         document.id(),
                         parentId,
                         ChunkType.CHILD,
@@ -181,14 +215,70 @@ public class IngestionService {
                         i
                 );
                 totalChunks++;
+
+                // Queue child chunk vertex and HAS_CHILD edge creation
+                chunkOps.add(new DocumentIngestedEvent.ChunkGraphOperation(
+                        childId, ChunkType.CHILD, document.id(), parentId));
             }
         }
 
-        log.info("Ingested file: {} with {} chunks ({} parents, {} children)",
+        // Extract cross-references (collect as operations, don't create edges yet)
+        List<DocumentIngestedEvent.ReferenceEdgeOperation> refOps =
+                collectReferenceOperations(file, parsed.content(), document);
+
+        // Publish event for graph operations to execute after PostgreSQL commit
+        eventPublisher.publishEvent(new DocumentIngestedEvent(
+                document.id(), document.path(), chunkOps, refOps));
+
+        log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references queued",
                 file.getFileName(),
                 totalChunks,
                 chunkPairs.size(),
-                totalChunks - chunkPairs.size());
+                totalChunks - chunkPairs.size(),
+                refOps.size());
+    }
+
+    /**
+     * Extracts markdown links from content and collects REFERENCES edge operations.
+     * Only includes edges for links where the target document has already been indexed.
+     *
+     * @param sourceFile Path to the source file
+     * @param content Parsed markdown content
+     * @param document The source document
+     * @return List of reference edge operations to execute after commit
+     */
+    private List<DocumentIngestedEvent.ReferenceEdgeOperation> collectReferenceOperations(
+            Path sourceFile, String content, Document document) {
+        List<CrossReferenceExtractorPort.ExtractedLink> links = crossReferenceExtractor.extractLinks(content);
+
+        if (links.isEmpty()) {
+            return List.of();
+        }
+
+        List<DocumentIngestedEvent.ReferenceEdgeOperation> refOps = new ArrayList<>();
+        for (CrossReferenceExtractorPort.ExtractedLink link : links) {
+            Optional<Path> resolvedPath = crossReferenceExtractor.resolveLink(sourceFile, link.relativePath());
+
+            if (resolvedPath.isPresent()) {
+                String targetPath = resolvedPath.get().toString();
+                Optional<Document> targetDoc = documentRepository.findByPath(targetPath);
+
+                if (targetDoc.isPresent()) {
+                    refOps.add(new DocumentIngestedEvent.ReferenceEdgeOperation(
+                            document.id(),
+                            targetDoc.get().id(),
+                            link.linkText()
+                    ));
+                    log.debug("Queued reference: {} -> {} ('{}')",
+                            sourceFile.getFileName(), resolvedPath.get().getFileName(), link.linkText());
+                } else {
+                    log.debug("Target document not indexed, skipping reference: {} -> {}",
+                            sourceFile.getFileName(), targetPath);
+                }
+            }
+        }
+
+        return refOps;
     }
 
     /**

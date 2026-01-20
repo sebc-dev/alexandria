@@ -12,8 +12,8 @@
 - [x] **ING-03**: Generer embeddings avec all-MiniLM-L6-v2 (ONNX local)
 - [x] **ING-04**: Stocker embeddings dans PostgreSQL/pgvector avec index HNSW
 - [x] **ING-05**: Extraire metadonnees depuis frontmatter YAML (titre, tags, categorie)
-- [ ] **ING-06**: Stocker relations parent-child dans Apache AGE
-- [ ] **ING-07**: Stocker relations entre documents (references croisees) dans AGE
+- [x] **ING-06**: Stocker relations parent-child dans Apache AGE
+- [x] **ING-07**: Stocker relations entre documents (references croisees) dans AGE
 
 ### Recherche
 
@@ -88,8 +88,8 @@
 | ING-03 | Phase 2 | Complete |
 | ING-04 | Phase 2 | Complete |
 | ING-05 | Phase 2 | Complete |
-| ING-06 | Phase 3 | Pending |
-| ING-07 | Phase 3 | Pending |
+| ING-06 | Phase 3 | Complete |
+| ING-07 | Phase 3 | Complete |
 | SRCH-01 | Phase 4 | Pending |
 | SRCH-02 | Phase 4 | Pending |
 | SRCH-03 | Phase 4 | Pending |
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-20 - Phase 2 complete (ING-01 through ING-05)*
+*Last updated: 2026-01-20 - Phase 3 complete (ING-06, ING-07)*
