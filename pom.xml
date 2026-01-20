@@ -75,15 +75,6 @@
             <artifactId>liquibase-core</artifactId>
         </dependency>
 
-        <!-- AGE JDBC driver (system scope - not on Maven Central) -->
-        <dependency>
-            <groupId>org.apache.age</groupId>
-            <artifactId>age-jdbc</artifactId>
-            <version>1.6.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/age-jdbc-1.6.0.jar</systemPath>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
