@@ -15,7 +15,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 - [x] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
 - [x] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
 - [x] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
-- [ ] **Phase 6: MCP Server** - Tools exposes pour Claude Code
+- [x] **Phase 6: MCP Server** - Tools exposes pour Claude Code
 - [ ] **Phase 7: CLI** - Commandes pour indexation et maintenance
 
 ## Phase Details
@@ -108,8 +108,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Spring AI MCP dependency, STDIO profile, DocumentRepository extensions (findById, findDistinctCategories)
-- [ ] 06-02-PLAN.md — MCP tools implementation (search_docs, index_docs, list_categories, get_doc) and .mcp.json
+- [x] 06-01-PLAN.md — Spring AI MCP dependency, STDIO profile, DocumentRepository extensions (findById, findDistinctCategories)
+- [x] 06-02-PLAN.md — MCP tools implementation (search_docs, index_docs, list_categories, get_doc) and .mcp.json
 
 ### Phase 7: CLI
 **Goal**: L'utilisateur peut gerer l'indexation via ligne de commande
@@ -120,10 +120,11 @@ Plans:
   2. La commande `search <query>` retourne des resultats de recherche
   3. La commande `status` affiche le nombre de documents et la derniere indexation
   4. La commande `clear` vide la base pour permettre une reindexation complete
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: CLI framework et commandes
+- [ ] 07-01-PLAN.md — Spring Shell dependency, CLI profile config, repository extensions (count, findLastUpdated, deleteAll, clearAll)
+- [ ] 07-02-PLAN.md — AlexandriaCommands (index, search, status, clear) with exit code handling
 
 ## Progress
 
@@ -137,10 +138,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Graph Relations | 2/2 | Complete | 2026-01-20 |
 | 4. Recherche Base | 2/2 | Complete | 2026-01-20 |
 | 5. Recherche Avancee | 2/2 | Complete | 2026-01-20 |
-| 6. MCP Server | 0/2 | Planned | - |
-| 7. CLI | 0/1 | Not started | - |
+| 6. MCP Server | 2/2 | Complete | 2026-01-20 |
+| 7. CLI | 0/2 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 6 planned: 2026-01-20*
+*Phase 7 planned: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*
