@@ -2,6 +2,7 @@ package fr.kalifazzia.alexandria.core.port;
 
 import fr.kalifazzia.alexandria.core.model.ChunkType;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -9,8 +10,9 @@ import java.util.UUID;
  * Follows hexagonal architecture - core defines the contract, infra implements it.
  *
  * <p>The graph stores Document and Chunk vertices with HAS_CHILD edges
- * linking parent chunks to their child chunks. This enables graph traversal
- * for context expansion during search.
+ * linking parent chunks to their child chunks, and REFERENCES edges
+ * linking documents that reference each other via markdown links.
+ * This enables graph traversal for context expansion during search.
  */
 public interface GraphRepository {
 
@@ -54,4 +56,25 @@ public interface GraphRepository {
      * @param documentId UUID of the document
      */
     void deleteDocumentGraph(UUID documentId);
+
+    /**
+     * Creates a REFERENCES edge between two documents.
+     * Used to track cross-references from markdown links.
+     *
+     * @param sourceDocId UUID of the document containing the link
+     * @param targetDocId UUID of the document being referenced
+     * @param linkText The display text of the link (may be empty)
+     */
+    void createReferenceEdge(UUID sourceDocId, UUID targetDocId, String linkText);
+
+    /**
+     * Finds documents related to a given document via REFERENCES edges.
+     * Uses variable-length path traversal to discover documents within maxHops.
+     * Excludes the source document from results.
+     *
+     * @param documentId UUID of the starting document
+     * @param maxHops Maximum number of REFERENCES edges to traverse (1-10)
+     * @return List of document UUIDs that are reachable within maxHops
+     */
+    List<UUID> findRelatedDocuments(UUID documentId, int maxHops);
 }

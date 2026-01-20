@@ -1,5 +1,6 @@
 package fr.kalifazzia.alexandria.infra.persistence;
 
+import com.google.gson.Gson;
 import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import org.slf4j.Logger;
@@ -7,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,9 +28,11 @@ public class AgeGraphRepository implements GraphRepository {
     private static final String GRAPH_NAME = "alexandria";
 
     private final JdbcTemplate jdbcTemplate;
+    private final Gson gson;
 
     public AgeGraphRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.gson = new Gson();
     }
 
     @Override
@@ -81,6 +86,67 @@ public class AgeGraphRepository implements GraphRepository {
 
         executeCypherUpdate(cypher);
         log.debug("Deleted Document vertex: {}", documentId);
+    }
+
+    @Override
+    public void createReferenceEdge(UUID sourceDocId, UUID targetDocId, String linkText) {
+        String cypher = String.format("""
+            MATCH (s:Document {document_id: '%s'}), (t:Document {document_id: '%s'})
+            CREATE (s)-[:REFERENCES {link_text: '%s'}]->(t)
+            """, sourceDocId, targetDocId, escapeCypher(linkText != null ? linkText : ""));
+
+        executeCypherUpdate(cypher);
+        log.debug("Created REFERENCES edge: {} -> {} ('{}')", sourceDocId, targetDocId, linkText);
+    }
+
+    @Override
+    public List<UUID> findRelatedDocuments(UUID documentId, int maxHops) {
+        if (maxHops < 1 || maxHops > 10) {
+            throw new IllegalArgumentException("maxHops must be between 1 and 10");
+        }
+
+        String cypher = String.format("""
+            MATCH (d:Document {document_id: '%s'})-[:REFERENCES*1..%d]->(related:Document)
+            WHERE related.document_id <> '%s'
+            RETURN DISTINCT related.document_id AS doc_id
+            """, documentId, maxHops, documentId);
+
+        String sql = String.format(
+            "SELECT * FROM cypher('%s', $$ %s $$) AS (doc_id agtype)",
+            GRAPH_NAME, cypher
+        );
+
+        List<UUID> results = new ArrayList<>();
+        jdbcTemplate.query(sql, rs -> {
+            String agtypeValue = rs.getString("doc_id");
+            String docIdStr = parseAgtypeString(agtypeValue);
+            if (docIdStr != null) {
+                results.add(UUID.fromString(docIdStr));
+            }
+        });
+
+        log.debug("Found {} related documents for {} (maxHops={})", results.size(), documentId, maxHops);
+        return results;
+    }
+
+    /**
+     * Parses an agtype string value to extract the underlying string.
+     * Agtype strings are JSON-encoded with quotes, e.g., "\"uuid-value\""
+     *
+     * @param agtypeValue The raw agtype value from ResultSet
+     * @return The parsed string value, or null if parsing fails
+     */
+    private String parseAgtypeString(String agtypeValue) {
+        if (agtypeValue == null || agtypeValue.isEmpty()) {
+            return null;
+        }
+        try {
+            // agtype strings come as JSON strings (quoted)
+            return gson.fromJson(agtypeValue, String.class);
+        } catch (Exception e) {
+            log.warn("Failed to parse agtype value: {}", agtypeValue, e);
+            return null;
+        }
     }
 
     /**

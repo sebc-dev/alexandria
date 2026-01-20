@@ -94,6 +94,12 @@
             <artifactId>liquibase-core</artifactId>
         </dependency>
 
+        <!-- Gson for AGE agtype parsing -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
