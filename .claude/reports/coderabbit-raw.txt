@@ -1,0 +1,38 @@
+Starting CodeRabbit review in plain text mode...
+
+Connecting to review service
+Setting up
+Analyzing
+Reviewing
+
+============================================================================
+File: src/main/java/fr/kalifazzia/alexandria/infra/persistence/JdbcSearchRepository.java
+Line: 93 to 97
+Type: potential_issue
+
+Prompt for AI Agent:
+In @src/main/java/fr/kalifazzia/alexandria/infra/persistence/JdbcSearchRepository.java around lines 93 - 97, The method arrayToList(java.sql.Array sqlArray) leaks JDBC resources because it doesn't call sqlArray.free(); modify arrayToList to capture sqlArray.getArray() into a local variable, convert it to the List as before, and then in a finally block (or try-with-resources equivalent) call sqlArray.free() if sqlArray is non-null, ensuring free() is invoked even when getArray() throws; reference arrayToList and sqlArray and ensure free() is used after extraction.
+
+
+
+============================================================================
+File: src/main/java/fr/kalifazzia/alexandria/infra/persistence/JdbcSearchRepository.java
+Line: 30 to 31
+Type: potential_issue
+
+Prompt for AI Agent:
+In @src/main/java/fr/kalifazzia/alexandria/infra/persistence/JdbcSearchRepository.java around lines 30 - 31, La méthode searchSimilar crée un PGvector à partir de queryEmbedding sans vérifier sa taille, ce qui provoquera une erreur obscure si la dimension n'est pas 384; before constructing PGvector in searchSimilar validate that queryEmbedding != null && queryEmbedding.length == 384 and if not throw an IllegalArgumentException (or return a clear error) with a message indicating the expected 384 dimensions; reference the method name searchSimilar, the parameter queryEmbedding and the PGvector construction to locate where to add this check.
+
+
+
+============================================================================
+File: src/main/java/fr/kalifazzia/alexandria/core/search/SearchService.java
+Line: 36 to 52
+Type: potential_issue
+
+Prompt for AI Agent:
+In @src/main/java/fr/kalifazzia/alexandria/core/search/SearchService.java around lines 36 - 52, In SearchService.search, validate the filters parameter before calling searchRepository.searchSimilar: if filters is null, replace it with a safe empty/default instance (e.g., new SearchFilters() or SearchFilters.empty() depending on available API) so searchRepository.searchSimilar(queryEmbedding, filters) never receives null; update SearchService.search to use the non-null filters variable when invoking searchRepository.searchSimilar and in logs.
+
+
+
+Review completed ✔
