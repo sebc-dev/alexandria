@@ -15,12 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreadline-dev \
     zlib1g-dev \
     flex \
-    bison \
-    && rm -rf /var/lib/apt/lists/*
+    bison
 
-# Clone and build Apache AGE
+# Clone and build Apache AGE (stable PG17 branch)
 WORKDIR /build
-RUN git clone --branch PG17/v1.6.0-rc0 --depth 1 https://github.com/apache/age.git && \
+RUN git clone --branch PG17 --depth 1 https://github.com/apache/age.git && \
     cd age && \
     make && \
     make install
@@ -29,6 +28,9 @@ RUN git clone --branch PG17/v1.6.0-rc0 --depth 1 https://github.com/apache/age.g
 # Final stage: Production image
 # ============================================
 FROM pgvector/pgvector:0.8.1-pg17
+
+LABEL maintainer="Alexandria RAG Project"
+LABEL description="PostgreSQL 17 with pgvector 0.8.1 and Apache AGE for RAG"
 
 # Copy AGE extension from builder
 COPY --from=builder /usr/share/postgresql/17/extension/age* /usr/share/postgresql/17/extension/
