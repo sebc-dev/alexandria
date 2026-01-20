@@ -60,6 +60,18 @@
             <version>0.1.6</version>
         </dependency>
 
+        <!-- CommonMark for markdown/frontmatter -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.22.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+            <version>0.22.0</version>
+        </dependency>
+
         <!-- LangChain4j -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
