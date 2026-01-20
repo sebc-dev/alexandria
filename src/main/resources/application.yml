@@ -26,3 +26,12 @@ logging:
   level:
     fr.kalifazzia.alexandria: DEBUG
     org.springframework.jdbc: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: cli
+  shell:
+    interactive:
+      enabled: false
