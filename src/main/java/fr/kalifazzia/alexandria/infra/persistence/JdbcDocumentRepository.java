@@ -110,6 +110,30 @@ public class JdbcDocumentRepository implements DocumentRepository {
         return jdbcTemplate.query(sql, documentRowMapper, ids.toArray());
     }
 
+    @Override
+    public Optional<Document> findById(UUID id) {
+        String sql = """
+                SELECT id, path, title, category, tags, content_hash, frontmatter, created_at, updated_at
+                FROM documents
+                WHERE id = ?
+                """;
+
+        List<Document> results = jdbcTemplate.query(sql, documentRowMapper, id);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
+    }
+
+    @Override
+    public List<String> findDistinctCategories() {
+        String sql = """
+                SELECT DISTINCT category
+                FROM documents
+                WHERE category IS NOT NULL
+                ORDER BY category
+                """;
+
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
     private Document mapRow(ResultSet rs, int rowNum) throws SQLException {
         UUID id = rs.getObject("id", UUID.class);
         String path = rs.getString("path");
