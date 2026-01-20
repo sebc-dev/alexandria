@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    hikari:
+      # Disable AGE extension loading for tests (not available in pgvector image)
+      connection-init-sql: ""
+
+  liquibase:
+    # Disable Liquibase - schema initialized via Testcontainers init script
+    enabled: false
