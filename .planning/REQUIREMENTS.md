@@ -21,8 +21,8 @@
 - [x] **SRCH-02**: Retourner chunks enfants avec contexte parent
 - [x] **SRCH-03**: Filtrer resultats par categorie
 - [x] **SRCH-04**: Filtrer resultats par tags
-- [ ] **SRCH-05**: Recherche hybride vector + full-text (tsvector PostgreSQL)
-- [ ] **SRCH-06**: Traversee graph pour trouver documents lies via AGE
+- [x] **SRCH-05**: Recherche hybride vector + full-text (tsvector PostgreSQL)
+- [x] **SRCH-06**: Traversee graph pour trouver documents lies via AGE
 
 ### MCP Server
 
@@ -94,8 +94,8 @@
 | SRCH-02 | Phase 4 | Complete |
 | SRCH-03 | Phase 4 | Complete |
 | SRCH-04 | Phase 4 | Complete |
-| SRCH-05 | Phase 5 | Pending |
-| SRCH-06 | Phase 5 | Pending |
+| SRCH-05 | Phase 5 | Complete |
+| SRCH-06 | Phase 5 | Complete |
 | MCP-01 | Phase 6 | Pending |
 | MCP-02 | Phase 6 | Pending |
 | MCP-03 | Phase 6 | Pending |
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-20 - Phase 4 complete (SRCH-01, SRCH-02, SRCH-03, SRCH-04)*
+*Last updated: 2026-01-20 - Phase 5 complete (SRCH-05, SRCH-06)*

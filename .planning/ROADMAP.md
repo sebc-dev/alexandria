@@ -14,7 +14,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 - [x] **Phase 2: Ingestion Core** - Pipeline d'indexation markdown avec embeddings locaux
 - [x] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
 - [x] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
-- [ ] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
+- [x] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
 - [ ] **Phase 6: MCP Server** - Tools exposes pour Claude Code
 - [ ] **Phase 7: CLI** - Commandes pour indexation et maintenance
 
@@ -89,11 +89,11 @@ Plans:
   1. La recherche combine vector similarity et full-text PostgreSQL (tsvector)
   2. Les documents lies via le graph AGE sont retournes en complement
   3. La traversee graph permet de decouvrir documents a 1-2 hops de distance
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Recherche hybride vector + fulltext
-- [ ] 05-02: Traversee graph pour documents lies
+- [x] 05-01-PLAN.md — Hybrid search (vector + fulltext) with RRF scoring
+- [x] 05-02-PLAN.md — Graph traversal integration for related documents
 
 ### Phase 6: MCP Server
 **Goal**: Claude Code peut acceder a la documentation via tools MCP
@@ -136,11 +136,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Ingestion Core | 3/3 | Complete | 2026-01-20 |
 | 3. Graph Relations | 2/2 | Complete | 2026-01-20 |
 | 4. Recherche Base | 2/2 | Complete | 2026-01-20 |
-| 5. Recherche Avancee | 0/2 | Not started | - |
+| 5. Recherche Avancee | 2/2 | Complete | 2026-01-20 |
 | 6. MCP Server | 0/2 | Not started | - |
 | 7. CLI | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 4 complete: 2026-01-20*
+*Phase 5 planned: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*

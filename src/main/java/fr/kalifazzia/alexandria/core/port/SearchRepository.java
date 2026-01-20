@@ -1,5 +1,6 @@
 package fr.kalifazzia.alexandria.core.port;
 
+import fr.kalifazzia.alexandria.core.search.HybridSearchFilters;
 import fr.kalifazzia.alexandria.core.search.SearchFilters;
 import fr.kalifazzia.alexandria.core.search.SearchResult;
 
@@ -30,4 +31,17 @@ public interface SearchRepository {
      * @return List of search results with parent context, ordered by similarity descending
      */
     List<SearchResult> searchSimilar(float[] queryEmbedding, SearchFilters filters);
+
+    /**
+     * Searches using hybrid vector + full-text search with RRF scoring.
+     *
+     * <p>Combines semantic similarity (pgvector) with full-text matching (tsvector)
+     * using Reciprocal Rank Fusion for score-independent result combination.
+     *
+     * @param queryEmbedding Embedding vector for semantic search
+     * @param queryText Raw text for full-text search
+     * @param filters Hybrid search filters including RRF parameters
+     * @return List of search results ordered by combined RRF score descending
+     */
+    List<SearchResult> hybridSearch(float[] queryEmbedding, String queryText, HybridSearchFilters filters);
 }

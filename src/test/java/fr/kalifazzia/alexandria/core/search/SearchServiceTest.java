@@ -1,6 +1,9 @@
 package fr.kalifazzia.alexandria.core.search;
 
+import fr.kalifazzia.alexandria.core.model.Document;
+import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
+import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,10 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -24,11 +31,17 @@ class SearchServiceTest {
     @Mock
     private SearchRepository searchRepository;
 
+    @Mock
+    private GraphRepository graphRepository;
+
+    @Mock
+    private DocumentRepository documentRepository;
+
     private SearchService searchService;
 
     @BeforeEach
     void setUp() {
-        searchService = new SearchService(embeddingGenerator, searchRepository);
+        searchService = new SearchService(embeddingGenerator, searchRepository, graphRepository, documentRepository);
     }
 
     @Test
@@ -96,6 +109,159 @@ class SearchServiceTest {
         assertThat(results).isEmpty();
     }
 
+    @Test
+    void hybridSearch_shouldGenerateEmbeddingAndCallRepository() {
+        // Given
+        String query = "spring boot configuration";
+        float[] embedding = new float[]{0.1f, 0.2f, 0.3f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+        SearchResult expectedResult = createSearchResult(1.5);  // RRF score can exceed 1.0
+
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of(expectedResult));
+
+        // When
+        List<SearchResult> results = searchService.hybridSearch(query, filters);
+
+        // Then
+        assertThat(results).hasSize(1);
+        verify(embeddingGenerator).embed(query);
+        verify(searchRepository).hybridSearch(embedding, query, filters);
+    }
+
+    @Test
+    void hybridSearch_shouldThrowOnNullQuery() {
+        assertThatThrownBy(() -> searchService.hybridSearch(null, HybridSearchFilters.defaults(10)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("null or blank");
+    }
+
+    @Test
+    void hybridSearch_shouldThrowOnBlankQuery() {
+        assertThatThrownBy(() -> searchService.hybridSearch("   ", HybridSearchFilters.defaults(10)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("null or blank");
+    }
+
+    @Test
+    void hybridSearchSimple_shouldUseDefaultFilters() {
+        // Given
+        String query = "test query";
+        float[] embedding = new float[]{0.1f};
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(eq(embedding), eq(query), any())).thenReturn(List.of());
+
+        // When
+        searchService.hybridSearch(query, 5);
+
+        // Then
+        verify(searchRepository).hybridSearch(eq(embedding), eq(query), argThat(f ->
+                f.maxResults() == 5 && f.vectorWeight() == 1.0 && f.textWeight() == 1.0 && f.rrfK() == 60
+        ));
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldReturnSearchResultsAndRelatedDocuments() {
+        // Given
+        String query = "spring configuration";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+
+        UUID docId1 = UUID.randomUUID();
+        UUID relatedDocId = UUID.randomUUID();
+
+        SearchResult searchResult = createSearchResultWithDocId(docId1, 1.5);
+        Document relatedDoc = createDocument(relatedDocId, "Related Doc", "/related.md", "java");
+
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of(searchResult));
+        when(graphRepository.findRelatedDocuments(docId1, 2)).thenReturn(List.of(relatedDocId));
+        when(documentRepository.findByIds(Set.of(relatedDocId))).thenReturn(List.of(relatedDoc));
+
+        // When
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters);
+
+        // Then
+        assertThat(result.searchResults()).hasSize(1);
+        assertThat(result.relatedDocuments()).hasSize(1);
+        assertThat(result.relatedDocuments().get(0).documentId()).isEqualTo(relatedDocId);
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldExcludeSearchResultDocsFromRelated() {
+        // Given
+        String query = "test";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+
+        UUID docId = UUID.randomUUID();
+        SearchResult searchResult = createSearchResultWithDocId(docId, 1.5);
+
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of(searchResult));
+        // Graph returns the same doc that's already in results
+        when(graphRepository.findRelatedDocuments(docId, 2)).thenReturn(List.of(docId));
+
+        // When
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters);
+
+        // Then
+        assertThat(result.relatedDocuments()).isEmpty();
+        verify(documentRepository, never()).findByIds(any());
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldHandleEmptySearchResults() {
+        // Given
+        String query = "unknown";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of());
+
+        // When
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters);
+
+        // Then
+        assertThat(result.searchResults()).isEmpty();
+        assertThat(result.relatedDocuments()).isEmpty();
+        verify(graphRepository, never()).findRelatedDocuments(any(), anyInt());
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldValidateMaxHops() {
+        assertThatThrownBy(() -> searchService.hybridSearchWithGraph("test", HybridSearchFilters.defaults(10), 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("maxHops");
+
+        assertThatThrownBy(() -> searchService.hybridSearchWithGraph("test", HybridSearchFilters.defaults(10), 11))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("maxHops");
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldContinueOnGraphTraversalFailure() {
+        // Given
+        String query = "test";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+
+        UUID docId = UUID.randomUUID();
+        SearchResult searchResult = createSearchResultWithDocId(docId, 1.5);
+
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of(searchResult));
+        when(graphRepository.findRelatedDocuments(docId, 2)).thenThrow(new RuntimeException("Graph error"));
+
+        // When
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters);
+
+        // Then - should return results without related documents, not fail
+        assertThat(result.searchResults()).hasSize(1);
+        assertThat(result.relatedDocuments()).isEmpty();
+    }
+
     private SearchResult createSearchResult(double similarity) {
         return new SearchResult(
                 UUID.randomUUID(),
@@ -109,6 +275,29 @@ class SearchServiceTest {
                 "java",
                 List.of("spring", "configuration"),
                 similarity
+        );
+    }
+
+    private SearchResult createSearchResultWithDocId(UUID docId, double similarity) {
+        return new SearchResult(
+                UUID.randomUUID(),
+                "child content",
+                0,
+                UUID.randomUUID(),
+                "parent context",
+                docId,
+                "Document Title",
+                "/docs/file.md",
+                "java",
+                List.of("tag"),
+                similarity
+        );
+    }
+
+    private Document createDocument(UUID id, String title, String path, String category) {
+        return new Document(
+                id, path, title, category, List.of(),
+                "hash", Map.of(), Instant.now(), Instant.now()
         );
     }
 }

@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 4 - Recherche Base (Complete)
+**Current focus:** Phase 5 - Recherche Avancee (Complete)
 
 ## Current Position
 
-Phase: 4 of 7 (Recherche Base)
+Phase: 5 of 7 (Recherche Avancee)
 Plan: 2 of 2 in current phase
 Status: Phase complete
-Last activity: 2026-01-20 - Completed 04-02-PLAN.md (Search Implementation)
+Last activity: 2026-01-20 - Completed 05-02-PLAN.md (Graph Traversal Integration)
 
-Progress: [#########.] 64%
+Progress: [###########] 79%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 11
 - Average duration: 3.5 min
-- Total execution time: 0.53 hours
+- Total execution time: 0.63 hours
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [#########.] 64%
 | 02-ingestion-core | 3 | 13 min | 4.3 min |
 | 03-graph-relations | 2 | 12 min | 6.0 min |
 | 04-recherche-base | 2 | 4 min | 2.0 min |
+| 05-recherche-avancee | 2 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (4 min), 03-02 (8 min), 04-01 (1 min), 04-02 (3 min)
+- Last 5 plans: 04-01 (1 min), 04-02 (3 min), 05-01 (4 min), 05-02 (3 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -76,6 +77,13 @@ Recent decisions affecting current work:
 - Post-filter minSimilarity in Java (pgvector post-filters AFTER HNSW scan)
 - Fetch 3x results when minSimilarity set to compensate for client-side filtering
 - Use tags @> containment operator for array filtering with GIN index
+- RRF k=60 default for balanced rank sensitivity in hybrid search
+- websearch_to_tsquery for user-friendly full-text query syntax
+- FULL OUTER JOIN combines results from vector and text search
+- HybridSearchFilters separate record for hybrid-specific parameters
+- Default maxHops=2 for graph traversal (recommended for documentation)
+- Graceful degradation: graph failures logged, search continues without related docs
+- Deduplication: related documents exclude those already in search results
 
 ### Pending Todos
 
@@ -88,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 15:46 UTC
-Stopped at: Completed 04-02-PLAN.md (Search Implementation)
+Last session: 2026-01-20 17:31 UTC
+Stopped at: Completed 05-02-PLAN.md (Graph Traversal Integration)
 Resume file: None
