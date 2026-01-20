@@ -16,6 +16,15 @@ spring:
         # STDIO transport for Claude Code
         stdio: true
 
+# Alexandria MCP security settings
+alexandria:
+  mcp:
+    # Allowed base directories for index_docs (path traversal protection)
+    # Paths outside these directories will be rejected
+    # Default: user home directory
+    allowed-paths:
+      - ${user.home}
+
 # File logging only - console output breaks STDIO protocol
 logging:
   pattern:
