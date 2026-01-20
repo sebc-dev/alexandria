@@ -1,0 +1,520 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# ============================================================================
+# Configuration CodeRabbit - Documentation RAG (Version enrichie)
+# ============================================================================
+# Projet: Système RAG personnel avec PostgreSQL/pgvector/Apache AGE
+# Stack: Java 21 + LangChain4j 1.0+ + MCP Java SDK
+# Usage: Développeur solo - focus bugs/sécurité, ignore style mineur
+# Dernière mise à jour: Janvier 2026
+# ============================================================================
+
+language: "fr"
+early_access: false
+
+# ----------------------------------------------------------------------------
+# Instructions de ton - Limite 250 caractères
+# ----------------------------------------------------------------------------
+tone_instructions: |
+  Concis. Focus bugs, sécurité, injection SQL/Cypher, fuites JDBC.
+  Vérifie dimensions embeddings (384). Ignore style mineur.
+
+# ============================================================================
+# REVIEWS - Configuration principale
+# ============================================================================
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  
+  high_level_summary: true
+  high_level_summary_instructions: |
+    Bullet points concis en français:
+    - Breaking changes API/schéma DB
+    - Modifications embeddings/vectoriel (dimension 384)
+    - Changements requêtes Cypher/AGE
+    - Impacts performances pgvector/HNSW
+    - Risques sécurité (injection, credentials)
+  
+  poem: false
+  collapse_walkthrough: true
+  review_status: true
+  commit_status: true
+  sequence_diagrams: true
+  assess_linked_issues: true
+  enable_prompt_for_ai_agents: true
+
+  # --------------------------------------------------------------------------
+  # Path Filters - Format tableau plat avec ! pour exclusions
+  # --------------------------------------------------------------------------
+  path_filters:
+    # Inclusions
+    - "src/**"
+    - "pom.xml"
+    - "build.gradle"
+    - "build.gradle.kts"
+    - "docker-compose*.yml"
+    - "Dockerfile*"
+    - "*.sql"
+    - "*.md"
+    - "config/**"
+    # Exclusions build/génération
+    - "!target/**"
+    - "!build/**"
+    - "!out/**"
+    - "!.gradle/**"
+    - "!.mvn/**"
+    - "!**/generated/**"
+    - "!**/generated-sources/**"
+    - "!**/generated-test-sources/**"
+    # Exclusions IDE
+    - "!.idea/**"
+    - "!.vscode/**"
+    - "!*.iml"
+    - "!.project"
+    - "!.classpath"
+    - "!.settings/**"
+    # Exclusions artifacts
+    - "!**/*.jar"
+    - "!**/*.war"
+    - "!**/*.class"
+    - "!**/*.log"
+    # Exclusions documentation générée
+    - "!**/apidocs/**"
+    - "!**/javadoc/**"
+    - "!**/site/**"
+
+  # --------------------------------------------------------------------------
+  # Path Instructions - Directives spécifiques par couche (max 20000 chars)
+  # --------------------------------------------------------------------------
+  path_instructions:
+    # ===== COUCHE INGESTION =====
+    - path: "**/ingestion/**"
+      instructions: |
+        INGESTION PIPELINE - Points de vigilance:
+        
+        MÉMOIRE & STREAMING:
+        - Fichiers >10MB: utiliser streaming (BufferedReader) vs chargement complet
+        - try-with-resources obligatoire pour tous les streams
+        - Encodage UTF-8 explicite: new InputStreamReader(is, StandardCharsets.UTF_8)
+        
+        CHUNKING HIÉRARCHIQUE:
+        - Parent chunks: 1000 tokens (contexte)
+        - Child chunks: 200 tokens (matching précis)
+        - Overlap recommandé: 50-75 tokens (10-15%)
+        - Utiliser DocumentSplitters.recursive() de LangChain4j
+        
+        FRONTMATTER YAML:
+        - Valider présence des champs requis (titre, tags, catégorie)
+        - Gérer nulls et types incorrects gracieusement
+        - Extraire metadata dans TextSegment.metadata()
+        
+        VALIDATION:
+        - Vérifier extension fichier avant parsing
+        - Limiter taille maximale configurable
+        - Logger les fichiers ignorés/échoués
+
+    # ===== COUCHE EMBEDDINGS =====
+    - path: "**/embedding/**"
+      instructions: |
+        EMBEDDINGS (all-MiniLM-L6-v2 ONNX) - Points critiques:
+        
+        DIMENSION - RÈGLE ABSOLUE:
+        - Dimension fixe: 384 (MiniLM-L6-v2)
+        - INTERDIT: hardcoder la dimension (384, 768, 1536)
+        - OBLIGATOIRE: utiliser embeddingModel.dimension() dynamiquement
+        - Valider cohérence avec schéma pgvector au démarrage
+        
+        PERFORMANCES:
+        - Batch processing: embedAll() pour >10 documents
+        - Throughput attendu: 200-400 embeddings/sec sur 4 cores
+        - Mémoire ONNX: ~100MB RAM réservé
+        
+        THREAD-SAFETY:
+        - AllMiniLmL6V2EmbeddingModel est thread-safe
+        - Réutiliser une instance unique (singleton)
+        - try-with-resources si création locale
+        
+        VALIDATION VECTEURS:
+        - Vérifier dimension avant stockage
+        - Rejeter vecteurs null ou vides
+        - Normaliser si nécessaire (L2 norm)
+
+    # ===== COUCHE REPOSITORY/DAO =====
+    - path: "**/repository/**"
+      instructions: |
+        REPOSITORY PostgreSQL/pgvector/AGE - Points critiques:
+        
+        INJECTION SQL - TOLÉRANCE ZÉRO:
+        - INTERDIT: Statement.createStatement()
+        - INTERDIT: "SELECT * FROM " + userInput
+        - INTERDIT: String.format() dans prepareStatement()
+        - OBLIGATOIRE: PreparedStatement avec placeholders (?)
+        - Utiliser setString(), setInt(), etc. pour tous les paramètres
+        
+        GESTION RESSOURCES JDBC:
+        - try-with-resources OBLIGATOIRE pour Connection, Statement, ResultSet
+        - Ordre de fermeture: ResultSet → Statement → Connection
+        - Utiliser DataSource (HikariCP) vs DriverManager
+        - Pool sizing: 10-20 connexions en production
+        
+        PGVECTOR SPÉCIFIQUE:
+        - Index HNSW obligatoire si >100k rows
+        - Paramètres HNSW: m=16, ef_construction=64
+        - Utiliser vector_cosine_ops pour similarité texte
+        - Bulk inserts: DROP INDEX, INSERT, CREATE INDEX
+        
+        APACHE AGE (CYPHER):
+        - SET search_path = ag_catalog AVANT chaque requête
+        - Paramètres bindés: WHERE n.id = $1 (pas concaténation)
+        - Transactions explicites pour opérations multi-nœuds
+        - LOAD 'age' requis après connexion
+        
+        PAGINATION & LIMITES:
+        - LIMIT obligatoire sur recherches vectorielles
+        - Pagination avec OFFSET ou keyset pagination
+        - maxResults configuré sur ContentRetriever (3-10)
+        
+        GESTION ERREURS:
+        - Catch SQLException avec logging détaillé
+        - Rollback explicite en cas d'erreur transactionnelle
+        - Retourner Optional<> plutôt que null
+
+    # ===== COUCHE SERVICE =====
+    - path: "**/service/**"
+      instructions: |
+        SERVICES RAG - Points de vigilance:
+        
+        VALIDATION INPUTS:
+        - Query non vide et non null
+        - Limites raisonnables (maxResults, minScore)
+        - Sanitization des filtres (catégorie, tags)
+        
+        CONTENT RETRIEVER CONFIGURATION:
+        - maxResults: 3-5 pour précision, max 10
+        - minScore: 0.7-0.85 (filtrer le bruit)
+        - INTERDIT: recherche sans limite
+        
+        SÉPARATION RESPONSABILITÉS:
+        - Pas de SQL/Cypher dans les services
+        - Déléguer aux repositories
+        - Services = orchestration + validation
+        
+        LOGGING & OBSERVABILITÉ:
+        - Logger query, temps de réponse, nb résultats
+        - Logger scores de similarité (debug)
+        - Métriques de latence embedding + search
+        
+        GESTION ERREURS:
+        - Messages explicites pour debugging
+        - Retry logic pour embedding failures (transient)
+        - Fallback gracieux si service embedding down
+
+    # ===== COUCHE MCP SERVER =====
+    - path: "**/mcp/**"
+      instructions: |
+        MCP SERVER (Java SDK) - Points critiques:
+        
+        TRANSPORT & CONNEXION:
+        - Initialisation avec error handling complet
+        - Capability negotiation vérifiée
+        - Timeout configuré pour opérations longues
+        
+        TOOLS DEFINITION:
+        - Annotations complètes avec descriptions FR
+        - Paramètres validés avant traitement
+        - Messages d'erreur explicites pour Claude Code
+        
+        ERROR HANDLING:
+        - McpError exception handling obligatoire
+        - Resource cleanup dans finally blocks
+        - Logging des erreurs avec contexte
+        
+        THREAD-SAFETY:
+        - Serveur multi-connexions: synchronisation si état partagé
+        - Utiliser ConcurrentHashMap si cache nécessaire
+        
+        SÉRIALISATION:
+        - JSON mapping correct (Jackson annotations si nécessaire)
+        - Gérer nulls dans les réponses
+        - Valider structure des requêtes entrantes
+
+    # ===== CLI =====
+    - path: "**/cli/**"
+      instructions: |
+        CLI - Points de vigilance:
+        
+        VALIDATION PATHS:
+        - Vérifier existence fichier/répertoire
+        - Vérifier permissions lecture/écriture
+        - Paths absolus vs relatifs gérés
+        
+        EXIT CODES:
+        - 0: succès
+        - 1: erreur utilisateur (bad input)
+        - 2: erreur système (IO, DB)
+        
+        UX:
+        - Messages clairs et informatifs
+        - Progress bar pour opérations longues
+        - Gestion Ctrl+C (shutdown hook)
+        
+        AIDE:
+        - --help avec exemples d'usage
+        - Messages d'erreur avec suggestion de correction
+
+    # ===== CONFIGURATION =====
+    - path: "**/config/**"
+      instructions: |
+        CONFIGURATION - Points de vigilance:
+        
+        SÉCURITÉ CREDENTIALS:
+        - INTERDIT: credentials en clair dans le code
+        - Utiliser ${ENV_VAR} ou fichiers externes
+        - application-local.properties dans .gitignore
+        
+        VALIDATION:
+        - Valider paramètres au démarrage (fail-fast)
+        - Valeurs par défaut raisonnables documentées
+        - Vérifier cohérence (ex: dimension = 384)
+        
+        POOL CONNEXIONS:
+        - HikariCP recommandé
+        - maxPoolSize: 10-20 production
+        - connectionTimeout configuré
+        - validationQuery pour health check
+
+    # ===== TESTS =====
+    - path: "**/test/**"
+      instructions: |
+        TESTS - Points de vigilance:
+        
+        ANNOTATIONS:
+        - Pas de @Disabled/@Ignore sans commentaire explicatif
+        - @DisplayName descriptif en français
+        - @Timeout pour tests avec I/O
+        
+        ASSERTIONS:
+        - AssertJ préféré (fluent, messages clairs)
+        - Pas de assertTrue(condition) seul
+        - Vérifier dimensions vecteurs dans assertions
+        
+        TESTS D'INTÉGRATION:
+        - @Testcontainers pour PostgreSQL+pgvector
+        - Cleanup @AfterEach (truncate tables)
+        - Données isolées par test method
+        
+        MOCKING:
+        - Mock EmbeddingModel pour tests unitaires (éviter I/O)
+        - Pas de mock pour tests d'intégration
+        
+        EDGE CASES À TESTER:
+        - Vecteurs vides/null
+        - Documents sans chunks
+        - Dimension mismatch
+        - Connexion DB indisponible
+
+    # ===== SQL/MIGRATIONS =====
+    - path: "**/*.sql"
+      instructions: |
+        SQL/MIGRATIONS PostgreSQL - Points critiques:
+        
+        IDEMPOTENCE:
+        - IF NOT EXISTS sur CREATE TABLE/INDEX
+        - DROP IF EXISTS avant CREATE OR REPLACE
+        
+        PGVECTOR:
+        - CREATE EXTENSION IF NOT EXISTS vector
+        - Colonne: embedding vector(384)
+        - Index: USING hnsw (embedding vector_cosine_ops)
+        - Paramètres: WITH (m = 16, ef_construction = 64)
+        
+        APACHE AGE:
+        - CREATE EXTENSION IF NOT EXISTS age
+        - LOAD 'age' (requis après connexion)
+        - SET search_path = ag_catalog, "$user", public
+        
+        INTÉGRITÉ:
+        - Contraintes NOT NULL appropriées
+        - Foreign keys avec ON DELETE approprié
+        - Index sur colonnes de filtre fréquentes
+        
+        PERFORMANCES:
+        - ANALYZE après bulk inserts
+        - Partitioning si >10M rows
+
+    # ===== DOCKER =====
+    - path: "**/docker-compose*.yml"
+      instructions: |
+        DOCKER COMPOSE - Points de vigilance:
+        
+        PERSISTANCE:
+        - Volumes nommés pour PostgreSQL data
+        - Pas de bind mounts pour données critiques
+        
+        HEALTH CHECKS:
+        - pg_isready pour PostgreSQL
+        - Depends_on avec condition: service_healthy
+        
+        SÉCURITÉ:
+        - Variables d'environnement pour credentials
+        - Pas de passwords dans le fichier
+        - Réseau interne entre services
+        
+        CONFIGURATION:
+        - Shared memory size pour PostgreSQL (shm_size)
+        - Limites mémoire appropriées
+
+    # ===== BUILD MAVEN =====
+    - path: "pom.xml"
+      instructions: |
+        MAVEN - Points de vigilance:
+        
+        VERSIONS LANGCHAIN4J:
+        - Utiliser BOM pour cohérence: langchain4j-bom
+        - Version 1.0+ requise
+        - Toutes les dépendances LangChain4j même version
+        
+        DÉPENDANCES CRITIQUES:
+        - langchain4j-pgvector
+        - langchain4j-embeddings-all-minilm-l6-v2
+        - postgresql (driver JDBC)
+        
+        SCOPES:
+        - test pour JUnit, Mockito, Testcontainers
+        - provided si applicable
+        
+        PLUGINS:
+        - Versions explicites (maven-compiler-plugin, etc.)
+        - Java 21 source/target
+
+    # ===== BUILD GRADLE =====
+    - path: "build.gradle*"
+      instructions: |
+        GRADLE - Points de vigilance:
+        
+        VERSIONS:
+        - Platform BOM pour LangChain4j
+        - Toutes dépendances LangChain4j alignées
+        
+        CONFIGURATIONS:
+        - implementation pour runtime
+        - testImplementation pour tests
+        - Éviter compile (deprecated)
+        
+        JAVA 21:
+        - toolchain { languageVersion = JavaLanguageVersion.of(21) }
+
+  # --------------------------------------------------------------------------
+  # Auto Review
+  # --------------------------------------------------------------------------
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DRAFT"
+      - "DO NOT MERGE"
+      - "wip"
+      - "draft"
+      - "[skip ci]"
+      - "[no review]"
+    labels: []
+    base_branches: []
+
+  # --------------------------------------------------------------------------
+  # Finishing Touches
+  # --------------------------------------------------------------------------
+  finishing_touches:
+    docstrings:
+      enabled: true
+    unit_tests:
+      enabled: true
+
+  # --------------------------------------------------------------------------
+  # Tools - Outils d'analyse statique
+  # --------------------------------------------------------------------------
+  tools:
+    # Sécurité - Toujours activés
+    gitleaks:
+      enabled: true
+    semgrep:
+      enabled: true
+    
+    # Java - PMD avec ruleset custom si disponible
+    pmd:
+      enabled: true
+      # config_file: "config/pmd-ruleset.xml"
+    
+    # AST-grep - Règles essentielles (pas de propriété "enabled")
+    ast-grep:
+      essential_rules: true
+      rule_dirs: []
+      packages: []
+    
+    # Shell scripts
+    shellcheck:
+      enabled: true
+    
+    # YAML/Markdown
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    
+    # Désactivation outils non pertinents (pas de JS/Python/Ruby/Go)
+    eslint:
+      enabled: false
+    biome:
+      enabled: false
+    ruff:
+      enabled: false
+    pylint:
+      enabled: false
+    rubocop:
+      enabled: false
+    golangci-lint:
+      enabled: false
+
+# ============================================================================
+# CHAT
+# ============================================================================
+chat:
+  auto_reply: true
+
+# ============================================================================
+# KNOWLEDGE BASE
+# ============================================================================
+knowledge_base:
+  learnings:
+    scope: "global"
+  code_guidelines:
+    enabled: true
+  web_search:
+    enabled: true
+
+# ============================================================================
+# Notes d'implémentation
+# ============================================================================
+# 
+# STACK TECHNIQUE:
+# - Java 21 (records, virtual threads, pattern matching)
+# - LangChain4j 1.0+ (RAG pipeline)
+# - PostgreSQL 17 + pgvector 0.8.1 (HNSW index)
+# - Apache AGE 1.6.0 (graph Cypher)
+# - all-MiniLM-L6-v2 ONNX (384 dimensions)
+# - MCP Java SDK (exposition Claude Code)
+#
+# PARAMÈTRES CRITIQUES:
+# - Embedding dimension: 384 (JAMAIS hardcodé)
+# - Chunk size: 200-1000 tokens selon niveau
+# - HNSW: m=16, ef_construction=64
+# - ContentRetriever: maxResults=5, minScore=0.75
+# - Connection pool: 10-20 connexions
+#
+# RÈGLES DE SÉCURITÉ:
+# - PreparedStatement obligatoire (jamais Statement)
+# - try-with-resources pour toutes ressources JDBC
+# - Pas de credentials dans le code
+# - Paramètres bindés pour Cypher AGE
+#
+# ============================================================================

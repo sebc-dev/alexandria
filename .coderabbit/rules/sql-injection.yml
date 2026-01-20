@@ -1,0 +1,110 @@
+# Règles ast-grep pour détection d'injection SQL en Java
+# À placer dans .coderabbit/rules/sql-injection.yml
+
+id: sql-injection-execute-query-concat
+language: java
+severity: error
+message: |
+  Injection SQL potentielle: concaténation détectée dans executeQuery().
+  Utiliser PreparedStatement avec paramètres (?) à la place.
+rule:
+  kind: method_invocation
+  pattern: $STMT.executeQuery($SQL + $VAR)
+note: |
+  INCORRECT:
+    stmt.executeQuery("SELECT * FROM users WHERE id = " + userId);
+  
+  CORRECT:
+    PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+    ps.setInt(1, userId);
+    ResultSet rs = ps.executeQuery();
+
+---
+id: sql-injection-execute-update-concat
+language: java
+severity: error
+message: |
+  Injection SQL potentielle: concaténation détectée dans executeUpdate().
+  Utiliser PreparedStatement avec paramètres (?) à la place.
+rule:
+  kind: method_invocation
+  pattern: $STMT.executeUpdate($SQL + $VAR)
+
+---
+id: create-statement-forbidden
+language: java
+severity: warning
+message: |
+  createStatement() ne supporte pas les paramètres. 
+  Utiliser prepareStatement() pour requêtes paramétrées.
+rule:
+  pattern: $CONN.createStatement()
+note: |
+  INCORRECT:
+    Statement stmt = conn.createStatement();
+    stmt.executeQuery("SELECT * FROM users WHERE id = " + id);
+  
+  CORRECT:
+    PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+    ps.setInt(1, id);
+
+---
+id: prepared-statement-string-format
+language: java
+severity: error
+message: |
+  String.format() avec PreparedStatement annule la protection contre l'injection.
+  Utiliser des placeholders (?) et setString/setInt.
+rule:
+  pattern: $CONN.prepareStatement(String.format($$$))
+note: |
+  INCORRECT:
+    conn.prepareStatement(String.format("SELECT * FROM %s WHERE id = %d", table, id));
+  
+  Pour les noms de tables dynamiques, utiliser une whitelist validée.
+
+---
+id: prepared-statement-concat-in-call
+language: java
+severity: error
+message: |
+  PreparedStatement créé avec SQL concaténé - vulnérable à l'injection.
+  Les placeholders (?) ne seront pas efficaces.
+rule:
+  kind: method_invocation
+  all:
+    - has:
+        field: name
+        regex: ^prepareStatement$
+    - has:
+        field: arguments
+        kind: binary_expression
+note: |
+  INCORRECT:
+    conn.prepareStatement("SELECT * FROM users WHERE name = '" + name + "'");
+  
+  CORRECT:
+    conn.prepareStatement("SELECT * FROM users WHERE name = ?");
+
+---
+id: cypher-injection-concat
+language: java
+severity: error
+message: |
+  Requête Cypher (Apache AGE) construite par concaténation - vulnérable à l'injection.
+  Utiliser des paramètres bindés: WHERE n.id = $id
+rule:
+  kind: binary_expression
+  all:
+    - has:
+        kind: string_literal
+        regex: (MATCH|CREATE|MERGE|DELETE|SET|RETURN|WHERE)
+    - has:
+        kind: identifier
+note: |
+  INCORRECT:
+    "MATCH (n:Document) WHERE n.id = '" + docId + "' RETURN n"
+  
+  CORRECT:
+    "MATCH (n:Document) WHERE n.id = $docId RETURN n"
+    avec paramètres bindés via l'API AGE
