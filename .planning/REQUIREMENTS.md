@@ -17,10 +17,10 @@
 
 ### Recherche
 
-- [ ] **SRCH-01**: Recherche semantique par similarite cosine sur embeddings
-- [ ] **SRCH-02**: Retourner chunks enfants avec contexte parent
-- [ ] **SRCH-03**: Filtrer resultats par categorie
-- [ ] **SRCH-04**: Filtrer resultats par tags
+- [x] **SRCH-01**: Recherche semantique par similarite cosine sur embeddings
+- [x] **SRCH-02**: Retourner chunks enfants avec contexte parent
+- [x] **SRCH-03**: Filtrer resultats par categorie
+- [x] **SRCH-04**: Filtrer resultats par tags
 - [ ] **SRCH-05**: Recherche hybride vector + full-text (tsvector PostgreSQL)
 - [ ] **SRCH-06**: Traversee graph pour trouver documents lies via AGE
 
@@ -90,10 +90,10 @@
 | ING-05 | Phase 2 | Complete |
 | ING-06 | Phase 3 | Complete |
 | ING-07 | Phase 3 | Complete |
-| SRCH-01 | Phase 4 | Pending |
-| SRCH-02 | Phase 4 | Pending |
-| SRCH-03 | Phase 4 | Pending |
-| SRCH-04 | Phase 4 | Pending |
+| SRCH-01 | Phase 4 | Complete |
+| SRCH-02 | Phase 4 | Complete |
+| SRCH-03 | Phase 4 | Complete |
+| SRCH-04 | Phase 4 | Complete |
 | SRCH-05 | Phase 5 | Pending |
 | SRCH-06 | Phase 5 | Pending |
 | MCP-01 | Phase 6 | Pending |
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-20 - Phase 3 complete (ING-06, ING-07)*
+*Last updated: 2026-01-20 - Phase 4 complete (SRCH-01, SRCH-02, SRCH-03, SRCH-04)*
