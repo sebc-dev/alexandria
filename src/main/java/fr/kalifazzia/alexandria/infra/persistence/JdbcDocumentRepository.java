@@ -134,6 +134,32 @@ public class JdbcDocumentRepository implements DocumentRepository {
         return jdbcTemplate.queryForList(sql, String.class);
     }
 
+    @Override
+    public long count() {
+        Long result = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM documents",
+            Long.class
+        );
+        return result != null ? result : 0L;
+    }
+
+    @Override
+    public Optional<Instant> findLastUpdated() {
+        List<Timestamp> results = jdbcTemplate.query(
+            "SELECT MAX(updated_at) FROM documents",
+            (rs, rowNum) -> rs.getTimestamp(1)
+        );
+        if (results.isEmpty() || results.getFirst() == null) {
+            return Optional.empty();
+        }
+        return Optional.of(results.getFirst().toInstant());
+    }
+
+    @Override
+    public void deleteAll() {
+        jdbcTemplate.update("DELETE FROM documents");
+    }
+
     private Document mapRow(ResultSet rs, int rowNum) throws SQLException {
         UUID id = rs.getObject("id", UUID.class);
         String path = rs.getString("path");

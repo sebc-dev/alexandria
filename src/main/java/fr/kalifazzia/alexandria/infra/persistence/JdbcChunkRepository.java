@@ -70,6 +70,20 @@ public class JdbcChunkRepository implements ChunkRepository {
                 """, chunkRowMapper, documentId);
     }
 
+    @Override
+    public long count() {
+        Long result = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM chunks",
+            Long.class
+        );
+        return result != null ? result : 0L;
+    }
+
+    @Override
+    public void deleteAll() {
+        jdbcTemplate.update("DELETE FROM chunks");
+    }
+
     private Chunk mapRow(ResultSet rs, int rowNum) throws SQLException {
         UUID id = rs.getObject("id", UUID.class);
         UUID documentId = rs.getObject("document_id", UUID.class);
