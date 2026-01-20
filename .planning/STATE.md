@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 6 - MCP Server (Complete)
+**Current focus:** Phase 7 - CLI (In Progress)
 
 ## Current Position
 
-Phase: 6 of 7 (MCP Server)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 06-02-PLAN.md (MCP Tools)
+Phase: 7 of 7 (CLI)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-20 - Completed 07-01-PLAN.md (CLI Foundation)
 
-Progress: [#############] 93%
+Progress: [##############] 94%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 3.3 min
-- Total execution time: 0.72 hours
+- Total plans completed: 14
+- Average duration: 3.2 min
+- Total execution time: 0.75 hours
 
 **By Phase:**
 
@@ -33,9 +33,10 @@ Progress: [#############] 93%
 | 04-recherche-base | 2 | 4 min | 2.0 min |
 | 05-recherche-avancee | 2 | 7 min | 3.5 min |
 | 06-mcp-server | 2 | 5 min | 2.5 min |
+| 07-cli | 1 | 2 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (4 min), 05-02 (3 min), 06-01 (3 min), 06-02 (2 min)
+- Last 5 plans: 05-02 (3 min), 06-01 (3 min), 06-02 (2 min), 07-01 (2 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - DTOs use String for UUIDs and timestamps for cleaner JSON
 - Tool names use snake_case per MCP convention
 - Thin facade pattern: tools delegate to existing services
+- Spring Shell 3.4.1 for CLI (latest stable, Spring Boot 3.4 compatible)
+- CLI profile disables interactive mode for single-command execution
+- Repository statistics methods: count() returns long, findLastUpdated() returns Optional<Instant>
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 18:18 UTC
-Stopped at: Completed 06-02-PLAN.md (MCP Tools)
+Last session: 2026-01-20 20:05 UTC
+Stopped at: Completed 07-01-PLAN.md (CLI Foundation)
 Resume file: None
