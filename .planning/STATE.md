@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 2 - Ingestion Core (Complete)
+**Current focus:** Phase 3 - Graph Relations (In Progress)
 
 ## Current Position
 
-Phase: 2 of 7 (Ingestion Core)
-Plan: 3 of 3 in current phase (Phase Complete)
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 02-03-PLAN.md (Embedding and Ingestion Pipeline)
+Phase: 3 of 7 (Graph Relations)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-20 - Completed 03-01-PLAN.md (Graph Repository and Ingestion Integration)
 
-Progress: [#####.....] 36%
+Progress: [######....] 43%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 3.2 min
-- Total execution time: 0.27 hours
+- Total plans completed: 6
+- Average duration: 3.3 min
+- Total execution time: 0.33 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [#####.....] 36%
 |-------|-------|-------|----------|
 | 01-infrastructure | 2 | 5 min | 2.5 min |
 | 02-ingestion-core | 3 | 13 min | 4.3 min |
+| 03-graph-relations | 1 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (3 min), 02-01 (4 min), 02-02 (2 min), 02-03 (7 min)
+- Last 5 plans: 02-01 (4 min), 02-02 (2 min), 02-03 (7 min), 03-01 (4 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - SHA-256 content hash prevents redundant re-indexing of unchanged files
 - Upsert pattern: delete old chunks then insert new, not update in place
 - Testcontainers with pgvector/pgvector:pg17 for integration testing
+- GraphRepository: cypher() function with AS clause for AGE queries
+- DETACH DELETE for cascading vertex/edge deletion in graph
+- Graph data deleted before PostgreSQL data during re-indexing
 
 ### Pending Todos
 
@@ -73,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 10:18 UTC
-Stopped at: Completed 02-03-PLAN.md (Embedding and Ingestion Pipeline)
+Last session: 2026-01-20 14:39 UTC
+Stopped at: Completed 03-01-PLAN.md (Graph Repository and Ingestion Integration)
 Resume file: None
