@@ -17,6 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -38,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @Testcontainers
+@ActiveProfiles("test")
 @Tag("integration")
 @DisplayName("Ingestion Integration Tests")
 class IngestionIT {
@@ -45,7 +47,7 @@ class IngestionIT {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg17")
-    );
+    ).withInitScript("init-test-db.sql");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
