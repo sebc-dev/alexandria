@@ -13,7 +13,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 - [x] **Phase 1: Infrastructure** - PostgreSQL 17 avec pgvector et Apache AGE pret au dev
 - [x] **Phase 2: Ingestion Core** - Pipeline d'indexation markdown avec embeddings locaux
 - [x] **Phase 3: Graph Relations** - Relations parent-child et references croisees dans AGE
-- [ ] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
+- [x] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
 - [ ] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
 - [ ] **Phase 6: MCP Server** - Tools exposes pour Claude Code
 - [ ] **Phase 7: CLI** - Commandes pour indexation et maintenance
@@ -75,11 +75,11 @@ Plans:
   2. Les resultats incluent le chunk enfant et son contexte parent
   3. Les resultats peuvent etre filtres par categorie
   4. Les resultats peuvent etre filtres par tags
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Recherche semantique pgvector
-- [ ] 04-02: Contexte parent et filtres
+- [x] 04-01-PLAN.md — Search domain models (SearchResult, SearchFilters) and SearchRepository port
+- [x] 04-02-PLAN.md — JdbcSearchRepository with pgvector, SearchService, unit and integration tests
 
 ### Phase 5: Recherche Avancee
 **Goal**: Recherche hybride et exploration du graph de documents
@@ -135,12 +135,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Infrastructure | 2/2 | Complete | 2026-01-19 |
 | 2. Ingestion Core | 3/3 | Complete | 2026-01-20 |
 | 3. Graph Relations | 2/2 | Complete | 2026-01-20 |
-| 4. Recherche Base | 0/2 | Not started | - |
+| 4. Recherche Base | 2/2 | Complete | 2026-01-20 |
 | 5. Recherche Avancee | 0/2 | Not started | - |
 | 6. MCP Server | 0/2 | Not started | - |
 | 7. CLI | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 3 complete: 2026-01-20*
+*Phase 4 complete: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*

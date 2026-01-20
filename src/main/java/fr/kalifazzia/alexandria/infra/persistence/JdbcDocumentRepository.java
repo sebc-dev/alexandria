@@ -112,8 +112,12 @@ public class JdbcDocumentRepository implements DocumentRepository {
         if (sqlArray == null) {
             return List.of();
         }
-        String[] array = (String[]) sqlArray.getArray();
-        return array != null ? List.of(array) : List.of();
+        try {
+            String[] array = (String[]) sqlArray.getArray();
+            return array != null ? List.of(array) : List.of();
+        } finally {
+            sqlArray.free();
+        }
     }
 
     private String serializeFrontmatter(Map<String, Object> frontmatter) {

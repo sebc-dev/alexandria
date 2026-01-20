@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 3 - Graph Relations (Complete)
+**Current focus:** Phase 4 - Recherche Base (Complete)
 
 ## Current Position
 
-Phase: 3 of 7 (Graph Relations)
+Phase: 4 of 7 (Recherche Base)
 Plan: 2 of 2 in current phase
 Status: Phase complete
-Last activity: 2026-01-20 - Completed 03-02-PLAN.md (Cross-Reference Extraction)
+Last activity: 2026-01-20 - Completed 04-02-PLAN.md (Search Implementation)
 
-Progress: [#######...] 50%
+Progress: [#########.] 64%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 3.9 min
-- Total execution time: 0.45 hours
+- Total plans completed: 9
+- Average duration: 3.5 min
+- Total execution time: 0.53 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [#######...] 50%
 | 01-infrastructure | 2 | 5 min | 2.5 min |
 | 02-ingestion-core | 3 | 13 min | 4.3 min |
 | 03-graph-relations | 2 | 12 min | 6.0 min |
+| 04-recherche-base | 2 | 4 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (2 min), 02-03 (7 min), 03-01 (4 min), 03-02 (8 min)
+- Last 5 plans: 03-01 (4 min), 03-02 (8 min), 04-01 (1 min), 04-02 (3 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -69,6 +70,12 @@ Recent decisions affecting current work:
 - Cross-references extracted even for short files (links provide value)
 - Forward references only in v1 (target must be indexed first)
 - Gson for agtype JSON parsing (Spring Boot managed version)
+- SearchResult includes parentContext for LLM context expansion
+- SearchFilters validates maxResults (1-100), minSimilarity (0-1) in compact constructor
+- SearchRepository searches CHILD chunks only, returns parent context via JOIN
+- Post-filter minSimilarity in Java (pgvector post-filters AFTER HNSW scan)
+- Fetch 3x results when minSimilarity set to compensate for client-side filtering
+- Use tags @> containment operator for array filtering with GIN index
 
 ### Pending Todos
 
@@ -81,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 13:47 UTC
-Stopped at: Completed 03-02-PLAN.md (Cross-Reference Extraction)
+Last session: 2026-01-20 15:46 UTC
+Stopped at: Completed 04-02-PLAN.md (Search Implementation)
 Resume file: None
