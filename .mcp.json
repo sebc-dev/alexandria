@@ -4,9 +4,10 @@
       "type": "stdio",
       "command": "java",
       "args": [
+        "--enable-native-access=ALL-UNNAMED",
         "-jar",
-        "-Dspring.profiles.active=mcp",
-        "target/alexandria-0.1.0-SNAPSHOT.jar"
+        "target/alexandria-0.1.0-SNAPSHOT.jar",
+        "--spring.profiles.active=mcp"
       ],
       "env": {
         "SPRING_DATASOURCE_URL": "jdbc:postgresql://localhost:5432/alexandria?sslmode=disable",
