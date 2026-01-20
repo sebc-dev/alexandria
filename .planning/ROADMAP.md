@@ -89,11 +89,11 @@ Plans:
   1. La recherche combine vector similarity et full-text PostgreSQL (tsvector)
   2. Les documents lies via le graph AGE sont retournes en complement
   3. La traversee graph permet de decouvrir documents a 1-2 hops de distance
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Recherche hybride vector + fulltext
-- [ ] 05-02: Traversee graph pour documents lies
+- [ ] 05-01-PLAN.md — Hybrid search (vector + fulltext) with RRF scoring
+- [ ] 05-02-PLAN.md — Graph traversal integration for related documents
 
 ### Phase 6: MCP Server
 **Goal**: Claude Code peut acceder a la documentation via tools MCP
@@ -142,5 +142,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 4 complete: 2026-01-20*
+*Phase 5 planned: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*
