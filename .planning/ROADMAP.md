@@ -45,12 +45,12 @@ Plans:
   3. Les embeddings all-MiniLM-L6-v2 sont generes pour chaque chunk
   4. Les metadonnees (titre, tags, categorie) sont extraites du frontmatter YAML
   5. Les embeddings sont stockes dans pgvector avec index HNSW
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Markdown parser et extraction frontmatter
-- [ ] 02-02: Chunking hierarchique
-- [ ] 02-03: Embeddings et stockage pgvector
+- [ ] 02-01-PLAN.md — Domain models, MarkdownParser with frontmatter extraction, DocumentRepository
+- [ ] 02-02-PLAN.md — HierarchicalChunker with two-pass splitting (parent 1000 / child 200 tokens)
+- [ ] 02-03-PLAN.md — EmbeddingGenerator, ChunkRepository with pgvector, IngestionService orchestration
 
 ### Phase 3: Graph Relations
 **Goal**: Les relations hierarchiques et references entre documents sont stockees dans AGE
@@ -132,8 +132,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 2/2 | ✓ Complete | 2026-01-19 |
-| 2. Ingestion Core | 0/3 | Not started | - |
+| 1. Infrastructure | 2/2 | Complete | 2026-01-19 |
+| 2. Ingestion Core | 0/3 | Planned | - |
 | 3. Graph Relations | 0/2 | Not started | - |
 | 4. Recherche Base | 0/2 | Not started | - |
 | 5. Recherche Avancee | 0/2 | Not started | - |
@@ -142,4 +142,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-19*
+*Phase 2 planned: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*
