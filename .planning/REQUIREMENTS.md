@@ -26,17 +26,17 @@
 
 ### MCP Server
 
-- [ ] **MCP-01**: Tool `search_docs` - recherche semantique avec filtres optionnels
-- [ ] **MCP-02**: Tool `index_docs` - declencher indexation d'un repertoire
-- [ ] **MCP-03**: Tool `list_categories` - lister categories disponibles
-- [ ] **MCP-04**: Tool `get_doc` - recuperer document complet par ID
+- [x] **MCP-01**: Tool `search_docs` - recherche semantique avec filtres optionnels
+- [x] **MCP-02**: Tool `index_docs` - declencher indexation d'un repertoire
+- [x] **MCP-03**: Tool `list_categories` - lister categories disponibles
+- [x] **MCP-04**: Tool `get_doc` - recuperer document complet par ID
 
 ### CLI
 
-- [ ] **CLI-01**: Commande `index <path>` - indexer repertoire de markdown
-- [ ] **CLI-02**: Commande `search <query>` - tester une recherche
-- [ ] **CLI-03**: Commande `status` - afficher etat de la base (nb docs, derniere indexation)
-- [ ] **CLI-04**: Commande `clear` - vider la base pour reindexation complete
+- [x] **CLI-01**: Commande `index <path>` - indexer repertoire de markdown
+- [x] **CLI-02**: Commande `search <query>` - tester une recherche
+- [x] **CLI-03**: Commande `status` - afficher etat de la base (nb docs, derniere indexation)
+- [x] **CLI-04**: Commande `clear` - vider la base pour reindexation complete
 
 ### Infrastructure
 
@@ -96,14 +96,14 @@
 | SRCH-04 | Phase 4 | Complete |
 | SRCH-05 | Phase 5 | Complete |
 | SRCH-06 | Phase 5 | Complete |
-| MCP-01 | Phase 6 | Pending |
-| MCP-02 | Phase 6 | Pending |
-| MCP-03 | Phase 6 | Pending |
-| MCP-04 | Phase 6 | Pending |
-| CLI-01 | Phase 7 | Pending |
-| CLI-02 | Phase 7 | Pending |
-| CLI-03 | Phase 7 | Pending |
-| CLI-04 | Phase 7 | Pending |
+| MCP-01 | Phase 6 | Complete |
+| MCP-02 | Phase 6 | Complete |
+| MCP-03 | Phase 6 | Complete |
+| MCP-04 | Phase 6 | Complete |
+| CLI-01 | Phase 7 | Complete |
+| CLI-02 | Phase 7 | Complete |
+| CLI-03 | Phase 7 | Complete |
+| CLI-04 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 25 total
@@ -112,4 +112,4 @@
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-20 - Phase 5 complete (SRCH-05, SRCH-06)*
+*Last updated: 2026-01-20 - Milestone v1 complete (all 25 requirements)*

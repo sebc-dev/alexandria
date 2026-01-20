@@ -16,7 +16,7 @@ Ce roadmap guide la construction d'un systeme RAG personnel pour indexer et rech
 - [x] **Phase 4: Recherche Base** - Recherche semantique avec filtres categorie/tags
 - [x] **Phase 5: Recherche Avancee** - Hybride vector+fulltext et traversee graph
 - [x] **Phase 6: MCP Server** - Tools exposes pour Claude Code
-- [ ] **Phase 7: CLI** - Commandes pour indexation et maintenance
+- [x] **Phase 7: CLI** - Commandes pour indexation et maintenance
 
 ## Phase Details
 
@@ -123,8 +123,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Spring Shell dependency, CLI profile config, repository extensions (count, findLastUpdated, deleteAll, clearAll)
-- [ ] 07-02-PLAN.md — AlexandriaCommands (index, search, status, clear) with exit code handling
+- [x] 07-01-PLAN.md — Spring Shell dependency, CLI profile config, repository extensions (count, findLastUpdated, deleteAll, clearAll)
+- [x] 07-02-PLAN.md — AlexandriaCommands (index, search, status, clear) with exit code handling
 
 ## Progress
 
@@ -139,7 +139,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Recherche Base | 2/2 | Complete | 2026-01-20 |
 | 5. Recherche Avancee | 2/2 | Complete | 2026-01-20 |
 | 6. MCP Server | 2/2 | Complete | 2026-01-20 |
-| 7. CLI | 0/2 | Planned | - |
+| 7. CLI | 2/2 | Complete | 2026-01-20 |
 
 ---
 *Roadmap created: 2026-01-19*
