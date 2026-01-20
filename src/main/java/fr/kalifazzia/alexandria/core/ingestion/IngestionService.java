@@ -11,6 +11,7 @@ import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,7 @@ public class IngestionService {
     private final ChunkRepository chunkRepository;
     private final GraphRepository graphRepository;
     private final CrossReferenceExtractorPort crossReferenceExtractor;
+    private final ApplicationEventPublisher eventPublisher;
 
     public IngestionService(
             MarkdownParserPort markdownParser,
@@ -66,7 +69,8 @@ public class IngestionService {
             DocumentRepository documentRepository,
             ChunkRepository chunkRepository,
             GraphRepository graphRepository,
-            CrossReferenceExtractorPort crossReferenceExtractor) {
+            CrossReferenceExtractorPort crossReferenceExtractor,
+            ApplicationEventPublisher eventPublisher) {
         this.markdownParser = markdownParser;
         this.chunker = chunker;
         this.embeddingGenerator = embeddingGenerator;
@@ -74,6 +78,7 @@ public class IngestionService {
         this.chunkRepository = chunkRepository;
         this.graphRepository = graphRepository;
         this.crossReferenceExtractor = crossReferenceExtractor;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -132,12 +137,12 @@ public class IngestionService {
         if (existing.isPresent()) {
             log.debug("File changed, re-indexing: {}", file);
             UUID existingId = existing.get().id();
-            // Delete graph data first (before PostgreSQL deletion)
-            graphRepository.deleteChunksByDocumentId(existingId);
-            graphRepository.deleteDocumentGraph(existingId);
-            // Then delete from PostgreSQL tables
+            // Delete from PostgreSQL first (transactional - will rollback on failure)
             chunkRepository.deleteByDocumentId(existingId);
             documentRepository.delete(existingId);
+            // Then delete graph data (if PostgreSQL succeeds, graph cleanup is safe)
+            graphRepository.deleteChunksByDocumentId(existingId);
+            graphRepository.deleteDocumentGraph(existingId);
         }
 
         // Parse markdown and extract frontmatter
@@ -159,8 +164,8 @@ public class IngestionService {
                 convertFrontmatter(parsed.metadata().rawFrontmatter())
         ));
 
-        // Create document vertex in graph
-        graphRepository.createDocumentVertex(document.id(), document.path());
+        // Collect graph operations to execute after PostgreSQL commit
+        List<DocumentIngestedEvent.ChunkGraphOperation> chunkOps = new ArrayList<>();
 
         // Chunk content hierarchically
         List<ChunkPair> chunkPairs = chunker.chunk(parsed.content());
@@ -180,8 +185,9 @@ public class IngestionService {
             );
             totalChunks++;
 
-            // Create parent chunk vertex in graph
-            graphRepository.createChunkVertex(parentId, ChunkType.PARENT, document.id());
+            // Queue parent chunk vertex creation (no parent edge)
+            chunkOps.add(new DocumentIngestedEvent.ChunkGraphOperation(
+                    parentId, ChunkType.PARENT, document.id(), null));
 
             // Generate and save child chunks
             for (int i = 0; i < pair.childContents().size(); i++) {
@@ -197,41 +203,46 @@ public class IngestionService {
                 );
                 totalChunks++;
 
-                // Create child chunk vertex and HAS_CHILD edge in graph
-                graphRepository.createChunkVertex(childId, ChunkType.CHILD, document.id());
-                graphRepository.createParentChildEdge(parentId, childId);
+                // Queue child chunk vertex and HAS_CHILD edge creation
+                chunkOps.add(new DocumentIngestedEvent.ChunkGraphOperation(
+                        childId, ChunkType.CHILD, document.id(), parentId));
             }
         }
 
-        // Extract cross-references and create REFERENCES edges
-        // This runs even for short files with no chunks - links still provide value
-        int referencesCreated = extractAndCreateReferences(file, parsed.content(), document);
+        // Extract cross-references (collect as operations, don't create edges yet)
+        List<DocumentIngestedEvent.ReferenceEdgeOperation> refOps =
+                collectReferenceOperations(file, parsed.content(), document);
 
-        log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references",
+        // Publish event for graph operations to execute after PostgreSQL commit
+        eventPublisher.publishEvent(new DocumentIngestedEvent(
+                document.id(), document.path(), chunkOps, refOps));
+
+        log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references queued",
                 file.getFileName(),
                 totalChunks,
                 chunkPairs.size(),
                 totalChunks - chunkPairs.size(),
-                referencesCreated);
+                refOps.size());
     }
 
     /**
-     * Extracts markdown links from content and creates REFERENCES edges to target documents.
-     * Only creates edges for links where the target document has already been indexed.
+     * Extracts markdown links from content and collects REFERENCES edge operations.
+     * Only includes edges for links where the target document has already been indexed.
      *
      * @param sourceFile Path to the source file
      * @param content Parsed markdown content
      * @param document The source document
-     * @return Number of REFERENCES edges created
+     * @return List of reference edge operations to execute after commit
      */
-    private int extractAndCreateReferences(Path sourceFile, String content, Document document) {
+    private List<DocumentIngestedEvent.ReferenceEdgeOperation> collectReferenceOperations(
+            Path sourceFile, String content, Document document) {
         List<CrossReferenceExtractorPort.ExtractedLink> links = crossReferenceExtractor.extractLinks(content);
 
         if (links.isEmpty()) {
-            return 0;
+            return List.of();
         }
 
-        int referencesCreated = 0;
+        List<DocumentIngestedEvent.ReferenceEdgeOperation> refOps = new ArrayList<>();
         for (CrossReferenceExtractorPort.ExtractedLink link : links) {
             Optional<Path> resolvedPath = crossReferenceExtractor.resolveLink(sourceFile, link.relativePath());
 
@@ -240,13 +251,12 @@ public class IngestionService {
                 Optional<Document> targetDoc = documentRepository.findByPath(targetPath);
 
                 if (targetDoc.isPresent()) {
-                    graphRepository.createReferenceEdge(
+                    refOps.add(new DocumentIngestedEvent.ReferenceEdgeOperation(
                             document.id(),
                             targetDoc.get().id(),
                             link.linkText()
-                    );
-                    referencesCreated++;
-                    log.debug("Created reference: {} -> {} ('{}')",
+                    ));
+                    log.debug("Queued reference: {} -> {} ('{}')",
                             sourceFile.getFileName(), resolvedPath.get().getFileName(), link.linkText());
                 } else {
                     log.debug("Target document not indexed, skipping reference: {} -> {}",
@@ -255,7 +265,7 @@ public class IngestionService {
             }
         }
 
-        return referencesCreated;
+        return refOps;
     }
 
     /**

@@ -19,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,6 +67,9 @@ class IngestionServiceTest {
     @Mock
     private CrossReferenceExtractorPort crossReferenceExtractor;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private IngestionService service;
 
     @TempDir
@@ -80,7 +84,8 @@ class IngestionServiceTest {
                 documentRepository,
                 chunkRepository,
                 graphRepository,
-                crossReferenceExtractor
+                crossReferenceExtractor,
+                eventPublisher
         );
     }
 
@@ -307,7 +312,7 @@ class IngestionServiceTest {
         }
 
         @Test
-        @DisplayName("should create document vertex in graph after saving document")
+        @DisplayName("should publish event with document info for graph vertex creation")
         void createsDocumentVertexInGraph() throws IOException {
             // Given
             Path file = createTempMarkdownFile("# Test\n\nContent here");
@@ -327,12 +332,16 @@ class IngestionServiceTest {
             // When
             service.ingestFile(file);
 
-            // Then - document vertex created
-            verify(graphRepository).createDocumentVertex(documentId, filePath);
+            // Then - event published with document info
+            ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            DocumentIngestedEvent event = eventCaptor.getValue();
+            assertThat(event.documentId()).isEqualTo(documentId);
+            assertThat(event.documentPath()).isEqualTo(filePath);
         }
 
         @Test
-        @DisplayName("should create chunk vertices and HAS_CHILD edges in graph")
+        @DisplayName("should publish event with chunk operations for graph vertices and edges")
         void createsChunkVerticesAndEdgesInGraph() throws IOException {
             // Given
             Path file = createTempMarkdownFile("# Test\n\nContent here");
@@ -366,19 +375,36 @@ class IngestionServiceTest {
             // When
             service.ingestFile(file);
 
-            // Then - verify graph vertices created
-            verify(graphRepository).createChunkVertex(parentChunkId, ChunkType.PARENT, documentId);
-            verify(graphRepository).createChunkVertex(child1Id, ChunkType.CHILD, documentId);
-            verify(graphRepository).createChunkVertex(child2Id, ChunkType.CHILD, documentId);
+            // Then - verify event contains chunk operations
+            ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            DocumentIngestedEvent event = eventCaptor.getValue();
 
-            // Then - verify HAS_CHILD edges created
-            verify(graphRepository).createParentChildEdge(parentChunkId, child1Id);
-            verify(graphRepository).createParentChildEdge(parentChunkId, child2Id);
+            // Verify 3 chunk operations (1 parent + 2 children)
+            assertThat(event.chunkOperations()).hasSize(3);
+
+            // Parent chunk operation (no parentChunkId)
+            var parentOp = event.chunkOperations().get(0);
+            assertThat(parentOp.chunkId()).isEqualTo(parentChunkId);
+            assertThat(parentOp.chunkType()).isEqualTo(ChunkType.PARENT);
+            assertThat(parentOp.documentId()).isEqualTo(documentId);
+            assertThat(parentOp.parentChunkId()).isNull();
+
+            // Child chunk operations (with parentChunkId for HAS_CHILD edge)
+            var child1Op = event.chunkOperations().get(1);
+            assertThat(child1Op.chunkId()).isEqualTo(child1Id);
+            assertThat(child1Op.chunkType()).isEqualTo(ChunkType.CHILD);
+            assertThat(child1Op.parentChunkId()).isEqualTo(parentChunkId);
+
+            var child2Op = event.chunkOperations().get(2);
+            assertThat(child2Op.chunkId()).isEqualTo(child2Id);
+            assertThat(child2Op.chunkType()).isEqualTo(ChunkType.CHILD);
+            assertThat(child2Op.parentChunkId()).isEqualTo(parentChunkId);
         }
 
         @Test
-        @DisplayName("should delete graph data before PostgreSQL data on re-index")
-        void deletesGraphDataBeforePostgresOnReindex() throws IOException {
+        @DisplayName("should delete PostgreSQL data before graph data on re-index (safer rollback)")
+        void deletesPostgresBeforeGraphOnReindex() throws IOException {
             // Given
             String newContent = "# Updated\n\nNew content";
             Path file = createTempMarkdownFile(newContent);
@@ -402,16 +428,17 @@ class IngestionServiceTest {
             // When
             service.ingestFile(file);
 
-            // Then - verify graph deletion happens before PostgreSQL deletion
-            InOrder inOrder = inOrder(graphRepository, chunkRepository, documentRepository);
-            inOrder.verify(graphRepository).deleteChunksByDocumentId(existingId);
-            inOrder.verify(graphRepository).deleteDocumentGraph(existingId);
+            // Then - verify PostgreSQL deletion happens before graph deletion
+            // This ensures if PostgreSQL fails, graph data remains intact
+            InOrder inOrder = inOrder(chunkRepository, documentRepository, graphRepository);
             inOrder.verify(chunkRepository).deleteByDocumentId(existingId);
             inOrder.verify(documentRepository).delete(existingId);
+            inOrder.verify(graphRepository).deleteChunksByDocumentId(existingId);
+            inOrder.verify(graphRepository).deleteDocumentGraph(existingId);
         }
 
         @Test
-        @DisplayName("should not call graph operations when file unchanged")
+        @DisplayName("should not publish event or call graph operations when file unchanged")
         void noGraphOperationsWhenUnchanged() throws IOException {
             // Given
             String content = "# Test\n\nContent here";
@@ -429,16 +456,14 @@ class IngestionServiceTest {
             // When
             service.ingestFile(file);
 
-            // Then - no graph operations
-            verify(graphRepository, never()).createDocumentVertex(any(), anyString());
-            verify(graphRepository, never()).createChunkVertex(any(), any(), any());
-            verify(graphRepository, never()).createParentChildEdge(any(), any());
+            // Then - no event published and no graph operations
+            verify(eventPublisher, never()).publishEvent(any());
             verify(graphRepository, never()).deleteChunksByDocumentId(any());
             verify(graphRepository, never()).deleteDocumentGraph(any());
         }
 
         @Test
-        @DisplayName("should create REFERENCES edge when link target exists")
+        @DisplayName("should include REFERENCES operation in event when link target exists")
         void createsReferenceEdgeWhenTargetExists() throws IOException {
             // Given - source file with link to target
             Path sourceFile = createTempMarkdownFile("# Source\n\nSee [target](target.md)");
@@ -475,12 +500,20 @@ class IngestionServiceTest {
             // When
             service.ingestFile(sourceFile);
 
-            // Then - REFERENCES edge created
-            verify(graphRepository).createReferenceEdge(sourceDocId, targetDocId, "target");
+            // Then - event contains REFERENCES operation
+            ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            DocumentIngestedEvent event = eventCaptor.getValue();
+
+            assertThat(event.referenceOperations()).hasSize(1);
+            var refOp = event.referenceOperations().get(0);
+            assertThat(refOp.sourceDocId()).isEqualTo(sourceDocId);
+            assertThat(refOp.targetDocId()).isEqualTo(targetDocId);
+            assertThat(refOp.linkText()).isEqualTo("target");
         }
 
         @Test
-        @DisplayName("should not create REFERENCES edge when target not found")
+        @DisplayName("should not include REFERENCES operation in event when target not found")
         void noReferenceEdgeWhenTargetNotFound() throws IOException {
             // Given
             Path sourceFile = createTempMarkdownFile("# Source\n\nSee [missing](missing.md)");
@@ -509,8 +542,12 @@ class IngestionServiceTest {
             // When
             service.ingestFile(sourceFile);
 
-            // Then - no REFERENCES edge created (target not indexed)
-            verify(graphRepository, never()).createReferenceEdge(any(), any(), anyString());
+            // Then - event has no reference operations (target not indexed)
+            ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            DocumentIngestedEvent event = eventCaptor.getValue();
+
+            assertThat(event.referenceOperations()).isEmpty();
         }
 
         @Test
@@ -537,9 +574,12 @@ class IngestionServiceTest {
             // When
             service.ingestFile(file);
 
-            // Then - resolveLink and createReferenceEdge never called
+            // Then - resolveLink never called and event has no reference operations
             verify(crossReferenceExtractor, never()).resolveLink(any(), anyString());
-            verify(graphRepository, never()).createReferenceEdge(any(), any(), anyString());
+
+            ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
+            verify(eventPublisher).publishEvent(eventCaptor.capture());
+            assertThat(eventCaptor.getValue().referenceOperations()).isEmpty();
         }
 
         @Test

@@ -121,7 +121,11 @@ public class AgeGraphRepository implements GraphRepository {
             String agtypeValue = rs.getString("doc_id");
             String docIdStr = parseAgtypeString(agtypeValue);
             if (docIdStr != null) {
-                results.add(UUID.fromString(docIdStr));
+                try {
+                    results.add(UUID.fromString(docIdStr));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid UUID in graph data, skipping: '{}' (raw agtype: {})", docIdStr, agtypeValue);
+                }
             }
         });
 
