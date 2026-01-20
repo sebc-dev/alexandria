@@ -2,6 +2,8 @@ package fr.kalifazzia.alexandria.core.port;
 
 import fr.kalifazzia.alexandria.core.model.Document;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,4 +43,13 @@ public interface DocumentRepository {
      * @param path Path to the document file
      */
     void deleteByPath(String path);
+
+    /**
+     * Finds documents by a collection of IDs.
+     * Used for batch loading document metadata for graph-related results.
+     *
+     * @param ids Collection of document IDs to find
+     * @return List of documents found (may be fewer than requested if some IDs don't exist)
+     */
+    List<Document> findByIds(Collection<UUID> ids);
 }

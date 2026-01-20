@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * JDBC implementation of DocumentRepository.
@@ -90,6 +91,23 @@ public class JdbcDocumentRepository implements DocumentRepository {
     @Override
     public void deleteByPath(String path) {
         jdbcTemplate.update("DELETE FROM documents WHERE path = ?", path);
+    }
+
+    @Override
+    public List<Document> findByIds(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        // Build IN clause with proper parameter binding
+        String placeholders = ids.stream().map(id -> "?").collect(Collectors.joining(", "));
+        String sql = String.format("""
+                SELECT id, path, title, category, tags, content_hash, frontmatter, created_at, updated_at
+                FROM documents
+                WHERE id IN (%s)
+                """, placeholders);
+
+        return jdbcTemplate.query(sql, documentRowMapper, ids.toArray());
     }
 
     private Document mapRow(ResultSet rs, int rowNum) throws SQLException {
