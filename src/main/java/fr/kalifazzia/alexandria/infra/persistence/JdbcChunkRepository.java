@@ -74,7 +74,11 @@ public class JdbcChunkRepository implements ChunkRepository {
         UUID id = rs.getObject("id", UUID.class);
         UUID documentId = rs.getObject("document_id", UUID.class);
         UUID parentChunkId = rs.getObject("parent_chunk_id", UUID.class);
-        ChunkType type = ChunkType.valueOf(rs.getString("chunk_type").toUpperCase());
+        String typeStr = rs.getString("chunk_type");
+        if (typeStr == null) {
+            throw new IllegalStateException("chunk_type is null for chunk ID: " + id);
+        }
+        ChunkType type = ChunkType.valueOf(typeStr.toUpperCase());
         String content = rs.getString("content");
         int position = rs.getInt("position");
         Timestamp timestamp = rs.getTimestamp("created_at");

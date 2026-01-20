@@ -100,8 +100,10 @@ public class JdbcDocumentRepository implements DocumentRepository {
         List<String> tags = arrayToList(rs.getArray("tags"));
         String contentHash = rs.getString("content_hash");
         Map<String, Object> frontmatter = deserializeFrontmatter(rs.getString("frontmatter"));
-        Instant createdAt = rs.getTimestamp("created_at").toInstant();
-        Instant updatedAt = rs.getTimestamp("updated_at").toInstant();
+        Timestamp createdTs = rs.getTimestamp("created_at");
+        Timestamp updatedTs = rs.getTimestamp("updated_at");
+        Instant createdAt = createdTs != null ? createdTs.toInstant() : Instant.now();
+        Instant updatedAt = updatedTs != null ? updatedTs.toInstant() : Instant.now();
 
         return new Document(id, path, title, category, tags, contentHash, frontmatter, createdAt, updatedAt);
     }

@@ -20,8 +20,6 @@ import java.util.List;
 @Component
 public class LangChain4jEmbeddingGenerator implements EmbeddingGenerator {
 
-    private static final int EMBEDDING_DIMENSION = 384;
-
     private final EmbeddingModel model;
 
     /**
@@ -64,6 +62,6 @@ public class LangChain4jEmbeddingGenerator implements EmbeddingGenerator {
 
     @Override
     public int dimension() {
-        return EMBEDDING_DIMENSION;
+        return model.dimension();
     }
 }

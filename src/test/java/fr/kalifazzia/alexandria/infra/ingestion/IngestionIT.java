@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,9 +74,8 @@ class IngestionIT {
 
     @Test
     @DisplayName("should ingest markdown file and create document with chunks")
-    void ingestsMarkdownFile() throws IOException {
+    void ingestsMarkdownFile(@TempDir Path tempDir) throws IOException {
         // Given
-        Path tempDir = Files.createTempDirectory("ingestion-test");
         Path file = tempDir.resolve("test.md");
         Files.writeString(file, """
                 ---
@@ -127,17 +127,12 @@ class IngestionIT {
         for (Chunk child : children) {
             assertThat(child.parentChunkId()).isNotNull();
         }
-
-        // Cleanup
-        Files.deleteIfExists(file);
-        Files.deleteIfExists(tempDir);
     }
 
     @Test
     @DisplayName("should skip re-indexing when content unchanged")
-    void skipsUnchangedContent() throws IOException {
+    void skipsUnchangedContent(@TempDir Path tempDir) throws IOException {
         // Given
-        Path tempDir = Files.createTempDirectory("ingestion-test");
         Path file = tempDir.resolve("test.md");
         String content = """
                 ---
@@ -162,17 +157,12 @@ class IngestionIT {
         Optional<Document> secondDoc = documentRepository.findByPath(file.toAbsolutePath().toString());
         assertThat(secondDoc).isPresent();
         assertThat(secondDoc.get().id()).isEqualTo(firstDoc.get().id());
-
-        // Cleanup
-        Files.deleteIfExists(file);
-        Files.deleteIfExists(tempDir);
     }
 
     @Test
     @DisplayName("should delete old chunks when content changes")
-    void deletesOldChunksOnChange() throws IOException {
+    void deletesOldChunksOnChange(@TempDir Path tempDir) throws IOException {
         // Given
-        Path tempDir = Files.createTempDirectory("ingestion-test");
         Path file = tempDir.resolve("test.md");
         String originalContent = """
                 ---
@@ -217,17 +207,12 @@ class IngestionIT {
         // New chunks exist
         List<Chunk> newChunks = chunkRepository.findByDocumentId(updatedDoc.get().id());
         assertThat(newChunks).isNotEmpty();
-
-        // Cleanup
-        Files.deleteIfExists(file);
-        Files.deleteIfExists(tempDir);
     }
 
     @Test
     @DisplayName("should ingest all markdown files in directory")
-    void ingestsDirectory() throws IOException {
+    void ingestsDirectory(@TempDir Path tempDir) throws IOException {
         // Given
-        Path tempDir = Files.createTempDirectory("ingestion-test");
         Files.writeString(tempDir.resolve("doc1.md"), """
                 ---
                 title: Document One
@@ -250,12 +235,5 @@ class IngestionIT {
         // Then - only markdown files ingested
         Long docCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM documents", Long.class);
         assertThat(docCount).isEqualTo(2);
-
-        // Cleanup
-        Files.walk(tempDir)
-                .sorted((a, b) -> b.compareTo(a))
-                .forEach(p -> {
-                    try { Files.deleteIfExists(p); } catch (IOException ignored) {}
-                });
     }
 }

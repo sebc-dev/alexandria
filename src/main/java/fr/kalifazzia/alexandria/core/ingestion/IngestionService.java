@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 public class IngestionService {
 
     private static final Logger log = LoggerFactory.getLogger(IngestionService.class);
+    private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     private final MarkdownParserPort markdownParser;
     private final ChunkerPort chunker;
@@ -192,9 +193,15 @@ public class IngestionService {
 
     /**
      * Reads file content as UTF-8 string.
+     * @throws IllegalArgumentException if file exceeds MAX_FILE_SIZE_BYTES
      */
     private String readFile(Path file) {
         try {
+            long size = Files.size(file);
+            if (size > MAX_FILE_SIZE_BYTES) {
+                throw new IllegalArgumentException(
+                    "File too large: " + size + " bytes (max: " + MAX_FILE_SIZE_BYTES + ")");
+            }
             return Files.readString(file, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read file: " + file, e);
