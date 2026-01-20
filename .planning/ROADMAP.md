@@ -105,11 +105,11 @@ Plans:
   3. Le tool `list_categories` retourne les categories disponibles
   4. Le tool `get_doc` retourne un document complet par son ID
   5. Claude Code peut invoquer ces tools via le protocole MCP
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: MCP Server setup avec Java SDK
-- [ ] 06-02: Implementation des 4 tools
+- [ ] 06-01-PLAN.md — Spring AI MCP dependency, STDIO profile, DocumentRepository extensions (findById, findDistinctCategories)
+- [ ] 06-02-PLAN.md — MCP tools implementation (search_docs, index_docs, list_categories, get_doc) and .mcp.json
 
 ### Phase 7: CLI
 **Goal**: L'utilisateur peut gerer l'indexation via ligne de commande
@@ -137,10 +137,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Graph Relations | 2/2 | Complete | 2026-01-20 |
 | 4. Recherche Base | 2/2 | Complete | 2026-01-20 |
 | 5. Recherche Avancee | 2/2 | Complete | 2026-01-20 |
-| 6. MCP Server | 0/2 | Not started | - |
+| 6. MCP Server | 0/2 | Planned | - |
 | 7. CLI | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Phase 5 planned: 2026-01-20*
+*Phase 6 planned: 2026-01-20*
 *Total requirements: 25 | Phases: 7 | Depth: standard*

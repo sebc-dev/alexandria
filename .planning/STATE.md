@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 5 - Recherche Avancee (Complete)
+**Current focus:** Phase 6 - MCP Server (Complete)
 
 ## Current Position
 
-Phase: 5 of 7 (Recherche Avancee)
+Phase: 6 of 7 (MCP Server)
 Plan: 2 of 2 in current phase
 Status: Phase complete
-Last activity: 2026-01-20 - Completed 05-02-PLAN.md (Graph Traversal Integration)
+Last activity: 2026-01-20 - Completed 06-02-PLAN.md (MCP Tools)
 
-Progress: [###########] 79%
+Progress: [#############] 93%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 3.5 min
-- Total execution time: 0.63 hours
+- Total plans completed: 13
+- Average duration: 3.3 min
+- Total execution time: 0.72 hours
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: [###########] 79%
 | 03-graph-relations | 2 | 12 min | 6.0 min |
 | 04-recherche-base | 2 | 4 min | 2.0 min |
 | 05-recherche-avancee | 2 | 7 min | 3.5 min |
+| 06-mcp-server | 2 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (1 min), 04-02 (3 min), 05-01 (4 min), 05-02 (3 min)
+- Last 5 plans: 05-01 (4 min), 05-02 (3 min), 06-01 (3 min), 06-02 (2 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -84,6 +85,12 @@ Recent decisions affecting current work:
 - Default maxHops=2 for graph traversal (recommended for documentation)
 - Graceful degradation: graph failures logged, search continues without related docs
 - Deduplication: related documents exclude those already in search results
+- Spring AI MCP 1.0.0 with explicit version (not via BOM to avoid conflicts)
+- MCP SYNC type for blocking operations (matches existing synchronous services)
+- File logging only for MCP profile (console breaks STDIO)
+- DTOs use String for UUIDs and timestamps for cleaner JSON
+- Tool names use snake_case per MCP convention
+- Thin facade pattern: tools delegate to existing services
 
 ### Pending Todos
 
@@ -96,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 17:31 UTC
-Stopped at: Completed 05-02-PLAN.md (Graph Traversal Integration)
+Last session: 2026-01-20 18:18 UTC
+Stopped at: Completed 06-02-PLAN.md (MCP Tools)
 Resume file: None

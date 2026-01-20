@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "alexandria": {
+      "type": "stdio",
+      "command": "java",
+      "args": [
+        "--enable-native-access=ALL-UNNAMED",
+        "-jar",
+        "target/alexandria-0.1.0-SNAPSHOT.jar",
+        "--spring.profiles.active=mcp"
+      ],
+      "env": {
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://localhost:5432/alexandria?sslmode=disable",
+        "SPRING_DATASOURCE_USERNAME": "alexandria",
+        "SPRING_DATASOURCE_PASSWORD": "alexandria"
+      }
+    }
+  }
+}

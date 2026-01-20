@@ -52,4 +52,20 @@ public interface DocumentRepository {
      * @return List of documents found (may be fewer than requested if some IDs don't exist)
      */
     List<Document> findByIds(Collection<UUID> ids);
+
+    /**
+     * Finds a document by its unique ID.
+     *
+     * @param id Document UUID
+     * @return Optional containing the document if found
+     */
+    Optional<Document> findById(UUID id);
+
+    /**
+     * Returns all distinct categories from indexed documents.
+     * Used by list_categories MCP tool.
+     *
+     * @return List of unique category names (excluding null values)
+     */
+    List<String> findDistinctCategories();
 }

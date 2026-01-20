@@ -1,0 +1,28 @@
+# MCP Server profile - STDIO transport for Claude Code integration
+spring:
+  main:
+    # Disable web server for STDIO transport
+    web-application-type: none
+    # Disable banner to prevent stdout pollution
+    banner-mode: off
+
+  ai:
+    mcp:
+      server:
+        name: alexandria
+        version: 0.1.0
+        # SYNC type for blocking database operations
+        type: SYNC
+        # STDIO transport for Claude Code
+        stdio: true
+
+# Alexandria MCP security settings
+alexandria:
+  mcp:
+    # Allowed base directories for index_docs (path traversal protection)
+    # Paths outside these directories will be rejected
+    # Default: user home directory
+    allowed-paths:
+      - ${user.home}
+
+# Logging configured in logback-spring.xml (MCP profile disables console appender)
