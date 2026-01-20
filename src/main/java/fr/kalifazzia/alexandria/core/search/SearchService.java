@@ -62,6 +62,43 @@ public class SearchService {
         return search(query, SearchFilters.simple(maxResults));
     }
 
+    /**
+     * Searches using hybrid vector + full-text search with RRF scoring.
+     *
+     * @param query Text query (used for both embedding generation and full-text search)
+     * @param filters Hybrid search filters including RRF parameters
+     * @return List of search results ordered by combined RRF score
+     * @throws IllegalArgumentException if query is null or blank
+     */
+    public List<SearchResult> hybridSearch(String query, HybridSearchFilters filters) {
+        if (query == null || query.isBlank()) {
+            throw new IllegalArgumentException("Query cannot be null or blank");
+        }
+
+        log.debug("Hybrid searching for: '{}' with filters: {}", query, filters);
+
+        // 1. Generate embedding for vector search
+        float[] queryEmbedding = embeddingGenerator.embed(query);
+
+        // 2. Execute hybrid search (vector + full-text via RRF)
+        List<SearchResult> results = searchRepository.hybridSearch(queryEmbedding, query, filters);
+
+        log.info("Hybrid search for '{}' returned {} results", truncate(query, 50), results.size());
+
+        return results;
+    }
+
+    /**
+     * Convenience method for hybrid search with default RRF parameters.
+     *
+     * @param query Text query
+     * @param maxResults Maximum number of results
+     * @return List of search results
+     */
+    public List<SearchResult> hybridSearch(String query, int maxResults) {
+        return hybridSearch(query, HybridSearchFilters.defaults(maxResults));
+    }
+
     private String truncate(String text, int maxLength) {
         if (text == null || text.length() <= maxLength) {
             return text;
