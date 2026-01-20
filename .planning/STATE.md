@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 2 - Ingestion Core (Plan 1 of 3 complete)
+**Current focus:** Phase 2 - Ingestion Core (Plan 2 of 3 complete)
 
 ## Current Position
 
 Phase: 2 of 7 (Ingestion Core)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-20 - Completed 02-01-PLAN.md (Domain Models and Markdown Parser)
+Last activity: 2026-01-20 - Completed 02-02-PLAN.md (Hierarchical Chunker)
 
-Progress: [###.......] 21%
+Progress: [####......] 29%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3.0 min
-- Total execution time: 0.15 hours
+- Total plans completed: 4
+- Average duration: 2.8 min
+- Total execution time: 0.18 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure | 2 | 5 min | 2.5 min |
-| 02-ingestion-core | 1 | 4 min | 4.0 min |
+| 02-ingestion-core | 2 | 6 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 01-02 (3 min), 02-01 (4 min)
+- Last 5 plans: 01-01 (2 min), 01-02 (3 min), 02-01 (4 min), 02-02 (2 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - CommonMark 0.22.0 for markdown parsing (10-20x faster than pegdown)
 - Java 21 records for immutable domain models with defensive copying
 - Port/adapter pattern for repository (core defines contract, infra implements)
+- Character-based token approximation (~4 chars/token) for LangChain4j DocumentSplitters
+- ChunkPair uses String content to keep domain model independent of LangChain4j types
 
 ### Pending Todos
 
@@ -67,6 +69,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20 10:07 UTC
-Stopped at: Completed 02-01-PLAN.md (Domain Models and Markdown Parser)
+Last session: 2026-01-20 10:10 UTC
+Stopped at: Completed 02-02-PLAN.md (Hierarchical Chunker)
 Resume file: None
