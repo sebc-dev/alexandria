@@ -112,7 +112,7 @@ public class AgeGraphRepository implements GraphRepository {
             """, documentId, maxHops, documentId);
 
         String sql = String.format(
-            "SELECT * FROM cypher('%s', $$ %s $$) AS (doc_id agtype)",
+            "SELECT * FROM cypher('%s', $cypher$ %s $cypher$) AS (doc_id agtype)",
             GRAPH_NAME, cypher
         );
 
@@ -161,7 +161,7 @@ public class AgeGraphRepository implements GraphRepository {
      */
     private void executeCypherUpdate(String cypher) {
         String sql = String.format(
-            "SELECT * FROM cypher('%s', $$ %s $$) AS (result agtype)",
+            "SELECT * FROM cypher('%s', $cypher$ %s $cypher$) AS (result agtype)",
             GRAPH_NAME, cypher
         );
         jdbcTemplate.execute(sql);
@@ -171,6 +171,13 @@ public class AgeGraphRepository implements GraphRepository {
      * Escapes special characters in strings for Cypher queries.
      * Prevents syntax errors and injection with special characters.
      *
+     * <p>Handles:
+     * <ul>
+     *   <li>Backslashes: {@code \} → {@code \\}</li>
+     *   <li>Single quotes: {@code '} → {@code ''}</li>
+     *   <li>Dollar-quote delimiter: {@code $cypher$} → {@code $cypher$$} (prevents SQL injection)</li>
+     * </ul>
+     *
      * @param value String value to escape
      * @return Escaped string safe for Cypher
      */
@@ -178,6 +185,9 @@ public class AgeGraphRepository implements GraphRepository {
         if (value == null) {
             return null;
         }
-        return value.replace("\\", "\\\\").replace("'", "''");
+        return value
+                .replace("\\", "\\\\")
+                .replace("'", "''")
+                .replace("$cypher$", "$cypher$$");
     }
 }
