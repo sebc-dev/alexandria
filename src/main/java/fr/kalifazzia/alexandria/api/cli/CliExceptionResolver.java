@@ -23,6 +23,9 @@ public class CliExceptionResolver implements CommandExceptionResolver {
         if (e instanceof IOException || e instanceof UncheckedIOException) {
             // I/O error (file not found, permission denied, etc.)
             String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            if (message == null || message.isBlank()) {
+                message = e.getClass().getSimpleName();
+            }
             return CommandHandlingResult.of("I/O Error: " + message + "\n", 2);
         }
         // Let other exceptions propagate (Spring Shell handles them)

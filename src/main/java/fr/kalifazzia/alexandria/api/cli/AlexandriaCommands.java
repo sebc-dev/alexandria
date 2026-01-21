@@ -63,6 +63,9 @@ public class AlexandriaCommands {
         if (!Files.isDirectory(directory)) {
             throw new IllegalArgumentException("Path is not a directory: " + directory);
         }
+        if (!Files.isReadable(directory)) {
+            throw new IllegalArgumentException("Directory is not readable: " + directory);
+        }
 
         long startTime = System.currentTimeMillis();
         ingestionService.ingestDirectory(directory);
