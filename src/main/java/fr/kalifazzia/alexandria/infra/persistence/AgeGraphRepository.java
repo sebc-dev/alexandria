@@ -133,6 +133,21 @@ public class AgeGraphRepository implements GraphRepository {
         return results;
     }
 
+    @Override
+    public void clearAll() {
+        // Delete all Chunk vertices first (they reference Document vertices)
+        String cypherChunks = "MATCH (c:Chunk) DETACH DELETE c";
+        executeCypherUpdate(cypherChunks);
+        log.debug("Deleted all Chunk vertices");
+
+        // Then delete all Document vertices
+        String cypherDocs = "MATCH (d:Document) DETACH DELETE d";
+        executeCypherUpdate(cypherDocs);
+        log.debug("Deleted all Document vertices");
+
+        log.info("Cleared all graph data");
+    }
+
     /**
      * Parses an agtype string value to extract the underlying string.
      * Agtype strings are JSON-encoded with quotes, e.g., "\"uuid-value\""

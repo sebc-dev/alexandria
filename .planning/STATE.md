@@ -2,26 +2,26 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-19)
+See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 6 - MCP Server (Complete)
+**Current focus:** Planning next milestone (v1.1)
 
 ## Current Position
 
-Phase: 6 of 7 (MCP Server)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 06-02-PLAN.md (MCP Tools)
+Phase: v1.0 complete
+Plan: All 15 plans shipped
+Status: Ready for next milestone
+Last activity: 2026-01-21 — v1.0 milestone archived
 
-Progress: [#############] 93%
+Progress: v1.0 [################] 100% SHIPPED
 
 ## Performance Metrics
 
-**Velocity:**
-- Total plans completed: 13
+**v1.0 Velocity:**
+- Total plans completed: 15
 - Average duration: 3.3 min
-- Total execution time: 0.72 hours
+- Total execution time: 0.83 hours
 
 **By Phase:**
 
@@ -33,76 +33,38 @@ Progress: [#############] 93%
 | 04-recherche-base | 2 | 4 min | 2.0 min |
 | 05-recherche-avancee | 2 | 7 min | 3.5 min |
 | 06-mcp-server | 2 | 5 min | 2.5 min |
-
-**Recent Trend:**
-- Last 5 plans: 05-01 (4 min), 05-02 (3 min), 06-01 (3 min), 06-02 (2 min)
-- Trend: stable
-
-*Updated after each plan completion*
+| 07-cli | 2 | 7 min | 3.5 min |
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Stack: LangChain4j 1.0.0-beta3, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
-- Embeddings: all-MiniLM-L6-v2 via ONNX (in-process, ~100MB RAM)
-- Chunking: Hierarchical parent (1000 tokens) / child (200 tokens)
-- HNSW index: m=16, ef_construction=100 for optimal recall
-- tsvector: 'simple' config for mixed FR/EN technical content
-- Docker: Multi-stage build pattern for smaller images
-- Java 21 virtual threads: spring.threads.virtual.enabled=true
-- AGE session: HikariCP connection-init-sql loads AGE per connection
-- Architecture: Three-layer (api -> core -> infra) with dependency inversion
-- CommonMark 0.22.0 for markdown parsing (10-20x faster than pegdown)
-- Java 21 records for immutable domain models with defensive copying
-- Port/adapter pattern for repository (core defines contract, infra implements)
-- Character-based token approximation (~4 chars/token) for LangChain4j DocumentSplitters
-- ChunkPair uses String content to keep domain model independent of LangChain4j types
-- Port interfaces (ChunkerPort, MarkdownParserPort) for clean unit testing with mocks
-- SHA-256 content hash prevents redundant re-indexing of unchanged files
-- Upsert pattern: delete old chunks then insert new, not update in place
-- Testcontainers with pgvector/pgvector:pg17 for integration testing
-- GraphRepository: cypher() function with AS clause for AGE queries
-- DETACH DELETE for cascading vertex/edge deletion in graph
-- Graph data deleted before PostgreSQL data during re-indexing
-- CrossReferenceExtractorPort interface for hexagonal architecture and testability
-- Cross-references extracted even for short files (links provide value)
-- Forward references only in v1 (target must be indexed first)
-- Gson for agtype JSON parsing (Spring Boot managed version)
-- SearchResult includes parentContext for LLM context expansion
-- SearchFilters validates maxResults (1-100), minSimilarity (0-1) in compact constructor
-- SearchRepository searches CHILD chunks only, returns parent context via JOIN
-- Post-filter minSimilarity in Java (pgvector post-filters AFTER HNSW scan)
-- Fetch 3x results when minSimilarity set to compensate for client-side filtering
-- Use tags @> containment operator for array filtering with GIN index
-- RRF k=60 default for balanced rank sensitivity in hybrid search
-- websearch_to_tsquery for user-friendly full-text query syntax
-- FULL OUTER JOIN combines results from vector and text search
-- HybridSearchFilters separate record for hybrid-specific parameters
-- Default maxHops=2 for graph traversal (recommended for documentation)
-- Graceful degradation: graph failures logged, search continues without related docs
-- Deduplication: related documents exclude those already in search results
-- Spring AI MCP 1.0.0 with explicit version (not via BOM to avoid conflicts)
-- MCP SYNC type for blocking operations (matches existing synchronous services)
-- File logging only for MCP profile (console breaks STDIO)
-- DTOs use String for UUIDs and timestamps for cleaner JSON
-- Tool names use snake_case per MCP convention
-- Thin facade pattern: tools delegate to existing services
+All v1.0 decisions reviewed and marked as outcomes (all ✓ Good).
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- Docker Desktop WSL integration not enabled - verification of 01-01 and 01-02 pending
-- Integration tests cannot be executed without Docker
+None active. Previous blocker (Docker Desktop WSL integration) was user environment issue.
+
+### Tech Debt (from v1.0)
+
+- MCP tool unit tests missing (wiring verified via service layer tests)
+- Integration tests for hybrid search not present (mocked in unit tests)
 
 ## Session Continuity
 
-Last session: 2026-01-20 18:18 UTC
-Stopped at: Completed 06-02-PLAN.md (MCP Tools)
+Last session: 2026-01-21
+Stopped at: v1.0 milestone complete and archived
 Resume file: None
+
+## Next Steps
+
+Run `/gsd:new-milestone` to start v1.1:
+- Questioning phase for scope
+- Research phase for new features
+- Requirements definition
+- Roadmap creation

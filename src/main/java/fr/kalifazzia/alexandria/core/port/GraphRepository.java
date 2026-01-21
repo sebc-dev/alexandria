@@ -77,4 +77,11 @@ public interface GraphRepository {
      * @return List of document UUIDs that are reachable within maxHops
      */
     List<UUID> findRelatedDocuments(UUID documentId, int maxHops);
+
+    /**
+     * Clears all vertices and edges from the graph.
+     * Used by CLI clear command for full re-indexation.
+     * Uses DETACH DELETE to cascade edge removal.
+     */
+    void clearAll();
 }
