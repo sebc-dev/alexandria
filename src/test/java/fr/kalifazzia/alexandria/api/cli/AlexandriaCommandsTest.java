@@ -10,6 +10,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,16 +98,21 @@ class AlexandriaCommandsTest {
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, null, documentRepository, chunkRepository, graphRepository);
 
+        Instant lastUpdated = Instant.parse("2026-01-20T10:00:00Z");
         when(documentRepository.count()).thenReturn(10L);
         when(chunkRepository.count()).thenReturn(50L);
-        when(documentRepository.findLastUpdated())
-                .thenReturn(Optional.of(Instant.parse("2026-01-20T10:00:00Z")));
+        when(documentRepository.findLastUpdated()).thenReturn(Optional.of(lastUpdated));
 
         String output = commands.status();
 
+        // Compute expected date using same formatter as AlexandriaCommands
+        String expectedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+                .format(lastUpdated);
+
         assertThat(output).contains("Documents: 10");
         assertThat(output).contains("Chunks: 50");
-        assertThat(output).contains("2026-01-20");
+        assertThat(output).contains(expectedDate);
     }
 
     @Test

@@ -18,7 +18,11 @@ public class CliExceptionResolver implements CommandExceptionResolver {
     public CommandHandlingResult resolve(Exception e) {
         if (e instanceof IllegalArgumentException) {
             // User error (invalid arguments)
-            return CommandHandlingResult.of("Error: " + e.getMessage() + "\n", 1);
+            String message = e.getMessage();
+            if (message == null || message.isBlank()) {
+                message = e.getClass().getSimpleName();
+            }
+            return CommandHandlingResult.of("Error: " + message + "\n", 1);
         }
         if (e instanceof IOException || e instanceof UncheckedIOException) {
             // I/O error (file not found, permission denied, etc.)
