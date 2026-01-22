@@ -9,8 +9,8 @@ Requirements for Better DX and Quality Gate milestone. Each maps to roadmap phas
 
 ### Coverage (JaCoCo)
 
-- [ ] **COV-01**: Rapport HTML local genere dans `target/site/jacoco/`
-- [ ] **COV-02**: Rapport XML pour CI et SonarCloud
+- [x] **COV-01**: Rapport HTML local genere dans `target/site/jacoco/`
+- [x] **COV-02**: Rapport XML pour CI et SonarCloud
 - [ ] **COV-03**: Rapports separes pour tests unitaires vs integration
 - [ ] **COV-04**: Rapport agrege merged combinant unit + integration
 
@@ -28,7 +28,7 @@ Requirements for Better DX and Quality Gate milestone. Each maps to roadmap phas
 
 ### Developer Experience
 
-- [ ] **DX-01**: Script `./coverage` lance JaCoCo et affiche resume
+- [x] **DX-01**: Script `./coverage` lance JaCoCo et affiche resume
 - [ ] **DX-02**: Script `./mutation` lance PIT incremental sur fichiers modifies
 - [ ] **DX-03**: Script `./quality` lance tout et affiche resume consolide
 
@@ -50,8 +50,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COV-01 | Phase 11 | Pending |
-| COV-02 | Phase 11 | Pending |
+| COV-01 | Phase 11 | Complete |
+| COV-02 | Phase 11 | Complete |
 | COV-03 | Phase 12 | Pending |
 | COV-04 | Phase 12 | Pending |
 | MUT-01 | Phase 13 | Pending |
@@ -60,7 +60,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-01 | Phase 12 | Pending |
 | CI-02 | Phase 12 | Pending |
 | CI-03 | Phase 14 | Pending |
-| DX-01 | Phase 11 | Pending |
+| DX-01 | Phase 11 | Complete |
 | DX-02 | Phase 13 | Pending |
 | DX-03 | Phase 14 | Pending |
 
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after roadmap creation*
+*Last updated: 2026-01-22 after Phase 11 completion*
