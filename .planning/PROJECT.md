@@ -8,7 +8,7 @@ A personal RAG (Retrieval-Augmented Generation) system using PostgreSQL with pgv
 
 Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
 
-## Current Milestone: v1.1 Full Docker
+## Current Milestone: v0.2 Full Docker
 
 **Goal:** Rendre l'application installable et utilisable via docker compose sans installer de dependances.
 
@@ -24,20 +24,20 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ### Validated
 
-- ✓ Indexer des fichiers markdown (documentation, conventions, bonnes pratiques) — v1.0
-- ✓ Pipeline RAG avec LangChain4j 1.0+ — v1.0
-- ✓ Embeddings locaux ONNX (all-MiniLM-L6-v2, 384 dimensions) — v1.0
-- ✓ Stockage vectoriel PostgreSQL 17 + pgvector 0.8.1 (index HNSW) — v1.0
-- ✓ Graph de documents avec Apache AGE 1.6.0 — v1.0
-- ✓ Chunking hierarchique (parent 1000 tokens, child 200 tokens) — v1.0
-- ✓ Exposer la recherche via serveur MCP (Java SDK) — v1.0
-- ✓ Recherche semantique sur la documentation indexee — v1.0
-- ✓ Commande CLI pour indexer/reindexer manuellement — v1.0
-- ✓ Retourner les documents pertinents avec leur contexte — v1.0
-- ✓ Recherche hybride vector + full-text — v1.0
-- ✓ Traversee graph pour documents lies — v1.0
+- ✓ Indexer des fichiers markdown (documentation, conventions, bonnes pratiques) — v0.1
+- ✓ Pipeline RAG avec LangChain4j 1.0+ — v0.1
+- ✓ Embeddings locaux ONNX (all-MiniLM-L6-v2, 384 dimensions) — v0.1
+- ✓ Stockage vectoriel PostgreSQL 17 + pgvector 0.8.1 (index HNSW) — v0.1
+- ✓ Graph de documents avec Apache AGE 1.6.0 — v0.1
+- ✓ Chunking hierarchique (parent 1000 tokens, child 200 tokens) — v0.1
+- ✓ Exposer la recherche via serveur MCP (Java SDK) — v0.1
+- ✓ Recherche semantique sur la documentation indexee — v0.1
+- ✓ Commande CLI pour indexer/reindexer manuellement — v0.1
+- ✓ Retourner les documents pertinents avec leur contexte — v0.1
+- ✓ Recherche hybride vector + full-text — v0.1
+- ✓ Traversee graph pour documents lies — v0.1
 
-### Active (v1.1)
+### Active (v0.2)
 
 - [ ] Dockerfile multi-stage pour build + runtime
 - [ ] Service app dans docker-compose.yml
@@ -65,7 +65,7 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ## Context
 
-**Current State (v1.0 shipped):**
+**Current State (v0.1 shipped):**
 - 53 Java files, 5,732 lines of code
 - Tech stack: Java 21, Spring Boot 3.4, LangChain4j 1.0-beta3, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
 - MCP server: 4 tools (search_docs, index_docs, list_categories, get_doc)
@@ -119,4 +119,4 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | Hexagonal architecture | api -> core <- infra, enforced by ArchUnit | ✓ Good |
 
 ---
-*Last updated: 2026-01-22 after v1.1 milestone start*
+*Last updated: 2026-01-22 after v0.2 milestone start*

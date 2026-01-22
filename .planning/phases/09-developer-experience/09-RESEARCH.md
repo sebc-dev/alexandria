@@ -480,7 +480,7 @@ For MCP integration, add to your Claude Code settings:
 1. **Windows Support for Wrapper Script**
    - What we know: PowerShell or batch file would be needed for native Windows support
    - What's unclear: WSL2 users may use the sh script directly
-   - Recommendation: Document WSL2 as primary Windows path; defer native Windows script to v1.2+
+   - Recommendation: Document WSL2 as primary Windows path; defer native Windows script to v0.3+
 
 2. **MEM_LIMIT Variable Usage**
    - What we know: docker-compose.yml already has `mem_limit: 2g` hardcoded

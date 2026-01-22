@@ -1,9 +1,9 @@
-# Requirements: Alexandria v1.1 Full Docker
+# Requirements: Alexandria v0.2 Full Docker
 
 **Defined:** 2026-01-22
 **Core Value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
 
-## v1.1 Requirements
+## v0.2 Requirements
 
 Requirements for Docker packaging milestone. Each maps to roadmap phases.
 
@@ -38,11 +38,11 @@ Requirements for Docker packaging milestone. Each maps to roadmap phases.
 
 ### CI/CD
 
-- [ ] **CICD-01**: GitHub Actions workflow pour build image Docker
-- [ ] **CICD-02**: Publication automatique sur GitHub Container Registry (ghcr.io)
-- [ ] **CICD-03**: Tagging semantique depuis git tags (v1.1.0 -> ghcr.io/user/alexandria:1.1.0)
+- [x] **CICD-01**: GitHub Actions workflow pour build image Docker
+- [x] **CICD-02**: Publication automatique sur GitHub Container Registry (ghcr.io)
+- [x] **CICD-03**: Tagging semantique depuis git tags (v0.2.0 -> ghcr.io/user/alexandria:0.2.0)
 
-## v1.2+ Requirements
+## v0.3+ Requirements
 
 Deferred to future releases.
 
@@ -59,7 +59,7 @@ Deferred to future releases.
 
 ## Out of Scope
 
-Explicitly excluded from v1.1.
+Explicitly excluded from v0.2.
 
 | Feature | Reason |
 |---------|--------|
@@ -92,15 +92,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEVX-01 | Phase 9 | Complete |
 | DEVX-02 | Phase 9 | Complete |
 | DEVX-03 | Phase 9 | Complete |
-| CICD-01 | Phase 10 | Pending |
-| CICD-02 | Phase 10 | Pending |
-| CICD-03 | Phase 10 | Pending |
+| CICD-01 | Phase 10 | Complete |
+| CICD-02 | Phase 10 | Complete |
+| CICD-03 | Phase 10 | Complete |
 
 **Coverage:**
-- v1.1 requirements: 20 total
+- v0.2 requirements: 20 total
 - Mapped to phases: 20
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after Phase 9 completion*
+*Last updated: 2026-01-22 after Phase 10 completion*

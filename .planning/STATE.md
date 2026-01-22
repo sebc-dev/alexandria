@@ -5,28 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** v1.1 Full Docker - Phase 9 (Developer Experience)
+**Current focus:** v0.2 Full Docker - Phase 10 (CI/CD Pipeline)
 
 ## Current Position
 
-Phase: 9 of 10 (Developer Experience)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 - Completed 09-02-PLAN.md
+Phase: 10 of 10 (CI/CD Pipeline)
+Plan: 1 of 1 in current phase
+Status: Milestone complete
+Last activity: 2026-01-22 - Completed 10-01-PLAN.md
 
-Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [###########     ] 67% (2/3 phases)
+Progress: v0.1 [################] 100% SHIPPED
+Progress: v0.2 [################] 100% (3/3 phases) SHIPPED
 
 ## Performance Metrics
 
-**v1.0 Velocity:**
+**v0.1 Velocity:**
 - Total plans completed: 15
 - Average duration: 3.3 min
 - Total execution time: 0.83 hours
 
-**v1.1 Velocity:**
-- Plans completed: 5
-- Average duration: 3.6 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min, 09-02: 2min)
+**v0.2 Velocity:**
+- Plans completed: 6
+- Average duration: 3.2 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min, 09-02: 2min, 10-01: 1min)
 
 **By Phase:**
 
@@ -41,15 +41,16 @@ Progress: v1.1 [###########     ] 67% (2/3 phases)
 | 07-cli | 2 | 7 min | 3.5 min |
 | 08-core-docker-infrastructure | 3 | 15 min | 5.0 min |
 | 09-developer-experience | 2 | 3 min | 1.5 min |
+| 10-cicd-pipeline | 1 | 1 min | 1.0 min |
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-v1.0 decisions all marked as outcomes (all Good).
+v0.1 decisions all marked as outcomes (all Good).
 
-**v1.1 decisions:**
+**v0.2 decisions:**
 - Keep both STDIO and HTTP/SSE MCP starters for profile-based selection (08-01)
 - Use stdio: false for transport switching (webmvc auto-configures SSE) (08-01)
 - Default DB_HOST to 'postgres' for docker-compose service name (08-01)
@@ -62,6 +63,8 @@ v1.0 decisions all marked as outcomes (all Good).
 - Include src/test/ in .dockerignore - test sources not needed in production (09-01)
 - Use POSIX sh instead of bash for CLI wrapper portability (09-02)
 - Keep Traditional Quick Start section for non-Docker users (09-02)
+- Use official Docker actions v3/v5/v6 for GHCR publishing (10-01)
+- type=gha cache with mode=max for multi-stage build optimization (10-01)
 
 ### Pending Todos
 
@@ -71,7 +74,7 @@ None.
 
 None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 
-### Tech Debt (from v1.0)
+### Tech Debt (from v0.1)
 
 - MCP tool unit tests missing (wiring verified via service layer tests)
 - Integration tests for hybrid search not present (mocked in unit tests)
@@ -79,5 +82,5 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 09-02-PLAN.md (CLI wrapper and README), Phase 9 complete
+Stopped at: Completed 10-01-PLAN.md (Docker release workflow), Phase 10 complete, v0.2 SHIPPED
 Resume file: None

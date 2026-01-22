@@ -2,13 +2,13 @@
 
 ## Milestones
 
-- [x] **v1.0 MVP** - Phases 1-7 (shipped 2026-01-20)
-- [ ] **v1.1 Full Docker** - Phases 8-10 (in progress)
+- [x] **v0.1 MVP** - Phases 1-7 (shipped 2026-01-20)
+- [ ] **v0.2 Full Docker** - Phases 8-10 (in progress)
 
 ## Phases
 
 <details>
-<summary>v1.0 MVP (Phases 1-7) - SHIPPED 2026-01-20</summary>
+<summary>v0.1 MVP (Phases 1-7) - SHIPPED 2026-01-20</summary>
 
 ### Phase 1: Infrastructure
 **Goal**: PostgreSQL with pgvector + Apache AGE running in Docker
@@ -40,13 +40,13 @@
 
 </details>
 
-### v1.1 Full Docker (In Progress)
+### v0.2 Full Docker (In Progress)
 
 **Milestone Goal:** Rendre l'application installable et utilisable via docker compose sans installer de dependances.
 
 #### Phase 8: Core Docker Infrastructure
 **Goal**: Application runs in Docker with HTTP/SSE transport for MCP communication
-**Depends on**: Phase 7 (v1.0 complete)
+**Depends on**: Phase 7 (v0.1 complete)
 **Requirements**: DOCK-01, DOCK-02, DOCK-03, DOCK-04, DOCK-05, DOCK-06, DOCK-07, MCP-01, MCP-02, MCP-03, CONF-01, CONF-02
 **Success Criteria** (what must be TRUE):
   1. User can run `docker compose up` and have both app and postgres services start successfully
@@ -81,13 +81,13 @@ Plans:
 **Depends on**: Phase 9
 **Requirements**: CICD-01, CICD-02, CICD-03
 **Success Criteria** (what must be TRUE):
-  1. Pushing a git tag (v1.1.0) triggers GitHub Actions workflow
-  2. Image is published to ghcr.io/[owner]/alexandria with correct tag (1.1.0)
-  3. User can `docker pull ghcr.io/[owner]/alexandria:1.1.0` without git clone
-**Plans**: TBD
+  1. Pushing a git tag (v0.2.0) triggers GitHub Actions workflow
+  2. Image is published to ghcr.io/[owner]/alexandria with correct tag (0.2.0)
+  3. User can `docker pull ghcr.io/[owner]/alexandria:0.2.0` without git clone
+**Plans**: 1 plan (complete)
 
 Plans:
-- [ ] 10-01: GitHub Actions workflow for Docker build and publish
+- [x] 10-01-PLAN.md - GitHub Actions workflow for Docker build and publish
 
 ## Progress
 
@@ -95,13 +95,13 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Infrastructure | v1.0 | 2/2 | Complete | 2026-01-19 |
-| 2. Ingestion Core | v1.0 | 3/3 | Complete | 2026-01-20 |
-| 3. Graph Relations | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 4. Recherche Base | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 5. Recherche Avancee | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 6. MCP Server | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 7. CLI | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 8. Core Docker Infrastructure | v1.1 | 3/3 | Complete | 2026-01-22 |
-| 9. Developer Experience | v1.1 | 2/2 | Complete | 2026-01-22 |
-| 10. CI/CD Pipeline | v1.1 | 0/1 | Not started | - |
+| 1. Infrastructure | v0.1 | 2/2 | Complete | 2026-01-19 |
+| 2. Ingestion Core | v0.1 | 3/3 | Complete | 2026-01-20 |
+| 3. Graph Relations | v0.1 | 2/2 | Complete | 2026-01-20 |
+| 4. Recherche Base | v0.1 | 2/2 | Complete | 2026-01-20 |
+| 5. Recherche Avancee | v0.1 | 2/2 | Complete | 2026-01-20 |
+| 6. MCP Server | v0.1 | 2/2 | Complete | 2026-01-20 |
+| 7. CLI | v0.1 | 2/2 | Complete | 2026-01-20 |
+| 8. Core Docker Infrastructure | v0.2 | 3/3 | Complete | 2026-01-22 |
+| 9. Developer Experience | v0.2 | 2/2 | Complete | 2026-01-22 |
+| 10. CI/CD Pipeline | v0.2 | 1/1 | Complete | 2026-01-22 |

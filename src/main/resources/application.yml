@@ -32,6 +32,10 @@ spring:
   config:
     activate:
       on-profile: cli
+  main:
+    web-application-type: none
   shell:
     interactive:
+      enabled: false
+    history:
       enabled: false
