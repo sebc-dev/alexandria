@@ -42,10 +42,11 @@ Plans:
   2. `mvn verify` generates merged coverage report combining unit + integration tests
   3. GitHub Actions runs integration tests (Testcontainers) on PR and push to master
   4. GitHub Actions uploads JaCoCo reports as downloadable artifacts
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: [TBD during planning]
+- [ ] 12-01-PLAN.md — Configure JaCoCo integration test goals and merged report
+- [ ] 12-02-PLAN.md — Update GitHub Actions for integration tests and artifact upload
 
 ### Phase 13: PIT Mutation Testing
 **Goal**: Developer can run mutation testing locally with fast incremental analysis
@@ -81,7 +82,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. JaCoCo Unit Coverage | 1/1 | Complete | 2026-01-22 |
-| 12. Integration Test Coverage | 0/TBD | Not started | - |
+| 12. Integration Test Coverage | 0/2 | Planned | - |
 | 13. PIT Mutation Testing | 0/TBD | Not started | - |
 | 14. Quality Dashboard | 0/TBD | Not started | - |
 
