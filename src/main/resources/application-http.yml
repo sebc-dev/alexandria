@@ -1,0 +1,38 @@
+# HTTP/SSE MCP Server profile - for containerized deployment
+spring:
+  main:
+    # Enable web server for HTTP/SSE transport
+    web-application-type: servlet
+    banner-mode: console
+
+  ai:
+    mcp:
+      server:
+        name: alexandria
+        version: 0.1.0
+        type: SYNC
+        # SSE transport for remote clients
+        stdio: false
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+logging:
+  level:
+    fr.kalifazzia.alexandria: INFO
+    org.springframework: WARN

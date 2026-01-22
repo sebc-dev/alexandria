@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.7</version>
         <relativePath/>
     </parent>
 
@@ -22,7 +22,8 @@
 
     <properties>
         <java.version>21</java.version>
-        <langchain4j.version>1.0.0-beta3</langchain4j.version>
+        <tomcat.version>10.1.47</tomcat.version>
+        <langchain4j.version>1.2.0</langchain4j.version>
         <spring-ai.version>1.0.0</spring-ai.version>
         <sonar.organization>sebc-dev</sonar.organization>
     </properties>
@@ -108,10 +109,22 @@
             <artifactId>gson</artifactId>
         </dependency>
 
-        <!-- MCP Server (Spring AI) -->
+        <!-- MCP Server (Spring AI) - STDIO transport for local dev -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server</artifactId>
+        </dependency>
+
+        <!-- MCP Server HTTP/SSE (Spring AI) - for containerized deployment -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+        </dependency>
+
+        <!-- Actuator for health checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Spring Shell for CLI -->

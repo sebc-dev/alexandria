@@ -8,6 +8,18 @@ A personal RAG (Retrieval-Augmented Generation) system using PostgreSQL with pgv
 
 Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
 
+## Current Milestone: v1.1 Full Docker
+
+**Goal:** Rendre l'application installable et utilisable via docker compose sans installer de dependances.
+
+**Target features:**
+- Dockerfile pour l'application Java (MCP server + CLI)
+- docker-compose.yml complet (PostgreSQL + App)
+- MCP server avec transport HTTP/SSE (en plus de STDIO)
+- Script wrapper CLI pour simplifier les commandes
+- Publication sur GitHub Container Registry
+- Configuration via env vars + fichier .env
+
 ## Requirements
 
 ### Validated
@@ -25,12 +37,21 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 - ✓ Recherche hybride vector + full-text — v1.0
 - ✓ Traversee graph pour documents lies — v1.0
 
-### Active
+### Active (v1.1)
 
-- [ ] Scoring pondere configurable (vector vs keyword)
-- [ ] Reranking des resultats
-- [ ] Support fichiers RST, AsciiDoc
-- [ ] Tool `similar_docs` pour documents similaires
+- [ ] Dockerfile multi-stage pour build + runtime
+- [ ] Service app dans docker-compose.yml
+- [ ] MCP transport HTTP/SSE configurable (+ STDIO existant)
+- [ ] Script wrapper CLI (`alexandria` command)
+- [ ] GitHub Actions pour build et push image
+- [ ] Configuration externalisee (env vars, .env, volumes)
+
+### Deferred (v1.2+)
+
+- Scoring pondere configurable (vector vs keyword)
+- Reranking des resultats
+- Support fichiers RST, AsciiDoc
+- Tool `similar_docs` pour documents similaires
 
 ### Out of Scope
 
@@ -98,4 +119,4 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | Hexagonal architecture | api -> core <- infra, enforced by ArchUnit | ✓ Good |
 
 ---
-*Last updated: 2026-01-21 after v1.0 milestone*
+*Last updated: 2026-01-22 after v1.1 milestone start*
