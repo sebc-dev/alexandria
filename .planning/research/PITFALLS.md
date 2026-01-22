@@ -1,370 +1,478 @@
-# Pitfalls Research
+# Pitfalls Research: JaCoCo and PIT Mutation Testing
 
-**Domain:** Dockerizing Java 21 Spring Boot + MCP Server with ONNX Embeddings
+**Domain:** Java Test Quality Tools (JaCoCo Code Coverage + PIT Mutation Testing)
+**Project Context:** Java 21, Spring Boot 3.4.7, Maven, Testcontainers, Hexagonal Architecture
 **Researched:** 2026-01-22
 **Confidence:** HIGH (verified with official docs and multiple sources)
 
 ## Critical Pitfalls
 
-### Pitfall 1: STDIO Transport Incompatible with Docker MCP Server
+### Pitfall 1: JaCoCo argLine Overwritten by Surefire/Failsafe Configuration
 
 **What goes wrong:**
-The current MCP configuration uses STDIO transport (`spring.ai.mcp.server.stdio: true`), which requires the MCP client to spawn the server as a subprocess with stdin/stdout communication. When the application runs inside Docker, Claude Code cannot spawn a Docker container as a subprocess in the same way.
+JaCoCo's `prepare-agent` goal sets the `argLine` property to attach the JaCoCo agent. If your pom.xml already defines `<argLine>` in surefire-plugin configuration (which Alexandria does for `-XX:+EnableDynamicAgentLoading`), the JaCoCo agent is silently ignored. Result: 0% coverage with no error message.
 
 **Why it happens:**
-STDIO transport assumes in-process communication where the client directly manages stdin/stdout of the server process. Docker containers run as isolated processes with their own network namespace.
-
-**How to avoid:**
-Switch from STDIO to HTTP/SSE or StreamableHTTP transport for Docker deployment:
-```yaml
-spring:
-  ai:
-    mcp:
-      server:
-        stdio: false  # Disable STDIO
-  main:
-    web-application-type: servlet  # Enable web server
+Maven's property resolution happens at different phases. When surefire runs, it uses its explicit `<argLine>` configuration rather than the property set by JaCoCo. The current pom.xml has:
+```xml
+<argLine>-XX:+EnableDynamicAgentLoading</argLine>
 ```
-
-Configure HTTP/SSE endpoint that Claude Code can connect to via network. Note: SSE is deprecated as of MCP spec 2025-03-26 revision; StreamableHTTP is the recommended replacement.
+This overwrites whatever JaCoCo sets.
 
 **Warning signs:**
-- MCP tools not appearing in Claude Code when using Docker
-- "Connection refused" errors
-- No response from container despite it being healthy
+- JaCoCo exec file is very small (< 1KB) or empty
+- Coverage report shows 0% despite tests passing
+- No errors in build output (silent failure)
 
-**Phase to address:**
-Phase 1 - Initial Docker containerization must implement HTTP/SSE transport
+**Prevention strategy:**
+Use late property evaluation with `@{argLine}` syntax AND define an empty default:
+```xml
+<properties>
+    <argLine></argLine>  <!-- Prevent @{argLine} error when JaCoCo not active -->
+</properties>
+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <!-- @{argLine} is replaced by JaCoCo's prepare-agent -->
+        <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
+    </configuration>
+</plugin>
+```
+
+**Detection (before shipping):**
+- Run `mvn test jacoco:report` and check HTML report immediately
+- Verify exec file size: `ls -la target/jacoco.exec` should be > 10KB for real projects
+
+**Phase to address:** Phase 1 - Initial JaCoCo setup (first task)
 
 ---
 
-### Pitfall 2: JVM Not Receiving SIGTERM in Docker (Signal Propagation Failure)
+### Pitfall 2: PIT Runs Integration Tests (Testcontainers), Massive Slowdown
 
 **What goes wrong:**
-Docker sends SIGTERM to stop containers, but if the JVM doesn't receive it, graceful shutdown fails. The container gets forcefully killed after docker's grace period (default 10s), leading to:
-- Incomplete database transactions
-- HikariCP connections not properly closed
-- ONNX model resources not released
+PIT examines the entire classpath and runs ALL tests it finds, including `*IT.java` integration tests that use Testcontainers. Each mutation causes PIT to spin up PostgreSQL containers. A 2-minute mutation run becomes 2+ hours.
 
 **Why it happens:**
-Using shell form in Dockerfile ENTRYPOINT (e.g., `ENTRYPOINT java -jar app.jar`) starts the JVM as a child of `/bin/sh`, which doesn't forward signals. Only PID 1 receives Docker signals.
-
-**How to avoid:**
-Use exec form in Dockerfile:
-```dockerfile
-# CORRECT: Java runs as PID 1, receives signals directly
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
-# WRONG: Shell is PID 1, doesn't forward SIGTERM
-ENTRYPOINT java -jar app.jar
-```
-
-For scripts, use `exec`:
-```bash
-#!/bin/sh
-exec java -jar app.jar
-```
-
-Also configure Spring Boot graceful shutdown:
-```yaml
-server:
-  shutdown: graceful
-spring:
-  lifecycle:
-    timeout-per-shutdown-phase: 30s
-```
+PIT doesn't parse surefire's `<excludes>` by default. Even if surefire excludes `**/*IT.java`, PIT sees them on the classpath and runs them. The project has 3 integration tests (`IngestionIT`, `SearchIT`, `DatabaseConnectionIT`) that each start PostgreSQL containers with ONNX model loading (~30s startup per container).
 
 **Warning signs:**
-- Container takes exactly 10s to stop (Docker's default timeout)
-- Database connections remain open after container stops
-- "Connection reset by peer" errors in dependent services
+- PIT "running tests" phase takes > 5 minutes before mutations start
+- Docker containers being created during `mvn pitest:mutationCoverage`
+- Console shows "Starting PostgreSQLContainer" during mutation run
+- PIT reports tests failing without mutations (Testcontainers isolation issues)
 
-**Phase to address:**
-Phase 1 - Dockerfile must use exec form from the start
+**Prevention strategy:**
+Explicitly exclude integration tests in PIT configuration:
+```xml
+<plugin>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-maven</artifactId>
+    <configuration>
+        <excludedTestClasses>
+            <param>**.*IT</param>
+            <param>**.*IntegrationTest</param>
+        </excludedTestClasses>
+        <!-- Also exclude by tag if using JUnit 5 tags -->
+        <excludedGroups>
+            <excludedGroup>integration</excludedGroup>
+        </excludedGroups>
+    </configuration>
+</plugin>
+```
+
+**Detection (before shipping):**
+- First PIT run: watch for container startup messages
+- Time the initial "running tests" phase - should be < 30s for unit tests only
+
+**Phase to address:** Phase 2 - PIT setup (critical first-run configuration)
 
 ---
 
-### Pitfall 3: Native Memory Exhaustion from ONNX Model Loading
+### Pitfall 3: JaCoCo Integration Test Coverage Not Merged with Unit Test Coverage
 
 **What goes wrong:**
-The all-MiniLM-L6-v2 ONNX model (~100MB) loads into native memory outside the JVM heap. With default JVM settings, the container may exceed memory limits and get OOM-killed despite heap being within bounds.
+Running `mvn verify` produces two separate exec files: `target/jacoco.exec` (unit tests) and `target/jacoco-it.exec` (integration tests). JaCoCo reports only show one or the other, not combined coverage. SonarQube/local reports undercount actual coverage.
 
 **Why it happens:**
-`-Xmx` only limits heap memory. ONNX Runtime allocates native memory for:
-- Model weights (~100MB)
-- Inference buffers
-- Thread-local storage
-
-JVM also uses native memory for metaspace, thread stacks, and JIT compilation.
-
-**How to avoid:**
-1. Set container memory 1.5-2x the heap limit:
-```yaml
-services:
-  alexandria:
-    deploy:
-      resources:
-        limits:
-          memory: 1G  # For 512MB heap
-```
-
-2. Use `-XX:MaxRAMPercentage` instead of fixed `-Xmx`:
-```dockerfile
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=50.0", "-jar", "app.jar"]
-```
-This leaves 50% of container memory for native allocations.
-
-3. Monitor native memory:
-```bash
-java -XX:NativeMemoryTracking=summary -jar app.jar
-```
+JaCoCo's `prepare-agent` runs twice (once for surefire, once for failsafe) with different default output files. Without explicit merge configuration, reports use only one exec file.
 
 **Warning signs:**
-- Container OOM-killed despite heap utilization being low
-- `docker stats` shows memory near limit
-- "Cannot allocate memory" in logs without heap OutOfMemoryError
+- Coverage numbers seem low despite comprehensive integration tests
+- Classes tested only in ITs show 0% coverage
+- Two separate coverage reports instead of one combined
 
-**Phase to address:**
-Phase 1 - Memory configuration must account for ONNX from initial containerization
+**Prevention strategy:**
+Configure explicit merge of execution data:
+```xml
+<execution>
+    <id>merge-results</id>
+    <phase>post-integration-test</phase>
+    <goals>
+        <goal>merge</goal>
+    </goals>
+    <configuration>
+        <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+        <fileSets>
+            <fileSet>
+                <directory>${project.build.directory}</directory>
+                <includes>
+                    <include>jacoco.exec</include>
+                    <include>jacoco-it.exec</include>
+                </includes>
+            </fileSet>
+        </fileSets>
+    </configuration>
+</execution>
+```
+
+**Detection (before shipping):**
+- Check for both exec files after `mvn verify`
+- Compare coverage numbers in unit-only report vs merged report
+
+**Phase to address:** Phase 1 - JaCoCo configuration (after basic setup works)
 
 ---
 
-### Pitfall 4: Apache AGE Session State Lost in Connection Pool
+### Pitfall 4: PIT JUnit 5 Plugin Version Mismatch
 
 **What goes wrong:**
-Apache AGE requires `LOAD 'age'` and `SET search_path = ag_catalog` on every PostgreSQL session. If connections are pooled and reused, or if a pooler like PgBouncer is used in transaction mode, these session commands may not execute, causing Cypher queries to fail with "function cypher does not exist".
+PIT fails with cryptic errors like `NoSuchMethodError` or `ClassNotFoundException` on JUnit Platform classes. Tests that pass normally fail under PIT.
 
 **Why it happens:**
-HikariCP's `connection-init-sql` runs when a connection is first established, not on every borrow. If the PostgreSQL server restarts, or if an external pooler (PgBouncer) is added in transaction mode, the session state is lost.
-
-**How to avoid:**
-1. Current setup is correct for session mode (HikariCP direct to PostgreSQL):
-```yaml
-spring:
-  datasource:
-    hikari:
-      connection-init-sql: "LOAD 'age'; SET search_path = ag_catalog, \"$user\", public"
-```
-
-2. If adding PgBouncer, use session mode only:
-```ini
-[databases]
-alexandria = host=postgres port=5432 dbname=alexandria pool_mode=session
-```
-
-3. Consider defensive validation in code:
-```java
-// Before AGE queries, verify session state
-jdbcTemplate.execute("SELECT ag_catalog._cypher_merge_clause(NULL, NULL, NULL)");
-```
+The `pitest-junit5-plugin` must match both the pitest version AND the JUnit Platform version. Spring Boot 3.4.7 uses JUnit 5.10.x (Platform 1.10.x). Using an old pitest-junit5-plugin causes binary incompatibility.
 
 **Warning signs:**
-- Intermittent "function cypher(unknown, unknown) does not exist" errors
-- Graph queries fail after database restarts but work after app restart
-- Errors correlate with connection pool recycling
+- `NoSuchMethodError: org.junit.platform.launcher...`
+- Tests pass with `mvn test` but fail with `mvn pitest:mutationCoverage`
+- "No tests found" despite tests existing
 
-**Phase to address:**
-Phase 2 - Health checks should validate AGE session state
+**Prevention strategy:**
+Use compatible versions (as of 2025):
+```xml
+<plugin>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-maven</artifactId>
+    <version>1.19.1</version>  <!-- Latest stable -->
+    <dependencies>
+        <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.2</version>  <!-- Requires pitest 1.19.4+ -->
+        </dependency>
+    </dependencies>
+</plugin>
+```
+
+**Detection (before shipping):**
+- Run `mvn pitest:mutationCoverage` on a single class first
+- Check for JUnit-related exceptions in output
+
+**Phase to address:** Phase 2 - Initial PIT configuration
 
 ---
 
-### Pitfall 5: Slow Startup Causing Health Check Failures
+### Pitfall 5: Coverage Thresholds Block All PRs During Initial Adoption
 
 **What goes wrong:**
-Spring Boot with ONNX model loading can take 30-60 seconds to start. Default Docker health check parameters (interval=30s, start_period=30s) may mark the container unhealthy before it's ready, triggering restart loops.
+Adding JaCoCo with `<rule>` enforcement (e.g., 80% line coverage) immediately fails CI for all PRs. Existing untested code makes threshold impossible to meet. Team blocks all development until coverage catches up.
 
 **Why it happens:**
-ONNX model loading happens during Spring context initialization. The model must be fully loaded into memory and validated before the application is ready. Docker health checks don't distinguish between "still starting" and "failed".
-
-**How to avoid:**
-1. Configure appropriate health check timing:
-```yaml
-services:
-  alexandria:
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/readiness"]
-      interval: 10s
-      timeout: 5s
-      start_period: 120s  # Allow 2 minutes for startup
-      retries: 3
-```
-
-2. Separate liveness and readiness in Spring Boot:
-```yaml
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
-  health:
-    livenessState:
-      enabled: true
-    readinessState:
-      enabled: true
-```
-
-3. For Kubernetes, use startup probes:
-```yaml
-startupProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: 8080
-  failureThreshold: 30
-  periodSeconds: 10
-```
+Enforcement is configured before baseline is established. Teams copy "best practices" configs that include strict thresholds without considering current state.
 
 **Warning signs:**
-- Container keeps restarting during deployment
-- `docker logs` shows "Started AlexandriaApplication" but container marked unhealthy
-- Orchestrator events show "Liveness probe failed"
+- CI immediately starts failing after JaCoCo PR merges
+- "Coverage ratio 45% is lower than 80%" errors
+- Team debates lowering threshold vs writing tests, blocking progress
 
-**Phase to address:**
-Phase 1 - Health check configuration is part of initial Dockerfile/compose
+**Prevention strategy:**
+1. Add JaCoCo WITHOUT thresholds first (report-only)
+2. Measure baseline coverage
+3. Set threshold slightly below current baseline (ratchet approach)
+4. Increment threshold gradually over sprints
+
+For Alexandria (goal: no blocking thresholds):
+```xml
+<!-- Report only, no enforcement -->
+<execution>
+    <id>report</id>
+    <phase>test</phase>
+    <goals>
+        <goal>report</goal>
+    </goals>
+</execution>
+<!-- NO jacoco:check goal binding -->
+```
+
+**Detection (before shipping):**
+- Verify CI passes with no code changes after adding JaCoCo
+- Check pom.xml has no `<haltOnFailure>true</haltOnFailure>` with rules
+
+**Phase to address:** Phase 1 - JaCoCo setup (design decision upfront)
 
 ---
 
-### Pitfall 6: Hardcoded localhost Database URL in Container
+### Pitfall 6: PIT Single-Threaded by Default, Extremely Slow
 
 **What goes wrong:**
-The current `application.yml` uses `jdbc:postgresql://localhost:5432/alexandria`. Inside a Docker container, localhost refers to the container itself, not the host machine or another container.
+PIT mutation run takes 30+ minutes for a small codebase. Developers stop running it locally. Mutation testing becomes "CI only" which defeats fast feedback purpose.
 
 **Why it happens:**
-Development configuration works because the app runs directly on the host where PostgreSQL is accessible via localhost. Container networking isolates each container's localhost.
-
-**How to avoid:**
-Use environment variable substitution:
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:alexandria}
-```
-
-In docker-compose:
-```yaml
-services:
-  alexandria:
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: alexandria
-    depends_on:
-      postgres:
-        condition: service_healthy
-```
+PIT defaults to single-threaded execution. For a project with ~50 classes and ~20 test classes, single-threaded execution may require hours.
 
 **Warning signs:**
-- "Connection refused" immediately after container start
-- Works in development but fails in Docker
-- `psql` from inside container fails to connect to localhost
+- First mutation run takes > 10 minutes
+- No parallelism visible in output
+- CPU usage shows only one core active
 
-**Phase to address:**
-Phase 1 - Environment-based configuration is fundamental to containerization
+**Prevention strategy:**
+Configure parallel execution:
+```xml
+<configuration>
+    <threads>4</threads>  <!-- Or use auto-detection -->
+    <!-- Enable history for incremental runs -->
+    <withHistory>true</withHistory>
+</configuration>
+```
+
+For CI with constrained resources:
+```xml
+<threads>2</threads>  <!-- Match CI runner core count -->
+```
+
+**Detection (before shipping):**
+- Time the first run, should be < 5 minutes for ~50 classes
+- Check output shows multiple mutation threads
+
+**Phase to address:** Phase 2 - PIT performance tuning
 
 ---
 
-## Technical Debt Patterns
+## Moderate Pitfalls
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Using `latest` tag for base image | Always up-to-date | Builds become non-reproducible, may break on updates | Never in production |
-| Single-stage Dockerfile | Simpler to write | 2x larger image, includes build tools | Quick prototyping only |
-| Running as root in container | No permission issues | Security vulnerability, pod security policies reject | Never |
-| Skipping layered JAR extraction | Faster initial build | Every code change rebuilds dependencies layer (5+ min) | Initial development only |
-| Copying entire target directory | Simple COPY command | Includes test artifacts, .class files, ~2x size | Never |
+### Pitfall 7: JaCoCo Reports Don't Exclude Spring Configuration Classes
 
-## Integration Gotchas
+**What goes wrong:**
+Coverage reports show red/uncovered code for Spring `@Configuration` classes, `@SpringBootApplication` main class, and generated proxies. Misleading coverage numbers and visual noise.
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| PostgreSQL container | Using `depends_on` without health check | Use `depends_on: postgres: condition: service_healthy` |
-| HikariCP in container | Same pool size as development | Reduce to match container CPU allocation (2-3 connections per vCPU) |
-| Apache AGE with Docker | Not preloading in shared_preload_libraries | Add `shared_preload_libraries = 'age'` to postgresql.conf |
-| ONNX model loading | Packaging model inside JAR | Mount as volume or use init container for faster startup |
-| MCP over network | No CORS configuration | Configure CORS for MCP HTTP/SSE endpoints |
+**Why it happens:**
+These classes are loaded but not "tested" in the traditional sense. Spring's AOT and CGLIB generate additional classes that appear in reports.
 
-## Performance Traps
+**Prevention:**
+```xml
+<configuration>
+    <excludes>
+        <exclude>**/AlexandriaApplication.class</exclude>
+        <exclude>**/*Config.class</exclude>
+        <exclude>**/*Configuration.class</exclude>
+        <exclude>**/*$$SpringCGLIB$$*</exclude>
+        <exclude>**/*__*</exclude>
+    </excludes>
+</configuration>
+```
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Default thread pool with virtual threads | High memory usage, slow response | Virtual threads enabled (`spring.threads.virtual.enabled=true`) but ensure blocking calls are virtual-thread-friendly | 100+ concurrent requests |
-| ONNX model per-request loading | Slow first request, high memory | Load model once at startup, reuse for all requests | First request after cold start |
-| Large Docker build context | 5+ minute builds | Add `.dockerignore` excluding `target/`, `data/`, `.git/` | Any size project with data volumes |
-| Embedded model in JAR | Slow startup, high memory during unpack | Extract ONNX model to volume, load from path | Model > 50MB |
-| Default HikariCP pool (10 connections) | Connection exhaustion | Size pool to container resources: `(CPU cores * 2) + 1` | High concurrency |
+**Phase to address:** Phase 1 - JaCoCo configuration refinement
 
-## Security Mistakes
+---
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Hardcoded credentials in docker-compose | Credentials in version control | Use Docker secrets or environment files in `.gitignore` |
-| Running JVM as root | Container escape, privilege escalation | `USER 1000:1000` in Dockerfile after copying files |
-| Exposing database port (5432) to host | Direct database access bypassing app | Only expose on internal Docker network |
-| MCP server without authentication | Unauthorized tool invocation | Implement authentication for HTTP/SSE transport |
-| Using JRE with debug enabled | Remote code execution | Use production JRE, no `-agentlib:jdwp` in prod |
+### Pitfall 8: PIT History File Incompatibility After Upgrade
 
-## UX Pitfalls
+**What goes wrong:**
+After upgrading pitest version, incremental runs fail or produce wrong results. History file from old version is incompatible.
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| No startup progress indication | User thinks container is hung | Add startup banner with progress, use build-time info |
-| Silent ONNX loading failure | MCP tools error with cryptic messages | Validate model on startup, fail fast with clear error |
-| Container logs too verbose | Hard to find actual errors | Use structured logging, separate debug from info |
-| No health endpoint for MCP | User can't verify server is running | Expose `/health` endpoint independent of MCP transport |
+**Why it happens:**
+PIT's history file format changes between versions. Old history files are silently used but produce incorrect incremental analysis.
+
+**Warning signs:**
+- "No mutations found" after upgrade despite code changes
+- Inconsistent mutation scores between local and CI
+- Incremental run takes as long as full run
+
+**Prevention:**
+- Delete history file after PIT version upgrades
+- Store PIT version in history file name: `pitest-history-${pitest.version}.xml`
+- Document version upgrade procedure
+
+**Phase to address:** Phase 2 - PIT maintenance documentation
+
+---
+
+### Pitfall 9: Failsafe Not Passing JaCoCo Agent to Integration Tests
+
+**What goes wrong:**
+Integration test coverage is not collected. The `jacoco-it.exec` file is missing or empty.
+
+**Why it happens:**
+Failsafe plugin also needs the `@{argLine}` configuration, same as Surefire. If only Surefire is configured, integration tests run without the agent.
+
+**Prevention:**
+Apply same `argLine` pattern to both plugins:
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <configuration>
+        <argLine>@{argLine}</argLine>
+    </configuration>
+</plugin>
+```
+
+**Phase to address:** Phase 1 - JaCoCo integration test coverage
+
+---
+
+### Pitfall 10: PIT `parseSurefireConfig` Causes Unexpected Behavior
+
+**What goes wrong:**
+PIT parses Surefire configuration and applies its excludes, but this can cause tests to be unexpectedly included or excluded.
+
+**Why it happens:**
+By default, PIT tries to be helpful by reading Surefire config. But this can conflict with explicit PIT configuration.
+
+**Prevention:**
+Explicitly control behavior:
+```xml
+<configuration>
+    <parseSurefireConfig>false</parseSurefireConfig>
+    <!-- Then explicitly configure all excludes -->
+    <excludedTestClasses>
+        <param>**.*IT</param>
+    </excludedTestClasses>
+</configuration>
+```
+
+**Phase to address:** Phase 2 - PIT configuration
+
+---
+
+## Minor Pitfalls
+
+### Pitfall 11: JaCoCo HTML Report Not Generated
+
+**What goes wrong:**
+After `mvn test`, no HTML report exists in `target/site/jacoco/`.
+
+**Why it happens:**
+The `report` goal must be explicitly bound to a phase or run manually.
+
+**Prevention:**
+```xml
+<execution>
+    <id>report</id>
+    <phase>test</phase>
+    <goals>
+        <goal>report</goal>
+    </goals>
+</execution>
+```
+
+**Phase to address:** Phase 1 - Basic JaCoCo setup
+
+---
+
+### Pitfall 12: PIT `scmMutationCoverage` Requires SCM Plugin
+
+**What goes wrong:**
+Running `mvn pitest:scmMutationCoverage` fails with "No SCM configured" error.
+
+**Why it happens:**
+PIT delegates change detection to Maven SCM plugin, which requires `<scm>` section in pom.xml.
+
+**Prevention:**
+Ensure pom.xml has SCM configuration:
+```xml
+<scm>
+    <connection>scm:git:git://github.com/sebc-dev/alexandria.git</connection>
+    <developerConnection>scm:git:ssh://github.com/sebc-dev/alexandria.git</developerConnection>
+</scm>
+```
+
+**Phase to address:** Phase 2 - PIT incremental mode
+
+---
+
+### Pitfall 13: CI Artifacts Missing JaCoCo Reports
+
+**What goes wrong:**
+JaCoCo runs successfully but reports aren't available in CI artifacts.
+
+**Why it happens:**
+Reports are generated in `target/site/jacoco/` which may not be in artifact upload path.
+
+**Prevention:**
+In GitHub Actions, explicitly include JaCoCo output:
+```yaml
+- uses: actions/upload-artifact@v4
+  with:
+    name: coverage-report
+    path: target/site/jacoco/
+```
+
+**Phase to address:** Phase 3 - CI integration
+
+---
+
+## Phase-Specific Warnings
+
+| Phase | Topic | Likely Pitfall | Mitigation |
+|-------|-------|----------------|------------|
+| Phase 1 | JaCoCo basic setup | argLine overwritten (Pitfall 1) | Use @{argLine} syntax from start |
+| Phase 1 | JaCoCo integration tests | Failsafe not instrumented (Pitfall 9) | Configure both plugins identically |
+| Phase 1 | JaCoCo thresholds | Blocking CI (Pitfall 5) | Report-only mode initially |
+| Phase 2 | PIT first run | Integration tests run (Pitfall 2) | Exclude *IT pattern immediately |
+| Phase 2 | PIT JUnit 5 | Version mismatch (Pitfall 4) | Verify compatible versions |
+| Phase 2 | PIT performance | Single-threaded (Pitfall 6) | Configure threads=4 |
+| Phase 3 | CI artifacts | Reports missing (Pitfall 13) | Explicit artifact paths |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Dockerfile:** Has `HEALTHCHECK` instruction, not just relying on orchestrator
-- [ ] **Graceful shutdown:** `server.shutdown=graceful` AND exec form ENTRYPOINT
-- [ ] **Memory limits:** Container limit > heap + native memory (ONNX)
-- [ ] **Network config:** Database URL uses service name, not localhost
-- [ ] **Secrets:** No credentials in docker-compose.yml, using env vars or secrets
-- [ ] **Build optimization:** Layered JAR extracted, .dockerignore present
-- [ ] **Security:** Running as non-root user, no debug ports exposed
-- [ ] **Transport:** HTTP/SSE configured for Docker, not STDIO
-- [ ] **Health probes:** Separate liveness and readiness with appropriate timeouts
-- [ ] **AGE validation:** Health check verifies `LOAD 'age'` session state
+Before considering JaCoCo/PIT setup complete:
+
+- [ ] **argLine preserved:** Verify `@{argLine}` syntax in both surefire and failsafe
+- [ ] **Coverage non-zero:** Check HTML report shows actual coverage > 0%
+- [ ] **Exec files exist:** Both `jacoco.exec` and `jacoco-it.exec` present after `mvn verify`
+- [ ] **No thresholds blocking:** CI passes with zero code changes after adding tools
+- [ ] **ITs excluded from PIT:** Verify no container startup during mutation run
+- [ ] **PIT multi-threaded:** Confirm `threads` configured
+- [ ] **pitest-junit5-plugin present:** JUnit 5 tests run under PIT
+- [ ] **History enabled:** `withHistory=true` for incremental local runs
+- [ ] **CI artifacts include reports:** Download and verify HTML reports exist
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Wrong transport (STDIO in Docker) | LOW | Change config to HTTP/SSE, rebuild image, update client config |
-| Signal not forwarded | LOW | Update Dockerfile ENTRYPOINT to exec form, rebuild |
-| OOM from native memory | MEDIUM | Adjust container memory limits, may need to resize infrastructure |
-| AGE session state lost | HIGH | If using transaction-mode pooler, must switch to session mode or application-level workaround |
-| Hardcoded localhost | LOW | Add environment variable substitution, update compose |
-| Running as root | MEDIUM | Add USER instruction, may need to fix file permissions |
-
-## Pitfall-to-Phase Mapping
-
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| STDIO transport incompatibility | Phase 1: Initial containerization | MCP client can connect to Docker container |
-| Signal propagation failure | Phase 1: Dockerfile creation | `docker stop` completes in < 5s, not default 10s |
-| Native memory exhaustion | Phase 1: Memory configuration | `docker stats` shows headroom, no OOM events |
-| AGE session state | Phase 2: Health checks | Graph queries work after pool recycling |
-| Slow startup health failures | Phase 1: Health check config | Container becomes healthy on first deploy |
-| Hardcoded localhost | Phase 1: Configuration externalization | Container connects to compose network DB |
-| Large image size | Phase 1: Multi-stage build | Image < 400MB |
-| Root user | Phase 1: Security hardening | `docker exec id` shows non-root |
+| argLine overwritten | LOW | Add @{argLine}, rebuild, regenerate report |
+| ITs run by PIT | LOW | Add excludedTestClasses, rerun |
+| Coverage not merged | LOW | Add merge execution, regenerate |
+| JUnit 5 version mismatch | LOW | Update plugin versions, rerun |
+| Threshold blocking CI | MEDIUM | Remove rules, establish baseline first |
+| Single-threaded PIT | LOW | Add threads config, rerun |
+| History incompatibility | LOW | Delete history file, run full analysis |
 
 ## Sources
 
 ### Official Documentation
-- [Spring AI MCP Server Boot Starter](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-server-boot-starter-docs.html)
-- [Docker Best Practices: ENTRYPOINT](https://www.docker.com/blog/docker-best-practices-choosing-between-run-cmd-and-entrypoint/)
-- [HikariCP GitHub](https://github.com/brettwooldridge/HikariCP)
+- [JaCoCo prepare-agent goal](https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html)
+- [JaCoCo check goal](https://www.eclemma.org/jacoco/trunk/doc/check-mojo.html)
+- [PIT Maven Quickstart](https://pitest.org/quickstart/maven/)
+- [PIT Incremental Analysis](https://pitest.org/quickstart/incremental_analysis/)
+- [PIT FAQ](https://pitest.org/faq/)
+- [pitest-junit5-plugin GitHub](https://github.com/pitest/pitest-junit5-plugin)
 
 ### Community Resources
-- [Graceful Shutdowns for containerized Spring Boot](https://medium.com/viascom/graceful-shutdowns-for-containerized-spring-boot-applications-d9c465ce4fd9)
-- [Why Your Dockerized Spring Boot App Will Eventually Crash](https://medium.com/@himanshu675/why-your-dockerized-spring-boot-app-will-eventually-crash-the-2025-memory-leak-epidemic-9d50605f2e5e)
-- [Java inside Docker: What you must know](https://developers.redhat.com/blog/2017/03/14/java-inside-docker)
-- [Best practices for Java containerization](https://bell-sw.com/announcements/2022/09/01/avoiding-side-effects-of-containerization/)
-- [Configure MCP Transport Protocols for Docker](https://mcpcat.io/guides/configuring-mcp-transport-protocols-docker-containers/)
-- [HikariCP Connection Pool Issues](https://medium.com/@raphy.26.007/navigating-hikaricp-connection-pool-issues-when-your-database-says-no-more-connections-3203217a14a0)
-- [JVM Performance 2025: Virtual Threads and Container Optimization](https://www.atruedev.com/blog/performance/jvm-performance-2025-virtual-threads-graalvm-containers)
-- [Spring Boot Docker Layered JARs](https://www.baeldung.com/docker-layers-spring-boot)
+- [Baeldung: Exclusions from JaCoCo Report](https://www.baeldung.com/jacoco-report-exclude)
+- [Baeldung: Maven JaCoCo Configuration](https://www.baeldung.com/jacoco)
+- [Mutation Testing in Spring Boot 3 Projects](https://en.paradigmadigital.com/dev/mutation-testing-spring-boot-3-projects-beat-slowness-supercharge-tests/)
+- [Faster Mutation Testing](https://blog.frankel.ch/faster-mutation-testing/)
+- [Integration Testing with Failsafe and Merging Reports with JaCoCo](https://medium.com/@aleaandre/integration-testing-with-failsafe-and-merging-reports-with-jacoco-in-a-spring-boot-project-9e313a38ae26)
+- [Apache Maven JaCoCo Configuration](https://dev.to/khmarbaise/apache-maven-jacoco-configuration-i71)
+- [JaCoCo Maven plugin and test plugins](https://groups.google.com/g/jacoco/c/FuzoshJb2KU)
+- [PIT excludedGroups issue #699](https://github.com/hcoles/pitest/issues/699)
+- [withHistory disables explicit file paths](https://github.com/hcoles/pitest/issues/293)
 
 ---
-*Pitfalls research for: Dockerizing Java 21 Spring Boot + MCP Server*
+*Pitfalls research for: JaCoCo and PIT Mutation Testing with Java 21 Spring Boot*
+*Project: Alexandria v0.3*
 *Researched: 2026-01-22*

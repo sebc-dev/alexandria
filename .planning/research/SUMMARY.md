@@ -1,186 +1,206 @@
 # Project Research Summary
 
-**Project:** Alexandria Docker Packaging
-**Domain:** Docker containerization for Java Spring Boot MCP server with PostgreSQL/pgvector/Apache AGE
+**Project:** Alexandria v0.3 - Better DX and Quality Gate
+**Domain:** Java Test Quality Tools (JaCoCo Code Coverage + PIT Mutation Testing)
 **Researched:** 2026-01-22
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Docker packaging for Alexandria requires a multi-stage Dockerfile using Spring Boot's layered JAR extraction for optimal caching, Eclipse Temurin 21 JRE Alpine as the runtime image, and a critical transport protocol change from STDIO to HTTP/SSE (or Streamable-HTTP) to enable MCP communication within containerized environments. The existing STDIO transport works for local Claude Code integration but cannot function when the application runs inside Docker since MCP clients cannot spawn containers as subprocesses with stdin/stdout communication.
+Alexandria v0.3 focuses on adding test quality visibility without enforcement gates. The research confirms that JaCoCo 0.8.14 and PIT 1.22.0 are the correct tool choices for Java 21 with Spring Boot 3.4. Both tools integrate cleanly with Maven's lifecycle, but require careful argLine configuration to coexist with the existing Mockito dynamic agent loading flag. The core philosophy of "tools for reflection, not hard thresholds" aligns with best practices that discourage premature coverage gates.
 
-The recommended approach is a two-service Docker Compose architecture: the existing PostgreSQL container (with pgvector + Apache AGE) and a new Java application container. Both services communicate over a dedicated bridge network, with the application using service names (not localhost) for database connectivity. The application image should be approximately 200-400 MB using multi-stage builds, run as a non-root user, and include proper health checks with extended startup periods (120s) to accommodate ONNX model loading.
+The recommended approach is phased integration: JaCoCo first (simpler, immediate value), then PIT (slower, optional). JaCoCo provides immediate feedback via HTML reports and CI artifacts, while PIT's incremental analysis mode makes local mutation testing practical. Both tools should be profile-activated to avoid impacting normal build times. SonarQube integration comes essentially free once JaCoCo generates XML reports.
 
-Key risks center on three areas: (1) transport incompatibility requiring code changes beyond just Dockerfile creation, (2) JVM signal propagation for graceful shutdown, and (3) native memory exhaustion from ONNX model loading outside the JVM heap. All three require attention during the first phase of implementation. The project builds on well-established patterns with high-quality official documentation from Spring, Docker, and Eclipse Temurin.
+The primary risk is silent failure where coverage shows 0% due to misconfigured argLine merging. This is a well-documented pitfall with a clear prevention strategy (`@{argLine}` syntax). Secondary risks include PIT accidentally running integration tests (causing massive slowdowns) and version mismatches with the JUnit 5 plugin. All identified pitfalls have straightforward mitigations and low recovery costs.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack combines industry-standard Docker patterns with Spring Boot optimizations for containers. Eclipse Temurin 21 JRE Alpine provides a small (~387 MB), security-focused runtime that is TCK-tested and vendor-neutral. Spring Boot's jarmode tools extract layers (dependencies/spring-boot-loader/snapshot-dependencies/application) for cache-efficient rebuilds where code changes only affect the top layer.
+JaCoCo and PIT are the standard tools for Java code coverage and mutation testing. Both have mature Maven integrations and explicit Java 21 support.
 
 **Core technologies:**
-- **Eclipse Temurin 21-jre-alpine**: Runtime base image - balanced size, LTS support, container-aware JVM
-- **Spring Boot jarmode tools**: Layered JAR extraction - supersedes deprecated layertools, cache-efficient builds
-- **spring-ai-starter-mcp-server-webmvc**: HTTP/SSE transport - replaces STDIO for Docker deployments
-- **Docker multi-stage build**: Image optimization - separates build (Maven/JDK) from runtime (JRE only)
-- **GitHub Actions + buildx**: CI/CD pipeline - native ghcr.io integration, layer caching
+- **JaCoCo 0.8.14**: Code coverage measurement - latest stable with Java 21-25 support via ASM 9.8
+- **PIT 1.22.0**: Mutation testing engine - latest stable with incremental analysis and history support
+- **pitest-junit5-plugin 1.2.3**: JUnit 5 support for PIT - auto-detects JUnit Platform 1.5-1.10+
+- **cicirello/jacoco-badge-generator v2**: GitHub Action for coverage badges - no external API calls, PR-aware
+
+**Critical version requirements:**
+- JaCoCo must be 0.8.11+ for Java 21 support (0.8.14 recommended)
+- PIT must be 1.9.0+ for pitest-junit5-plugin 1.0+ compatibility
+- pitest-junit5-plugin must be 1.2.0+ to avoid manual launcher configuration
 
 ### Expected Features
 
 **Must have (table stakes):**
-- Multi-stage Dockerfile for Java app (JDK build, JRE runtime)
-- Docker Compose with app + postgres services
-- Health check integration (Spring Actuator with readiness/liveness probes)
-- Service dependency ordering (depends_on with service_healthy condition)
-- Volume mount for documents directory
-- Environment variable configuration (database URL, paths)
-- Non-root user in container
-- Graceful shutdown handling (exec form ENTRYPOINT + Spring lifecycle)
-- Spring Boot layered JARs for cache efficiency
-- CLI wrapper script for docker exec usage
+- Line and branch coverage metrics with HTML/XML reports
+- Maven lifecycle integration (prepare-agent, report goals)
+- Exclusion patterns for generated/config code
+- Default mutators covering boundaries, negation, math, returns
+- JUnit 5 test framework support
+- CI artifact upload for coverage reports
 
-**Should have (competitive):**
-- HTTP/SSE transport option for Docker MCP Toolkit integration
-- GitHub Container Registry publishing for easy installation
-- Structured JSON logging for aggregation tools
-- .env.example file for documentation
+**Should have (differentiators):**
+- Integration test coverage (separate jacoco-it.exec)
+- PIT incremental analysis with history file (7min to 17s improvement)
+- `scmMutationCoverage` goal for PR-only mutation analysis
+- Multi-threaded PIT execution
+- SonarQube integration via XML report path
 
 **Defer (v2+):**
-- Multi-arch images (ARM) - complexity outweighs benefit for personal use
-- Kubernetes manifests - Docker Compose sufficient
-- Native image (GraalVM) - ONNX compatibility issues, not worth complexity
+- Coverage threshold enforcement (add only after baseline established)
+- Multi-module report aggregation (Alexandria is single-module)
+- Custom mutators (domain-specific, high complexity)
+- Offline instrumentation (rare use case)
 
 ### Architecture Approach
 
-Two-service Docker Compose architecture with a dedicated bridge network (alexandria-net). The MCP server and CLI share the same Spring Boot application, activated via Spring profiles (`mcp` vs `cli`). PostgreSQL container continues using the existing custom Dockerfile with pgvector + Apache AGE extensions. The Java application container exposes port 8080 for HTTP/SSE MCP transport, connects to PostgreSQL via service name over the internal network, and mounts host documents as a read-only volume.
+Both tools integrate at the Maven lifecycle level. JaCoCo attaches as a Java agent during test execution (prepare-agent goal), while PIT runs as a separate analysis phase. The key integration point is argLine merging with Surefire/Failsafe plugins.
 
 **Major components:**
-1. **alexandria (Java App)** - MCP server + CLI entry point, Spring Boot 3.4 fat JAR, HTTP/SSE transport
-2. **postgres** - pgvector + Apache AGE, persistent named volume, health check for dependency ordering
-3. **alexandria-net** - Docker bridge network for service-to-service communication
+1. **JaCoCo Maven Plugin** - 4 executions: prepare-agent (unit), report (unit), prepare-agent-integration (IT), report-integration (IT)
+2. **PIT Maven Plugin** - Profile-activated, targets core package only, excludes API/infra layers
+3. **GitHub Actions Integration** - Coverage artifact upload, optional badge generation
+4. **SonarQube Integration** - Automatic via `sonar.coverage.jacoco.xmlReportPaths` property
+
+**Data flow:**
+```
+tests execute --> JaCoCo agent records --> jacoco.exec --> report goal --> HTML/XML/CSV
+                                                        --> SonarQube scanner reads XML
+```
 
 ### Critical Pitfalls
 
-1. **STDIO transport incompatible with Docker** - Switch to HTTP/SSE or Streamable-HTTP transport; requires adding spring-ai-starter-mcp-server-webmvc dependency and changing configuration
-2. **JVM not receiving SIGTERM** - Use exec form ENTRYPOINT (`["java", "-jar", "app.jar"]`) not shell form; combine with Spring graceful shutdown
-3. **Native memory exhaustion from ONNX** - Set container memory 1.5-2x heap limit; use `-XX:MaxRAMPercentage=50.0` instead of fixed -Xmx
-4. **Hardcoded localhost database URL** - Use environment variable substitution (`${DB_HOST:localhost}`) and service names in compose
-5. **Slow startup causing health failures** - Configure start_period: 120s in health check to accommodate ONNX model loading
+1. **argLine overwritten by Surefire** - JaCoCo agent silently ignored, 0% coverage. **Prevention:** Use `@{argLine}` late evaluation syntax and define empty `<argLine></argLine>` property default.
+
+2. **PIT runs integration tests** - Testcontainers spin up for each mutation, 2min becomes 2+ hours. **Prevention:** Explicit `<excludedTestClasses>**.*IT</excludedTestClasses>` configuration.
+
+3. **Coverage thresholds block all PRs** - Adding enforcement before baseline breaks CI immediately. **Prevention:** Report-only mode for v0.3, no `jacoco:check` goal binding.
+
+4. **PIT JUnit 5 plugin version mismatch** - Cryptic NoSuchMethodError failures. **Prevention:** Use compatible versions (PIT 1.22.0 + plugin 1.2.3).
+
+5. **PIT single-threaded default** - 30+ minute runs discourage local usage. **Prevention:** Configure `<threads>4</threads>` and `<withHistory>true</withHistory>`.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-### Phase 1: Core Docker Infrastructure
+### Phase 1: JaCoCo Foundation
 
-**Rationale:** Must establish Dockerfile and Docker Compose foundation before any other Docker features can be built. Transport change is required for Docker deployment to function at all.
+**Rationale:** JaCoCo has no dependencies, provides immediate value, and must be configured correctly before PIT. The argLine integration is the critical first step.
 
 **Delivers:**
-- Multi-stage Dockerfile.app with layered JAR extraction
-- Updated docker-compose.yml with app service definition
-- HTTP/SSE transport configuration (replacing STDIO)
-- Non-root user, graceful shutdown, proper health checks
-- Environment-based configuration for database connectivity
+- Code coverage reports (HTML/XML) for unit tests
+- CI artifact upload for coverage visibility
+- SonarQube coverage integration
 
 **Addresses features:**
-- Multi-stage Dockerfile, Docker Compose orchestration
-- Health checks, service dependency ordering
-- Volume mounts, externalized config
-- Non-root user, graceful shutdown
-- Spring Boot layered JARs
+- Line/branch coverage metrics
+- HTML report generation
+- XML report export
+- Maven lifecycle integration
+- Exclusion patterns for config classes
 
 **Avoids pitfalls:**
-- STDIO transport incompatibility (transport change is core deliverable)
-- JVM signal propagation failure (exec form ENTRYPOINT)
-- Native memory exhaustion (memory configuration)
-- Hardcoded localhost (environment variables)
-- Slow startup health failures (120s start_period)
+- Pitfall 1: argLine overwritten (use @{argLine} from start)
+- Pitfall 5: Coverage thresholds blocking CI (report-only mode)
+- Pitfall 7: Config classes in reports (exclusion patterns)
 
-### Phase 2: Developer Experience
+### Phase 2: Integration Test Coverage
 
-**Rationale:** With core Docker infrastructure working, enhance the developer experience with wrapper scripts and documentation.
+**Rationale:** Depends on Phase 1 JaCoCo setup being correct. Adds coverage for IT tests which exercise the full stack.
 
 **Delivers:**
-- CLI wrapper script for docker exec commands
-- .env.example with documented configuration options
-- .dockerignore for build optimization
-- Updated README with Docker usage instructions
+- Separate jacoco-it.exec and report
+- Optional merged coverage report
+- IT coverage artifact in CI
 
 **Addresses features:**
-- CLI wrapper script
-- .env.example file
-- Build optimization
+- Integration test coverage
+- Report separation (unit vs IT)
 
-**Implements:** Volume mount patterns for documents, configuration externalization patterns
+**Avoids pitfalls:**
+- Pitfall 3: Coverage not merged (explicit merge execution if desired)
+- Pitfall 9: Failsafe not instrumented (same argLine pattern)
 
-### Phase 3: CI/CD Pipeline
+### Phase 3: PIT Mutation Testing
 
-**Rationale:** Once local Docker builds work reliably, automate publishing to GitHub Container Registry for easy installation without git clone.
+**Rationale:** PIT is independent but benefits from established test infrastructure. Should be optional/profile-based to avoid impacting normal builds.
 
 **Delivers:**
-- GitHub Actions workflow for Docker image build
-- Automatic tagging from git tags (semantic versioning)
-- ghcr.io publishing with attestation
-- Layer caching for faster CI builds
+- Mutation testing capability (local only initially)
+- HTML mutation report
+- Incremental analysis for fast local feedback
 
 **Addresses features:**
-- GitHub Container Registry publishing
+- Default mutators
+- Target class filtering (core package only)
+- Multi-threaded execution
+- History file for incremental runs
 
-**Uses:** docker/build-push-action, docker/metadata-action, GitHub Actions cache
+**Avoids pitfalls:**
+- Pitfall 2: ITs run by PIT (excludedTestClasses pattern)
+- Pitfall 4: JUnit 5 version mismatch (verified compatible versions)
+- Pitfall 6: Single-threaded slowness (threads=4)
+- Pitfall 10: parseSurefireConfig confusion (set to false)
 
 ### Phase Ordering Rationale
 
-- **Phase 1 first:** Without working Docker infrastructure and transport change, nothing else matters. The transport change from STDIO to HTTP/SSE is a blocking requirement.
-- **Phase 2 second:** Developer experience improvements only make sense once the core system works. CLI wrapper depends on working Docker Compose.
-- **Phase 3 third:** CI/CD automation should only be built after local development workflow is proven. Publishing broken images wastes effort.
-- **All MVP features in Phase 1:** Research indicates clear separation between essential (Phase 1) and nice-to-have (Phases 2-3) features.
+- **Phase 1 before 2:** JaCoCo base configuration must work before IT coverage extension
+- **Phase 3 last:** PIT is optional tooling, not blocking for milestone completion
+- **No thresholds in any phase:** Aligns with "reflection, not enforcement" philosophy
+
+Dependencies:
+```
+Phase 1 (JaCoCo unit) --> Phase 2 (JaCoCo IT)
+                     \--> Phase 3 (PIT) [independent but logically after]
+```
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 1:** HTTP/SSE transport configuration - may need investigation into Spring AI MCP WebMVC starter specifics and Claude Desktop connector setup
-
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Dockerfile):** Well-documented multi-stage build patterns from Spring Boot official docs
-- **Phase 2:** Standard shell scripting and documentation
-- **Phase 3:** GitHub Actions Docker workflows have extensive examples and official actions
+- **Phase 1:** Well-documented, official JaCoCo Maven plugin docs sufficient
+- **Phase 2:** Extension of Phase 1, same patterns apply
+- **Phase 3:** Official PIT Maven quickstart covers all needs
+
+No phases require additional research. All patterns are well-documented with high confidence.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Official Spring Boot Docker docs, Eclipse Temurin docs, Spring AI MCP docs all verified |
-| Features | HIGH | Docker best practices well-established, feature prioritization based on multiple authoritative sources |
-| Architecture | HIGH | Two-service architecture follows Docker Compose conventions, MCP transport options documented |
-| Pitfalls | HIGH | Multiple sources confirm each pitfall; official docs + community experience aligned |
+| Stack | HIGH | Official release notes and changelogs verified, versions confirmed for Java 21 |
+| Features | HIGH | Official documentation reviewed, feature maturity documented |
+| Architecture | HIGH | Maven lifecycle integration is standard, verified with multiple sources |
+| Pitfalls | HIGH | Official docs + community sources confirm, all have documented solutions |
 
 **Overall confidence:** HIGH
 
+All research was validated against official documentation (JaCoCo Maven Plugin, PIT Quickstart, Maven Build Lifecycle). Community sources corroborated findings. No areas require validation during implementation.
+
 ### Gaps to Address
 
-- **MCP client configuration:** How Claude Desktop connects to HTTP/SSE endpoint needs validation during implementation (Settings > Connectors for Pro+ users, mcp-remote proxy for others)
-- **Apache AGE session validation:** Health check should verify AGE extension is loaded; exact health check query needs implementation-time testing
-- **ONNX memory footprint:** Actual memory usage under load should be profiled; 1.5-2x heap estimate may need adjustment
+- **Actual baseline coverage:** Unknown until JaCoCo runs. First run will establish baseline for future comparison.
+- **PIT performance on Alexandria codebase:** Estimated based on class count, actual timing will vary.
+
+Neither gap affects implementation approach. Both are resolved by running the tools.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Spring Boot Dockerfiles Documentation](https://docs.spring.io/spring-boot/reference/packaging/container-images/dockerfiles.html) - jarmode tools, multi-stage patterns
-- [Spring AI MCP STDIO and SSE Server Starter](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-stdio-sse-server-boot-starter-docs.html) - transport configuration
-- [Spring AI Streamable-HTTP MCP Servers](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-streamable-http-server-boot-starter-docs.html) - forward-compatible transport
-- [GitHub Actions Publishing Docker Images](https://docs.github.com/actions/guides/publishing-docker-images) - ghcr.io workflow
-- [Docker Multi-Stage Builds](https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/) - build optimization
-- [Docker Compose Startup Order](https://docs.docker.com/compose/how-tos/startup-order/) - depends_on with health checks
+- [JaCoCo Maven Plugin](https://www.eclemma.org/jacoco/trunk/doc/maven.html) - Plugin configuration, goal binding
+- [JaCoCo Change History](https://www.jacoco.org/jacoco/trunk/doc/changes.html) - Version history, Java 21 support
+- [PIT Quickstart for Maven](https://pitest.org/quickstart/maven/) - Maven plugin configuration
+- [PIT Incremental Analysis](https://pitest.org/quickstart/incremental_analysis/) - History file usage
+- [pitest-junit5-plugin GitHub](https://github.com/pitest/pitest-junit5-plugin) - Version compatibility
 
 ### Secondary (MEDIUM confidence)
-- [Best Docker Base Images for Java 2025](https://dev.to/devaaai/best-docker-base-images-and-performance-optimization-for-java-applications-in-2025-kdd) - Temurin vs alternatives
-- [9 Tips for Containerizing Spring Boot](https://www.docker.com/blog/9-tips-for-containerizing-your-spring-boot-code/) - Docker best practices
-- [Graceful Shutdowns for Containerized Spring Boot](https://medium.com/viascom/graceful-shutdowns-for-containerized-spring-boot-applications-d9c465ce4fd9) - signal handling
-- [Docker Blog: MCP Server Best Practices](https://www.docker.com/blog/mcp-server-best-practices/) - MCP in containers
+- [Baeldung: Mutation Testing with PITest](https://www.baeldung.com/java-mutation-testing-with-pitest) - Tutorial patterns
+- [Baeldung: JaCoCo Report Exclusions](https://www.baeldung.com/jacoco-report-exclude) - Exclusion patterns
+- [Nicolas Frankel: Faster Mutation Testing](https://blog.frankel.ch/faster-mutation-testing/) - Performance optimization
 
 ### Tertiary (LOW confidence)
-- Memory profiling for ONNX - needs validation during implementation
+- [GitHub cicirello/jacoco-badge-generator](https://github.com/cicirello/jacoco-badge-generator) - CI badge generation (optional feature)
 
 ---
 *Research completed: 2026-01-22*
