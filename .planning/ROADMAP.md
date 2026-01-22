@@ -70,11 +70,11 @@ Plans:
   2. User can copy .env.example to .env and customize configuration
   3. README contains complete installation instructions that work from git clone to running search
   4. Docker build completes faster on code-only changes (layered caching works)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 09-01: CLI wrapper script and .dockerignore
-- [ ] 09-02: .env support and documentation update
+- [ ] 09-01-PLAN.md - .dockerignore and .env configuration
+- [ ] 09-02-PLAN.md - CLI wrapper script and README documentation
 
 #### Phase 10: CI/CD Pipeline
 **Goal**: Docker images automatically published to GitHub Container Registry on release
