@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 9 of 10 (Developer Experience)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-22 - Completed 09-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 - Completed 09-02-PLAN.md
 
 Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [########        ] 50% (1.5/3 phases)
+Progress: v1.1 [###########     ] 67% (2/3 phases)
 
 ## Performance Metrics
 
@@ -25,8 +25,8 @@ Progress: v1.1 [########        ] 50% (1.5/3 phases)
 - Total execution time: 0.83 hours
 
 **v1.1 Velocity:**
-- Plans completed: 4
-- Average duration: 4.0 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min)
+- Plans completed: 5
+- Average duration: 3.6 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min, 09-02: 2min)
 
 **By Phase:**
 
@@ -40,7 +40,7 @@ Progress: v1.1 [########        ] 50% (1.5/3 phases)
 | 06-mcp-server | 2 | 5 min | 2.5 min |
 | 07-cli | 2 | 7 min | 3.5 min |
 | 08-core-docker-infrastructure | 3 | 15 min | 5.0 min |
-| 09-developer-experience | 1 | 1 min | 1.0 min |
+| 09-developer-experience | 2 | 3 min | 1.5 min |
 
 ## Accumulated Context
 
@@ -60,6 +60,8 @@ v1.0 decisions all marked as outcomes (all Good).
 - 120s health check start_period for ONNX model loading (08-03)
 - DOCS_PATH env variable with ./docs default for volume mount (08-03)
 - Include src/test/ in .dockerignore - test sources not needed in production (09-01)
+- Use POSIX sh instead of bash for CLI wrapper portability (09-02)
+- Keep Traditional Quick Start section for non-Docker users (09-02)
 
 ### Pending Todos
 
@@ -77,5 +79,5 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 09-01-PLAN.md (developer config files)
+Stopped at: Completed 09-02-PLAN.md (CLI wrapper and README), Phase 9 complete
 Resume file: None
