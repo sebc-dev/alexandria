@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 8 of 10 (Core Docker Infrastructure)
-Plan: 0 of 3 in current phase
-Status: Planned - ready to execute
-Last activity: 2026-01-22 - Phase 8 plans created
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-22 - Completed 08-01-PLAN.md
 
 Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [                ] 0%
+Progress: v1.1 [#               ] 6% (1/16 plans)
 
 ## Performance Metrics
 
@@ -43,6 +43,11 @@ Progress: v1.1 [                ] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 v1.0 decisions all marked as outcomes (all Good).
 
+**v1.1 decisions:**
+- Keep both STDIO and HTTP/SSE MCP starters for profile-based selection (08-01)
+- Use stdio: false for transport switching (webmvc auto-configures SSE) (08-01)
+- Default DB_HOST to 'postgres' for docker-compose service name (08-01)
+
 ### Pending Todos
 
 None.
@@ -58,6 +63,7 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Phase 8 plans created, ready to execute
+Last session: 2026-01-22T05:53:55Z
+Stopped at: Completed 08-01-PLAN.md (HTTP/SSE transport profile)
 Resume file: None
+Next: 08-02-PLAN.md (Dockerfile)
