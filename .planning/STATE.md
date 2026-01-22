@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 8 of 10 (Core Docker Infrastructure)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-22 - Completed 08-01-PLAN.md
+Last activity: 2026-01-22 - Completed 08-02-PLAN.md
 
 Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [#               ] 6% (1/16 plans)
+Progress: v1.1 [##              ] 12% (2/16 plans)
 
 ## Performance Metrics
 
@@ -23,6 +23,10 @@ Progress: v1.1 [#               ] 6% (1/16 plans)
 - Total plans completed: 15
 - Average duration: 3.3 min
 - Total execution time: 0.83 hours
+
+**v1.1 Velocity:**
+- Plans completed: 2
+- Average duration: 5.0 min (08-01: 4min, 08-02: 6min)
 
 **By Phase:**
 
@@ -35,6 +39,7 @@ Progress: v1.1 [#               ] 6% (1/16 plans)
 | 05-recherche-avancee | 2 | 7 min | 3.5 min |
 | 06-mcp-server | 2 | 5 min | 2.5 min |
 | 07-cli | 2 | 7 min | 3.5 min |
+| 08-core-docker-infrastructure | 2 | 10 min | 5.0 min |
 
 ## Accumulated Context
 
@@ -47,6 +52,9 @@ v1.0 decisions all marked as outcomes (all Good).
 - Keep both STDIO and HTTP/SSE MCP starters for profile-based selection (08-01)
 - Use stdio: false for transport switching (webmvc auto-configures SSE) (08-01)
 - Default DB_HOST to 'postgres' for docker-compose service name (08-01)
+- Install Maven directly in Dockerfile (project has no mvnw) (08-02)
+- Use --launcher flag for exploded class structure with JarLauncher (08-02)
+- Create /application/logs directory for logback file appender (08-02)
 
 ### Pending Todos
 
@@ -63,7 +71,7 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 
 ## Session Continuity
 
-Last session: 2026-01-22T05:53:55Z
-Stopped at: Completed 08-01-PLAN.md (HTTP/SSE transport profile)
+Last session: 2026-01-22T05:58:08Z
+Stopped at: Completed 08-02-PLAN.md (Multi-stage Dockerfile)
 Resume file: None
-Next: 08-02-PLAN.md (Dockerfile)
+Next: 08-03-PLAN.md (Docker Compose)
