@@ -8,17 +8,16 @@ A personal RAG (Retrieval-Augmented Generation) system using PostgreSQL with pgv
 
 Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
 
-## Current Milestone: v0.2 Full Docker
+## Current State
 
-**Goal:** Rendre l'application installable et utilisable via docker compose sans installer de dependances.
+**Latest shipped:** v0.2 Full Docker (2026-01-22)
 
-**Target features:**
-- Dockerfile pour l'application Java (MCP server + CLI)
-- docker-compose.yml complet (PostgreSQL + App)
-- MCP server avec transport HTTP/SSE (en plus de STDIO)
-- Script wrapper CLI pour simplifier les commandes
-- Publication sur GitHub Container Registry
-- Configuration via env vars + fichier .env
+**Delivered:** Docker packaging with HTTP/SSE MCP transport, CLI wrapper, and automatic GitHub Container Registry publishing.
+
+**Next milestone goals:**
+- Configurable search weights (vector vs keyword)
+- Reranking with cross-encoder
+- Additional file format support (RST, AsciiDoc)
 
 ## Requirements
 
@@ -36,17 +35,18 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 - ✓ Retourner les documents pertinents avec leur contexte — v0.1
 - ✓ Recherche hybride vector + full-text — v0.1
 - ✓ Traversee graph pour documents lies — v0.1
+- ✓ Dockerfile multi-stage pour build + runtime — v0.2
+- ✓ Service app dans docker-compose.yml — v0.2
+- ✓ MCP transport HTTP/SSE configurable (+ STDIO existant) — v0.2
+- ✓ Script wrapper CLI (`alexandria` command) — v0.2
+- ✓ GitHub Actions pour build et push image — v0.2
+- ✓ Configuration externalisee (env vars, .env, volumes) — v0.2
 
-### Active (v0.2)
+### Active
 
-- [ ] Dockerfile multi-stage pour build + runtime
-- [ ] Service app dans docker-compose.yml
-- [ ] MCP transport HTTP/SSE configurable (+ STDIO existant)
-- [ ] Script wrapper CLI (`alexandria` command)
-- [ ] GitHub Actions pour build et push image
-- [ ] Configuration externalisee (env vars, .env, volumes)
+(No active milestone - run `/gsd:new-milestone` to start next)
 
-### Deferred (v1.2+)
+### Deferred (v0.3+)
 
 - Scoring pondere configurable (vector vs keyword)
 - Reranking des resultats
@@ -65,11 +65,12 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ## Context
 
-**Current State (v0.1 shipped):**
-- 53 Java files, 5,732 lines of code
-- Tech stack: Java 21, Spring Boot 3.4, LangChain4j 1.0-beta3, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
-- MCP server: 4 tools (search_docs, index_docs, list_categories, get_doc)
-- CLI: 4 commands (index, search, status, clear) with Spring Shell 3.4.1
+**Current State (v0.2 shipped):**
+- 53 Java files, 5,751 lines of code
+- Tech stack: Java 21, Spring Boot 3.4.7, LangChain4j 1.2.0, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
+- MCP server: 4 tools (search_docs, index_docs, list_categories, get_doc) with HTTP/SSE + STDIO transports
+- CLI: 4 commands (index, search, status, clear) with Spring Shell 3.4.1 + Docker wrapper
+- Docker: Multi-stage build, auto-publishing to ghcr.io/sebc-dev/alexandria
 - Hexagonal architecture enforced by ArchUnit tests
 
 **Architecture:**
@@ -117,6 +118,11 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | websearch_to_tsquery | User-friendly full-text query syntax | ✓ Good |
 | Spring Shell 3.4.1 | @Command annotation style, non-interactive mode | ✓ Good |
 | Hexagonal architecture | api -> core <- infra, enforced by ArchUnit | ✓ Good |
+| Profile-based MCP transport | STDIO + HTTP/SSE via Spring profiles | ✓ Good |
+| 120s health start_period | ONNX model loading on first run | ✓ Good |
+| wget over curl | JRE image has no curl, wget is lighter | ✓ Good |
+| POSIX shell CLI wrapper | Maximum portability across systems | ✓ Good |
+| Official Docker GH Actions | Reliable GHCR publishing with gha cache | ✓ Good |
 
 ---
-*Last updated: 2026-01-22 after v0.2 milestone start*
+*Last updated: 2026-01-22 after v0.2 milestone*

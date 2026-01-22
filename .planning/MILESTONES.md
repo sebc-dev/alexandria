@@ -1,5 +1,33 @@
 # Project Milestones: Documentation RAG (Alexandria)
 
+## v0.2 Full Docker (Shipped: 2026-01-22)
+
+**Delivered:** Docker packaging with HTTP/SSE MCP transport, CLI wrapper, and automatic GitHub Container Registry publishing.
+
+**Phases completed:** 8-10 (6 plans total)
+
+**Key accomplishments:**
+
+- Multi-stage Dockerfile with layered JAR extraction for optimal Docker layer caching
+- HTTP/SSE MCP transport alongside existing STDIO (profile-based selection)
+- Complete Docker Compose stack with health checks and service dependencies (120s start period for ONNX)
+- CLI wrapper script (`./alexandria`) hiding Docker complexity from users
+- GitHub Actions CI/CD for automatic Docker image publishing to GHCR on semver tags
+- Developer configuration: .env.example template, .dockerignore for fast builds
+
+**Stats:**
+
+- 49 files modified
+- 6,640 lines added
+- 3 phases, 6 plans
+- 2 days (2026-01-21 → 2026-01-22)
+
+**Git range:** v0.1..f79e738 (50 commits)
+
+**What's next:** v0.3 planned features - configurable search weights, reranking, additional file format support
+
+---
+
 ## v0.1 MVP (Shipped: 2026-01-20)
 
 **Delivered:** Personal RAG system for technical documentation with MCP server for Claude Code integration and CLI for maintenance.
