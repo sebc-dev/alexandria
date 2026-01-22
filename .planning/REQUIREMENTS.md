@@ -50,25 +50,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COV-01 | TBD | Pending |
-| COV-02 | TBD | Pending |
-| COV-03 | TBD | Pending |
-| COV-04 | TBD | Pending |
-| MUT-01 | TBD | Pending |
-| MUT-02 | TBD | Pending |
-| MUT-03 | TBD | Pending |
-| CI-01 | TBD | Pending |
-| CI-02 | TBD | Pending |
-| CI-03 | TBD | Pending |
-| DX-01 | TBD | Pending |
-| DX-02 | TBD | Pending |
-| DX-03 | TBD | Pending |
+| COV-01 | Phase 11 | Pending |
+| COV-02 | Phase 11 | Pending |
+| COV-03 | Phase 12 | Pending |
+| COV-04 | Phase 12 | Pending |
+| MUT-01 | Phase 13 | Pending |
+| MUT-02 | Phase 13 | Pending |
+| MUT-03 | Phase 13 | Pending |
+| CI-01 | Phase 12 | Pending |
+| CI-02 | Phase 12 | Pending |
+| CI-03 | Phase 14 | Pending |
+| DX-01 | Phase 11 | Pending |
+| DX-02 | Phase 13 | Pending |
+| DX-03 | Phase 14 | Pending |
 
 **Coverage:**
 - v0.3 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after initial definition*
+*Last updated: 2026-01-22 after roadmap creation*
