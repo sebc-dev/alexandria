@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 
 Phase: 8 of 10 (Core Docker Infrastructure)
 Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-01-22 - v1.1 roadmap created
+Status: Planned - ready to execute
+Last activity: 2026-01-22 - Phase 8 plans created
 
 Progress: v1.0 [################] 100% SHIPPED
 Progress: v1.1 [                ] 0%
@@ -49,7 +49,7 @@ None.
 
 ### Blockers/Concerns
 
-- Research flag: HTTP/SSE transport configuration may need investigation during Phase 8 planning (Spring AI MCP WebMVC starter specifics, Claude Desktop connector setup)
+None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 
 ### Tech Debt (from v1.0)
 
@@ -59,5 +59,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: v1.1 roadmap created, ready to plan Phase 8
+Stopped at: Phase 8 plans created, ready to execute
 Resume file: None
