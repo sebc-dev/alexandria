@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 8 of 10 (Core Docker Infrastructure)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-22 - Completed 08-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 - Completed 08-03-PLAN.md
 
 Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [##              ] 12% (2/16 plans)
+Progress: v1.1 [###             ] 19% (3/16 plans)
 
 ## Performance Metrics
 
@@ -25,8 +25,8 @@ Progress: v1.1 [##              ] 12% (2/16 plans)
 - Total execution time: 0.83 hours
 
 **v1.1 Velocity:**
-- Plans completed: 2
-- Average duration: 5.0 min (08-01: 4min, 08-02: 6min)
+- Plans completed: 3
+- Average duration: 5.0 min (08-01: 4min, 08-02: 6min, 08-03: 5min)
 
 **By Phase:**
 
@@ -39,7 +39,7 @@ Progress: v1.1 [##              ] 12% (2/16 plans)
 | 05-recherche-avancee | 2 | 7 min | 3.5 min |
 | 06-mcp-server | 2 | 5 min | 2.5 min |
 | 07-cli | 2 | 7 min | 3.5 min |
-| 08-core-docker-infrastructure | 2 | 10 min | 5.0 min |
+| 08-core-docker-infrastructure | 3 | 15 min | 5.0 min |
 
 ## Accumulated Context
 
@@ -55,6 +55,9 @@ v1.0 decisions all marked as outcomes (all Good).
 - Install Maven directly in Dockerfile (project has no mvnw) (08-02)
 - Use --launcher flag for exploded class structure with JarLauncher (08-02)
 - Create /application/logs directory for logback file appender (08-02)
+- Use wget instead of curl for health check (JRE image has no curl) (08-03)
+- 120s health check start_period for ONNX model loading (08-03)
+- DOCS_PATH env variable with ./docs default for volume mount (08-03)
 
 ### Pending Todos
 
@@ -71,7 +74,7 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 
 ## Session Continuity
 
-Last session: 2026-01-22T05:58:08Z
-Stopped at: Completed 08-02-PLAN.md (Multi-stage Dockerfile)
+Last session: 2026-01-22T06:04:30Z
+Stopped at: Completed 08-03-PLAN.md (Docker Compose) - Phase 08 complete
 Resume file: None
-Next: 08-03-PLAN.md (Docker Compose)
+Next: Phase 09 (Developer Experience)
