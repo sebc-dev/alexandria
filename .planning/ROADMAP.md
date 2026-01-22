@@ -28,10 +28,10 @@ Alexandria v0.3 adds test quality visibility through JaCoCo code coverage and PI
   2. `mvn test` generates XML report for CI/SonarCloud integration
   3. `./coverage` script runs JaCoCo and displays coverage summary in terminal
   4. Existing `-XX:+EnableDynamicAgentLoading` flag coexists with JaCoCo agent (no argLine conflict)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 11-01: [TBD during planning]
+- [ ] 11-01-PLAN.md — Configure JaCoCo plugin and create coverage script
 
 ### Phase 12: Integration Test Coverage
 **Goal**: Developer can see coverage for integration tests, with merged overall report
@@ -80,7 +80,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 11. JaCoCo Unit Coverage | 0/TBD | Not started | - |
+| 11. JaCoCo Unit Coverage | 0/1 | Ready | - |
 | 12. Integration Test Coverage | 0/TBD | Not started | - |
 | 13. PIT Mutation Testing | 0/TBD | Not started | - |
 | 14. Quality Dashboard | 0/TBD | Not started | - |
