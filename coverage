@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Coverage script - runs unit tests with JaCoCo and displays summary
+# Parses JaCoCo CSV report using awk (portable, no external dependencies)
+
+set -euo pipefail
+
+REPORT_CSV="target/site/jacoco/jacoco.csv"
+
+# Run tests with coverage
+echo "Running unit tests with coverage..."
+mvn test -q
+
+if [[ ! -f "$REPORT_CSV" ]]; then
+    echo "Error: Coverage report not found at $REPORT_CSV"
+    exit 1
+fi
+
+echo ""
+echo "Coverage Summary"
+echo "================"
+
+# Parse CSV and sum counters across all classes
+# CSV columns: GROUP,PACKAGE,CLASS,
+#   INSTRUCTION_MISSED(4),INSTRUCTION_COVERED(5),
+#   BRANCH_MISSED(6),BRANCH_COVERED(7),
+#   LINE_MISSED(8),LINE_COVERED(9),
+#   COMPLEXITY_MISSED(10),COMPLEXITY_COVERED(11),
+#   METHOD_MISSED(12),METHOD_COVERED(13)
+
+awk -F',' '
+NR > 1 {
+    line_missed += $8
+    line_covered += $9
+    branch_missed += $6
+    branch_covered += $7
+    method_missed += $12
+    method_covered += $13
+    class_count++
+}
+END {
+    # LINE coverage
+    line_total = line_missed + line_covered
+    if (line_total > 0) {
+        line_pct = int(line_covered * 100 / line_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "LINE", line_pct, line_covered, line_total
+    } else {
+        printf "%-12s: N/A (no data)\n", "LINE"
+    }
+
+    # BRANCH coverage
+    branch_total = branch_missed + branch_covered
+    if (branch_total > 0) {
+        branch_pct = int(branch_covered * 100 / branch_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "BRANCH", branch_pct, branch_covered, branch_total
+    } else {
+        printf "%-12s: N/A (no data)\n", "BRANCH"
+    }
+
+    # METHOD coverage
+    method_total = method_missed + method_covered
+    if (method_total > 0) {
+        method_pct = int(method_covered * 100 / method_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "METHOD", method_pct, method_covered, method_total
+    } else {
+        printf "%-12s: N/A (no data)\n", "METHOD"
+    }
+
+    # CLASS coverage (at least one method covered = class covered)
+    # We count classes from rows, but need to determine covered classes
+    # A class is covered if it has any method covered (method_covered > 0 for that row)
+}
+' "$REPORT_CSV"
+
+# For CLASS coverage, count rows with at least one method covered
+class_covered=$(awk -F',' 'NR > 1 && $13 > 0 { count++ } END { print count+0 }' "$REPORT_CSV")
+class_total=$(awk -F',' 'NR > 1 { count++ } END { print count+0 }' "$REPORT_CSV")
+
+if [[ $class_total -gt 0 ]]; then
+    class_pct=$((class_covered * 100 / class_total))
+    printf "%-12s: %3d%% (%d/%d)\n" "CLASS" "$class_pct" "$class_covered" "$class_total"
+else
+    printf "%-12s: N/A (no data)\n" "CLASS"
+fi
+
+echo ""
+echo "Full report: target/site/jacoco/index.html"
