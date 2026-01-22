@@ -108,10 +108,22 @@
             <artifactId>gson</artifactId>
         </dependency>
 
-        <!-- MCP Server (Spring AI) -->
+        <!-- MCP Server (Spring AI) - STDIO transport for local dev -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server</artifactId>
+        </dependency>
+
+        <!-- MCP Server HTTP/SSE (Spring AI) - for containerized deployment -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+        </dependency>
+
+        <!-- Actuator for health checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- Spring Shell for CLI -->
