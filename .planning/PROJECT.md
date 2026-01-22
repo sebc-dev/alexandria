@@ -14,10 +14,15 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 **Delivered:** Docker packaging with HTTP/SSE MCP transport, CLI wrapper, and automatic GitHub Container Registry publishing.
 
-**Next milestone goals:**
-- Configurable search weights (vector vs keyword)
-- Reranking with cross-encoder
-- Additional file format support (RST, AsciiDoc)
+## Current Milestone: v0.3 Better DX and Quality Gate
+
+**Goal:** Improve test coverage visibility and quality validation tools for AI-generated code.
+
+**Target features:**
+- JaCoCo coverage reports (local HTML + CI artifacts)
+- PIT mutation testing (incremental local, reflection tool)
+- Integration tests in CI (Testcontainers on every PR + push master)
+- Local scripts for easy quality analysis
 
 ## Requirements
 
@@ -44,9 +49,13 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ### Active
 
-(No active milestone - run `/gsd:new-milestone` to start next)
+- [ ] JaCoCo coverage reports avec rapport HTML local
+- [ ] JaCoCo coverage reports dans artifacts CI
+- [ ] PIT mutation testing en mode incremental local
+- [ ] Tests d'integration Testcontainers en CI (PR + push master)
+- [ ] Scripts/commandes pour lancer l'analyse qualite facilement
 
-### Deferred (v0.3+)
+### Deferred (v0.4+)
 
 - Scoring pondere configurable (vector vs keyword)
 - Reranking des resultats
@@ -125,4 +134,4 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | Official Docker GH Actions | Reliable GHCR publishing with gha cache | ✓ Good |
 
 ---
-*Last updated: 2026-01-22 after v0.2 milestone*
+*Last updated: 2026-01-22 after starting v0.3 milestone*
