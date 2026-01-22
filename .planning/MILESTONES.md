@@ -1,6 +1,6 @@
 # Project Milestones: Documentation RAG (Alexandria)
 
-## v1.0 MVP (Shipped: 2026-01-20)
+## v0.1 MVP (Shipped: 2026-01-20)
 
 **Delivered:** Personal RAG system for technical documentation with MCP server for Claude Code integration and CLI for maintenance.
 
@@ -26,6 +26,6 @@
 
 **Git range:** `feat(01-01)` → `feat(07-02)` (117 commits)
 
-**What's next:** v1.1 planned features - configurable search weights, reranking, additional file format support
+**What's next:** v0.2 planned features - configurable search weights, reranking, additional file format support
 
 ---

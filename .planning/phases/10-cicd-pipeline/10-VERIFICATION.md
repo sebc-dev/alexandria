@@ -59,7 +59,7 @@ grep -iE "TODO|FIXME|placeholder|not implemented" .github/workflows/release.yml
 |-------------|--------|----------|
 | CICD-01: GitHub Actions workflow for Docker build | SATISFIED | `.github/workflows/release.yml` exists with docker/build-push-action |
 | CICD-02: Auto-publish to GHCR | SATISFIED | `REGISTRY: ghcr.io`, `push: true`, `packages: write` permission |
-| CICD-03: Semantic tagging (v1.1.0 -> ghcr.io/.../alexandria:1.1.0) | SATISFIED | `type=semver,pattern={{version}}` extracts 1.1.0 from v1.1.0 tag |
+| CICD-03: Semantic tagging (v0.2.0 -> ghcr.io/.../alexandria:0.2.0) | SATISFIED | `type=semver,pattern={{version}}` extracts 0.2.0 from v0.2.0 tag |
 
 ### Anti-Patterns Found
 
@@ -109,7 +109,7 @@ tags: |
 flavor: |
   latest=auto
 ```
-Generates: `1.1.0`, `1.1`, and `latest` from `v1.1.0` tag.
+Generates: `0.2.0`, `0.2`, and `latest` from `v0.2.0` tag.
 
 ### Human Verification Required
 
@@ -119,8 +119,8 @@ The following items require human testing after merging to main:
 
 **Test:** Create and push a test tag to trigger the workflow
 ```bash
-git tag v1.1.0-test
-git push origin v1.1.0-test
+git tag v0.2.0-test
+git push origin v0.2.0-test
 ```
 **Expected:** 
 1. GitHub Actions "Release" workflow runs
@@ -133,7 +133,7 @@ git push origin v1.1.0-test
 
 **Test:** Pull the published image
 ```bash
-docker pull ghcr.io/sebc-dev/alexandria:1.1.0-test
+docker pull ghcr.io/sebc-dev/alexandria:0.2.0-test
 ```
 **Expected:** Image downloads successfully without authentication (public package)
 
@@ -143,7 +143,7 @@ docker pull ghcr.io/sebc-dev/alexandria:1.1.0-test
 
 **Test:** Run the pulled image
 ```bash
-docker run --rm ghcr.io/sebc-dev/alexandria:1.1.0-test --help
+docker run --rm ghcr.io/sebc-dev/alexandria:0.2.0-test --help
 ```
 **Expected:** Alexandria CLI help displayed
 
@@ -153,8 +153,8 @@ docker run --rm ghcr.io/sebc-dev/alexandria:1.1.0-test --help
 
 **Test:** Remove test tag after verification
 ```bash
-git tag -d v1.1.0-test
-git push origin :refs/tags/v1.1.0-test
+git tag -d v0.2.0-test
+git push origin :refs/tags/v0.2.0-test
 ```
 **Expected:** Tag removed from local and remote
 

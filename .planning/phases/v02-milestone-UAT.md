@@ -1,11 +1,11 @@
 ---
-milestone: v1.1
+milestone: v0.2
 started: 2026-01-22T15:35:00Z
 completed: 2026-01-22T18:45:00Z
 status: passed
 ---
 
-# v1.1 Full Docker - User Acceptance Testing
+# v0.2 Full Docker - User Acceptance Testing
 
 ## Test Summary
 

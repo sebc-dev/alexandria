@@ -94,7 +94,7 @@ Features that seem good but create problems.
 
 ## MVP Definition
 
-### Launch With (v1.1)
+### Launch With (v0.2)
 
 Minimum viable product for Docker deployment.
 
@@ -109,7 +109,7 @@ Minimum viable product for Docker deployment.
 - [x] Spring Boot layered JARs for cache efficiency
 - [x] CLI wrapper script
 
-### Add After Validation (v1.1.x)
+### Add After Validation (v0.2.x)
 
 Features to add once core is working.
 
@@ -147,7 +147,7 @@ Features to defer until product-market fit is established.
 | Multi-arch images | LOW | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for v1.1 launch
+- P1: Must have for v0.2 launch
 - P2: Should have, add when possible
 - P3: Nice to have, future consideration
 

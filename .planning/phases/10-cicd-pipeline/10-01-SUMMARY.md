@@ -88,7 +88,7 @@ None - workflow uses GITHUB_TOKEN which is automatically available in GitHub Act
 ## Next Phase Readiness
 
 - Release workflow ready for use after merge to main
-- To test: Push a semver tag (e.g., `v1.1.0`) and verify workflow runs
+- To test: Push a semver tag (e.g., `v0.2.0`) and verify workflow runs
 - Package will appear at `ghcr.io/sebc-dev/alexandria`
 
 ---
