@@ -54,12 +54,12 @@
   3. Container restarts gracefully on SIGTERM without data corruption
   4. Health check reports healthy after ONNX model loads (within 120s start period)
   5. Container runs as non-root user (verified via `docker exec ... id`)
-**Plans**: 3 plans
+**Plans**: 3 plans (complete)
 
 Plans:
-- [ ] 08-01-PLAN.md - HTTP/SSE transport and Spring profile configuration
-- [ ] 08-02-PLAN.md - Multi-stage Dockerfile with layered JAR extraction
-- [ ] 08-03-PLAN.md - Docker Compose service definition with health checks
+- [x] 08-01-PLAN.md - HTTP/SSE transport and Spring profile configuration
+- [x] 08-02-PLAN.md - Multi-stage Dockerfile with layered JAR extraction
+- [x] 08-03-PLAN.md - Docker Compose service definition with health checks
 
 #### Phase 9: Developer Experience
 **Goal**: Users can easily configure and interact with containerized Alexandria
@@ -102,6 +102,6 @@ Plans:
 | 5. Recherche Avancee | v1.0 | 2/2 | Complete | 2026-01-20 |
 | 6. MCP Server | v1.0 | 2/2 | Complete | 2026-01-20 |
 | 7. CLI | v1.0 | 2/2 | Complete | 2026-01-20 |
-| 8. Core Docker Infrastructure | v1.1 | 0/3 | Planned | - |
+| 8. Core Docker Infrastructure | v1.1 | 3/3 | Complete | 2026-01-22 |
 | 9. Developer Experience | v1.1 | 0/2 | Not started | - |
 | 10. CI/CD Pipeline | v1.1 | 0/1 | Not started | - |
