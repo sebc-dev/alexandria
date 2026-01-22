@@ -1,0 +1,42 @@
+#!/bin/sh
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Help if no args
+if [ $# -eq 0 ]; then
+    cat <<EOF
+Alexandria - RAG system for personal documentation
+
+Usage: ./alexandria <command> [options]
+
+Commands:
+  index --path <dir>    Index markdown files from directory
+  search --query <text> Search indexed documentation
+  status                Show database status
+  clear --force         Clear all indexed data
+
+Examples:
+  ./alexandria index --path /docs
+  ./alexandria search --query "how to configure logging"
+  ./alexandria status
+
+Note: Container must be running (docker compose up -d)
+EOF
+    exit 0
+fi
+
+# Check Docker
+command -v docker >/dev/null 2>&1 || { echo "Error: Docker is not installed" >&2; exit 1; }
+
+# Check container running
+if ! docker compose ps --status running 2>/dev/null | grep -q alexandria-app; then
+    echo "Error: Alexandria container is not running." >&2
+    echo "Start it with: docker compose up -d" >&2
+    exit 1
+fi
+
+# Execute in container
+exec docker compose exec -T -e SPRING_PROFILES_ACTIVE=cli,docker app \
+    java org.springframework.boot.loader.launch.JarLauncher "$@"
