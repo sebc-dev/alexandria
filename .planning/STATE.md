@@ -2,19 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-21)
+See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Planning next milestone (v1.1)
+**Current focus:** v1.1 Full Docker - Phase 8 (Core Docker Infrastructure)
 
 ## Current Position
 
-Phase: v1.0 complete
-Plan: All 15 plans shipped
-Status: Ready for next milestone
-Last activity: 2026-01-21 — v1.0 milestone archived
+Phase: 8 of 10 (Core Docker Infrastructure)
+Plan: 0 of 3 in current phase
+Status: Ready to plan
+Last activity: 2026-01-22 - v1.1 roadmap created
 
 Progress: v1.0 [################] 100% SHIPPED
+Progress: v1.1 [                ] 0%
 
 ## Performance Metrics
 
@@ -40,7 +41,7 @@ Progress: v1.0 [################] 100% SHIPPED
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-All v1.0 decisions reviewed and marked as outcomes (all ✓ Good).
+v1.0 decisions all marked as outcomes (all Good).
 
 ### Pending Todos
 
@@ -48,7 +49,7 @@ None.
 
 ### Blockers/Concerns
 
-None active. Previous blocker (Docker Desktop WSL integration) was user environment issue.
+- Research flag: HTTP/SSE transport configuration may need investigation during Phase 8 planning (Spring AI MCP WebMVC starter specifics, Claude Desktop connector setup)
 
 ### Tech Debt (from v1.0)
 
@@ -57,14 +58,6 @@ None active. Previous blocker (Docker Desktop WSL integration) was user environm
 
 ## Session Continuity
 
-Last session: 2026-01-21
-Stopped at: v1.0 milestone complete and archived
+Last session: 2026-01-22
+Stopped at: v1.1 roadmap created, ready to plan Phase 8
 Resume file: None
-
-## Next Steps
-
-Run `/gsd:new-milestone` to start v1.1:
-- Questioning phase for scope
-- Research phase for new features
-- Requirements definition
-- Roadmap creation

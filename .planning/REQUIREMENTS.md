@@ -75,32 +75,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOCK-01 | - | Pending |
-| DOCK-02 | - | Pending |
-| DOCK-03 | - | Pending |
-| DOCK-04 | - | Pending |
-| DOCK-05 | - | Pending |
-| DOCK-06 | - | Pending |
-| DOCK-07 | - | Pending |
-| MCP-01 | - | Pending |
-| MCP-02 | - | Pending |
-| MCP-03 | - | Pending |
-| CONF-01 | - | Pending |
-| CONF-02 | - | Pending |
-| CONF-03 | - | Pending |
-| CONF-04 | - | Pending |
-| DEVX-01 | - | Pending |
-| DEVX-02 | - | Pending |
-| DEVX-03 | - | Pending |
-| CICD-01 | - | Pending |
-| CICD-02 | - | Pending |
-| CICD-03 | - | Pending |
+| DOCK-01 | Phase 8 | Pending |
+| DOCK-02 | Phase 8 | Pending |
+| DOCK-03 | Phase 8 | Pending |
+| DOCK-04 | Phase 8 | Pending |
+| DOCK-05 | Phase 8 | Pending |
+| DOCK-06 | Phase 8 | Pending |
+| DOCK-07 | Phase 8 | Pending |
+| MCP-01 | Phase 8 | Pending |
+| MCP-02 | Phase 8 | Pending |
+| MCP-03 | Phase 8 | Pending |
+| CONF-01 | Phase 8 | Pending |
+| CONF-02 | Phase 8 | Pending |
+| CONF-03 | Phase 9 | Pending |
+| CONF-04 | Phase 9 | Pending |
+| DEVX-01 | Phase 9 | Pending |
+| DEVX-02 | Phase 9 | Pending |
+| DEVX-03 | Phase 9 | Pending |
+| CICD-01 | Phase 10 | Pending |
+| CICD-02 | Phase 10 | Pending |
+| CICD-03 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after initial definition*
+*Last updated: 2026-01-22 after roadmap creation*
