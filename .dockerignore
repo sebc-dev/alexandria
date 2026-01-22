@@ -1,0 +1,44 @@
+# Build artifacts - large and rebuilt every time
+target/
+*.jar
+*.class
+
+# Version control - not needed in container
+.git/
+.gitignore
+.gitattributes
+
+# IDE files - development-only
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Documentation - not needed for runtime
+*.md
+LICENSE
+docs/
+
+# Local configuration - never commit secrets
+.env
+.env.local
+.env.*.local
+*.log
+
+# Planning and tooling files - development-only
+.planning/
+.claude/
+
+# Docker files - already in build context
+Dockerfile
+Dockerfile.app
+docker-compose.yml
+docker-compose*.yml
+
+# Data directory - database persistence volume
+data/
+
+# Test files - not needed in production image
+src/test/
