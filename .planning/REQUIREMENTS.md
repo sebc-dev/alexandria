@@ -38,9 +38,9 @@ Requirements for Docker packaging milestone. Each maps to roadmap phases.
 
 ### CI/CD
 
-- [ ] **CICD-01**: GitHub Actions workflow pour build image Docker
-- [ ] **CICD-02**: Publication automatique sur GitHub Container Registry (ghcr.io)
-- [ ] **CICD-03**: Tagging semantique depuis git tags (v1.1.0 -> ghcr.io/user/alexandria:1.1.0)
+- [x] **CICD-01**: GitHub Actions workflow pour build image Docker
+- [x] **CICD-02**: Publication automatique sur GitHub Container Registry (ghcr.io)
+- [x] **CICD-03**: Tagging semantique depuis git tags (v1.1.0 -> ghcr.io/user/alexandria:1.1.0)
 
 ## v1.2+ Requirements
 
@@ -92,9 +92,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEVX-01 | Phase 9 | Complete |
 | DEVX-02 | Phase 9 | Complete |
 | DEVX-03 | Phase 9 | Complete |
-| CICD-01 | Phase 10 | Pending |
-| CICD-02 | Phase 10 | Pending |
-| CICD-03 | Phase 10 | Pending |
+| CICD-01 | Phase 10 | Complete |
+| CICD-02 | Phase 10 | Complete |
+| CICD-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 20 total
@@ -103,4 +103,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after Phase 9 completion*
+*Last updated: 2026-01-22 after Phase 10 completion*

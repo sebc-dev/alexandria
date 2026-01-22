@@ -84,10 +84,10 @@ Plans:
   1. Pushing a git tag (v1.1.0) triggers GitHub Actions workflow
   2. Image is published to ghcr.io/[owner]/alexandria with correct tag (1.1.0)
   3. User can `docker pull ghcr.io/[owner]/alexandria:1.1.0` without git clone
-**Plans**: 1 plan
+**Plans**: 1 plan (complete)
 
 Plans:
-- [ ] 10-01-PLAN.md - GitHub Actions workflow for Docker build and publish
+- [x] 10-01-PLAN.md - GitHub Actions workflow for Docker build and publish
 
 ## Progress
 
@@ -104,4 +104,4 @@ Plans:
 | 7. CLI | v1.0 | 2/2 | Complete | 2026-01-20 |
 | 8. Core Docker Infrastructure | v1.1 | 3/3 | Complete | 2026-01-22 |
 | 9. Developer Experience | v1.1 | 2/2 | Complete | 2026-01-22 |
-| 10. CI/CD Pipeline | v1.1 | 0/1 | Ready | - |
+| 10. CI/CD Pipeline | v1.1 | 1/1 | Complete | 2026-01-22 |
