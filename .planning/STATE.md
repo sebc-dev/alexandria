@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** v1.1 Full Docker - Phase 9 (Developer Experience)
+**Current focus:** v1.1 Full Docker - Phase 10 (CI/CD Pipeline)
 
 ## Current Position
 
-Phase: 9 of 10 (Developer Experience)
-Plan: 2 of 2 in current phase
+Phase: 10 of 10 (CI/CD Pipeline)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-22 - Completed 09-02-PLAN.md
+Last activity: 2026-01-22 - Completed 10-01-PLAN.md
 
 Progress: v1.0 [################] 100% SHIPPED
-Progress: v1.1 [###########     ] 67% (2/3 phases)
+Progress: v1.1 [################] 100% (3/3 phases) SHIPPED
 
 ## Performance Metrics
 
@@ -25,8 +25,8 @@ Progress: v1.1 [###########     ] 67% (2/3 phases)
 - Total execution time: 0.83 hours
 
 **v1.1 Velocity:**
-- Plans completed: 5
-- Average duration: 3.6 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min, 09-02: 2min)
+- Plans completed: 6
+- Average duration: 3.2 min (08-01: 4min, 08-02: 6min, 08-03: 5min, 09-01: 1min, 09-02: 2min, 10-01: 1min)
 
 **By Phase:**
 
@@ -41,6 +41,7 @@ Progress: v1.1 [###########     ] 67% (2/3 phases)
 | 07-cli | 2 | 7 min | 3.5 min |
 | 08-core-docker-infrastructure | 3 | 15 min | 5.0 min |
 | 09-developer-experience | 2 | 3 min | 1.5 min |
+| 10-cicd-pipeline | 1 | 1 min | 1.0 min |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ v1.0 decisions all marked as outcomes (all Good).
 - Include src/test/ in .dockerignore - test sources not needed in production (09-01)
 - Use POSIX sh instead of bash for CLI wrapper portability (09-02)
 - Keep Traditional Quick Start section for non-Docker users (09-02)
+- Use official Docker actions v3/v5/v6 for GHCR publishing (10-01)
+- type=gha cache with mode=max for multi-stage build optimization (10-01)
 
 ### Pending Todos
 
@@ -79,5 +82,5 @@ None - HTTP/SSE transport research completed in 08-RESEARCH.md.
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 09-02-PLAN.md (CLI wrapper and README), Phase 9 complete
+Stopped at: Completed 10-01-PLAN.md (Docker release workflow), Phase 10 complete, v1.1 SHIPPED
 Resume file: None
