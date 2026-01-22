@@ -1,3 +1,6 @@
+# Configuration: Copy .env.example to .env to customize settings
+# See .env.example for all available options
+
 services:
   postgres:
     build: .
@@ -60,4 +63,4 @@ services:
       start_period: 120s
     restart: unless-stopped
     # Memory limit (ONNX model needs ~500MB, app needs ~500MB, buffer for GC)
-    mem_limit: 2g
+    mem_limit: ${MEM_LIMIT:-2g}
