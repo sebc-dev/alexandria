@@ -1,0 +1,17 @@
+# Docker profile - environment variable configuration
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:alexandria}?sslmode=disable
+    username: ${DB_USER:alexandria}
+    password: ${DB_PASSWORD:alexandria}
+
+# Allow index_docs from mounted /docs directory
+alexandria:
+  mcp:
+    allowed-paths:
+      - /docs
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    fr.kalifazzia.alexandria: ${LOG_LEVEL:INFO}
