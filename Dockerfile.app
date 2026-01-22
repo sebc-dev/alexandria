@@ -20,8 +20,8 @@ RUN mvn dependency:go-offline -B
 COPY src/ src/
 RUN mvn package -DskipTests -B
 
-# Extract layered JAR
-RUN java -Djarmode=tools -jar target/*.jar extract --layers --destination extracted
+# Extract layered JAR with launcher for exploded class structure
+RUN java -Djarmode=tools -jar target/*.jar extract --layers --launcher --destination extracted
 
 # ============================================
 # Runtime stage: Production image
@@ -37,8 +37,9 @@ WORKDIR /application
 RUN groupadd -r -g 10000 alexandria && \
     useradd -r -g alexandria -u 10000 -d /application -s /bin/false alexandria
 
-# Create docs directory for volume mount
-RUN mkdir -p /docs && chown alexandria:alexandria /docs
+# Create docs and logs directories for volume mount and logging
+RUN mkdir -p /docs /application/logs && \
+    chown -R alexandria:alexandria /docs /application/logs
 
 # Copy layers in order of change frequency (least to most)
 # This maximizes Docker layer cache hits on rebuilds
