@@ -27,14 +27,14 @@ Requirements for Docker packaging milestone. Each maps to roadmap phases.
 
 - [ ] **CONF-01**: Variables d'environnement pour connexion database (DB_HOST, etc.)
 - [ ] **CONF-02**: Volume mount pour repertoire documents configurable
-- [ ] **CONF-03**: Support fichier .env pour configuration overrides
-- [ ] **CONF-04**: Fichier .env.example avec documentation des options
+- [x] **CONF-03**: Support fichier .env pour configuration overrides
+- [x] **CONF-04**: Fichier .env.example avec documentation des options
 
 ### Developer Experience
 
-- [ ] **DEVX-01**: Script wrapper CLI (`alexandria` command) pour docker exec
-- [ ] **DEVX-02**: .dockerignore pour optimisation build (exclure target/, .git/, etc.)
-- [ ] **DEVX-03**: README mis a jour avec instructions installation et usage Docker
+- [x] **DEVX-01**: Script wrapper CLI (`alexandria` command) pour docker exec
+- [x] **DEVX-02**: .dockerignore pour optimisation build (exclure target/, .git/, etc.)
+- [x] **DEVX-03**: README mis a jour avec instructions installation et usage Docker
 
 ### CI/CD
 
@@ -87,11 +87,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MCP-03 | Phase 8 | Complete |
 | CONF-01 | Phase 8 | Complete |
 | CONF-02 | Phase 8 | Complete |
-| CONF-03 | Phase 9 | Pending |
-| CONF-04 | Phase 9 | Pending |
-| DEVX-01 | Phase 9 | Pending |
-| DEVX-02 | Phase 9 | Pending |
-| DEVX-03 | Phase 9 | Pending |
+| CONF-03 | Phase 9 | Complete |
+| CONF-04 | Phase 9 | Complete |
+| DEVX-01 | Phase 9 | Complete |
+| DEVX-02 | Phase 9 | Complete |
+| DEVX-03 | Phase 9 | Complete |
 | CICD-01 | Phase 10 | Pending |
 | CICD-02 | Phase 10 | Pending |
 | CICD-03 | Phase 10 | Pending |
@@ -103,4 +103,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-22 after Phase 8 completion*
+*Last updated: 2026-01-22 after Phase 9 completion*

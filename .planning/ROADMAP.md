@@ -70,11 +70,11 @@ Plans:
   2. User can copy .env.example to .env and customize configuration
   3. README contains complete installation instructions that work from git clone to running search
   4. Docker build completes faster on code-only changes (layered caching works)
-**Plans**: TBD
+**Plans**: 2 plans (complete)
 
 Plans:
-- [ ] 09-01: CLI wrapper script and .dockerignore
-- [ ] 09-02: .env support and documentation update
+- [x] 09-01-PLAN.md - .dockerignore and .env configuration
+- [x] 09-02-PLAN.md - CLI wrapper script and README documentation
 
 #### Phase 10: CI/CD Pipeline
 **Goal**: Docker images automatically published to GitHub Container Registry on release
@@ -103,5 +103,5 @@ Plans:
 | 6. MCP Server | v1.0 | 2/2 | Complete | 2026-01-20 |
 | 7. CLI | v1.0 | 2/2 | Complete | 2026-01-20 |
 | 8. Core Docker Infrastructure | v1.1 | 3/3 | Complete | 2026-01-22 |
-| 9. Developer Experience | v1.1 | 0/2 | Not started | - |
+| 9. Developer Experience | v1.1 | 2/2 | Complete | 2026-01-22 |
 | 10. CI/CD Pipeline | v1.1 | 0/1 | Not started | - |
