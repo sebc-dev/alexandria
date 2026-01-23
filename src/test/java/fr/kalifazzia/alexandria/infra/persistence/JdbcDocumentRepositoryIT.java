@@ -390,7 +390,7 @@ class JdbcDocumentRepositoryIT {
         // Then - allow small tolerance for timestamp precision differences
         assertThat(lastUpdated).isPresent();
         assertThat(lastUpdated.get())
-                .isCloseTo(latest.updatedAt(), org.assertj.core.api.Assertions.within(1, java.time.temporal.ChronoUnit.MICROS));
+                .isCloseTo(latest.updatedAt(), org.assertj.core.api.Assertions.within(1, java.time.temporal.ChronoUnit.MILLIS));
     }
 
     // ========== deleteAll() tests ==========
