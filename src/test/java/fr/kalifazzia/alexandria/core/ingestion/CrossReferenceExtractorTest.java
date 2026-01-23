@@ -200,6 +200,33 @@ class CrossReferenceExtractorTest {
             assertThat(links).extracting(ExtractedLink::relativePath)
                     .containsExactly("internal.md", "../related/doc.md");
         }
+
+        @Test
+        @DisplayName("should extract links from nested structures like lists and blockquotes")
+        void extractsLinksFromNestedStructures() {
+            String content = """
+                # Nested Links Test
+
+                Regular paragraph with [link1](link1.md).
+
+                - List item with [link2](link2.md)
+                - Another item
+                  - Nested list with [link3](link3.md)
+
+                > Blockquote with [link4](link4.md)
+                >
+                > > Nested blockquote with [link5](link5.md)
+
+                1. Ordered list with [link6](link6.md)
+                """;
+
+            List<ExtractedLink> links = extractor.extractLinks(content);
+
+            assertThat(links).hasSize(6);
+            assertThat(links).extracting(ExtractedLink::relativePath)
+                    .containsExactly("link1.md", "link2.md", "link3.md", "link4.md", "link5.md", "link6.md");
+        }
+
     }
 
     @Nested
