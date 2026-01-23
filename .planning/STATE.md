@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-01-22)
 ## Current Position
 
 Phase: 12 of 14 (Integration Test Coverage)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-22 - Phase 11 verified and complete
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-01-23 - Completed 12-01-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
-Progress: v0.3 [####............] 25%
+Progress: v0.3 [########........] 50%
 
 ## Performance Metrics
 
@@ -31,9 +31,9 @@ Progress: v0.3 [####............] 25%
 - Total execution time: ~19 min
 
 **v0.3 Velocity:**
-- Plans completed: 1
-- Average duration: 5 min
-- Total execution time: 5 min
+- Plans completed: 2
+- Average duration: 3.5 min
+- Total execution time: 7 min
 
 **By Phase:**
 
@@ -42,6 +42,7 @@ Progress: v0.3 [####............] 25%
 | 01-07 (v0.1) | 15 | 50 min | 3.3 min |
 | 08-10 (v0.2) | 6 | 19 min | 3.2 min |
 | 11 (v0.3) | 1 | 5 min | 5 min |
+| 12 (v0.3) | 1 | 2 min | 2 min |
 
 ## Accumulated Context
 
@@ -52,6 +53,7 @@ v0.1 and v0.2 decisions all marked as outcomes (all Good).
 
 **v0.3 Decisions:**
 - 11-01: Use awk CSV parsing instead of xmllint (more portable)
+- 12-01: Bind merge goal to post-integration-test phase (avoid generate-resources default)
 
 ### Pending Todos
 
@@ -68,10 +70,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Phase 11 verified and complete
+Last session: 2026-01-23
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 12` to plan Integration Test Coverage phase.
+Execute `/gsd:execute-phase 12` plan 02 (CI Integration).
