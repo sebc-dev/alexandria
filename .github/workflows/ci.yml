@@ -51,3 +51,25 @@ jobs:
             target/site/jacoco-it/
             target/site/jacoco-merged/
           retention-days: 7
+
+      - name: Generate JaCoCo coverage badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: target/site/jacoco-merged/jacoco.csv
+          badges-directory: .github/badges
+          generate-coverage-badge: true
+          generate-branches-badge: true
+          coverage-label: coverage
+          branches-label: branches
+
+      - name: Commit coverage badges
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [[ `git status --porcelain .github/badges` ]]; then
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .github/badges/*.svg
+            git commit -m "chore: update coverage badges"
+            git push
+          fi
