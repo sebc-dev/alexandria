@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 12 complete - Ready for Phase 13
+**Current focus:** Phase 13 - PIT Mutation Testing
 
 ## Current Position
 
-Phase: 12 of 14 (Integration Test Coverage)
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-01-23 - Completed 12-02-PLAN.md
+Phase: 13 of 14 (PIT Mutation Testing)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-23 - Phase 12 verified and complete
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
-Progress: v0.3 [##########......] 63%
+Progress: v0.3 [########........] 50%
 
 ## Performance Metrics
 
@@ -77,4 +77,4 @@ Resume file: None
 
 ## Next Steps
 
-Execute `/gsd:execute-phase 13` (MCP Core Tools).
+Run `/gsd:discuss-phase 13` to plan PIT Mutation Testing phase.
