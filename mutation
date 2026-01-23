@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Mutation testing script - runs PIT incremental and displays summary
+# Parses PIT CSV report using awk (portable, matches coverage script pattern)
+
+set -euo pipefail
+
+REPORT_CSV="target/pit-reports/mutations.csv"
+
+# Run mutation testing with incremental history
+echo "Running mutation testing (incremental)..."
+mvn test -Ppitest -q
+
+if [[ ! -f "$REPORT_CSV" ]]; then
+    echo "Error: Mutation report not found at $REPORT_CSV"
+    exit 1
+fi
+
+echo ""
+echo "Mutation Testing Summary"
+echo "========================"
+
+# CSV format (no header): filename,class,mutator,method,line,status,killingTest
+# Status values: KILLED, SURVIVED, NO_COVERAGE, TIMED_OUT, MEMORY_ERROR
+awk -F',' '
+{
+    total++
+    if ($6 == "KILLED") killed++
+    else if ($6 == "SURVIVED") survived++
+    else if ($6 == "NO_COVERAGE") no_coverage++
+    else if ($6 == "TIMED_OUT") timed_out++
+}
+END {
+    if (total > 0) {
+        score = int(killed * 100 / total)
+        printf "Mutation Score : %3d%% (%d/%d mutants killed)\n", score, killed, total
+        printf "Survived       : %3d\n", survived + 0
+        printf "No Coverage    : %3d\n", no_coverage + 0
+        printf "Timed Out      : %3d\n", timed_out + 0
+    } else {
+        print "No mutations generated"
+    }
+}
+' "$REPORT_CSV"
+
+echo ""
+echo "Full report: target/pit-reports/index.html"

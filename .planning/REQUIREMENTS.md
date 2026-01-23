@@ -16,9 +16,9 @@ Requirements for Better DX and Quality Gate milestone. Each maps to roadmap phas
 
 ### Mutation (PIT)
 
-- [ ] **MUT-01**: Rapport HTML local genere dans `target/pit-reports/`
-- [ ] **MUT-02**: Mode incremental active (withHistory=true) pour iteration rapide
-- [ ] **MUT-03**: Execution multi-threaded (threads=4) pour performance
+- [x] **MUT-01**: Rapport HTML local genere dans `target/pit-reports/`
+- [x] **MUT-02**: Mode incremental active (withHistory=true) pour iteration rapide
+- [x] **MUT-03**: Execution multi-threaded (threads=4) pour performance
 
 ### CI
 
@@ -29,7 +29,7 @@ Requirements for Better DX and Quality Gate milestone. Each maps to roadmap phas
 ### Developer Experience
 
 - [x] **DX-01**: Script `./coverage` lance JaCoCo et affiche resume
-- [ ] **DX-02**: Script `./mutation` lance PIT incremental sur fichiers modifies
+- [x] **DX-02**: Script `./mutation` lance PIT incremental sur fichiers modifies
 - [ ] **DX-03**: Script `./quality` lance tout et affiche resume consolide
 
 ## Out of Scope
@@ -54,14 +54,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COV-02 | Phase 11 | Complete |
 | COV-03 | Phase 12 | Complete |
 | COV-04 | Phase 12 | Complete |
-| MUT-01 | Phase 13 | Pending |
-| MUT-02 | Phase 13 | Pending |
-| MUT-03 | Phase 13 | Pending |
+| MUT-01 | Phase 13 | Complete |
+| MUT-02 | Phase 13 | Complete |
+| MUT-03 | Phase 13 | Complete |
 | CI-01 | Phase 12 | Complete |
 | CI-02 | Phase 12 | Complete |
 | CI-03 | Phase 14 | Pending |
 | DX-01 | Phase 11 | Complete |
-| DX-02 | Phase 13 | Pending |
+| DX-02 | Phase 13 | Complete |
 | DX-03 | Phase 14 | Pending |
 
 **Coverage:**
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-23 after Phase 12 completion*
+*Last updated: 2026-01-23 after Phase 13 completion*
