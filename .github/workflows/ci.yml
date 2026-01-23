@@ -64,7 +64,7 @@ jobs:
           branches-label: branches
 
       - name: Commit coverage badges
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           if [[ `git status --porcelain .github/badges` ]]; then
             git config --global user.name 'github-actions[bot]'
