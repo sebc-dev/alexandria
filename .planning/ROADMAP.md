@@ -58,10 +58,10 @@ Plans:
   3. PIT runs with 4 threads for performance
   4. `./mutation` script runs PIT incremental and displays mutation score summary
   5. PIT excludes integration tests (no Testcontainers startup during mutation)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 13-01: [TBD during planning]
+- [ ] 13-01-PLAN.md — Configure PITest Maven profile and create mutation script
 
 ### Phase 14: Quality Dashboard
 **Goal**: Developer has single command for full quality analysis and visible coverage badge
@@ -83,7 +83,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 11. JaCoCo Unit Coverage | 1/1 | Complete | 2026-01-22 |
 | 12. Integration Test Coverage | 2/2 | Complete | 2026-01-23 |
-| 13. PIT Mutation Testing | 0/TBD | Not started | - |
+| 13. PIT Mutation Testing | 0/1 | Planned | - |
 | 14. Quality Dashboard | 0/TBD | Not started | - |
 
 ---
