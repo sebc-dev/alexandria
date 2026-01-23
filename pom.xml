@@ -262,6 +262,8 @@
                     <includes>
                         <include>**/*IT.java</include>
                     </includes>
+                    <!-- @{argLine} = JaCoCo agent, then Mockito agent for Java 21+ -->
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
                 <executions>
                     <execution>
