@@ -1,12 +1,12 @@
 package fr.kalifazzia.alexandria.config;
 
+import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,7 +24,7 @@ public class NoOpGraphRepository implements GraphRepository {
     }
 
     @Override
-    public void createChunkVertex(UUID chunkId, String chunkType, UUID documentId) {
+    public void createChunkVertex(UUID chunkId, ChunkType type, UUID documentId) {
         // No-op
     }
 
@@ -49,8 +49,8 @@ public class NoOpGraphRepository implements GraphRepository {
     }
 
     @Override
-    public Set<UUID> findRelatedDocuments(UUID documentId, int maxHops) {
-        return Set.of();
+    public List<UUID> findRelatedDocuments(UUID documentId, int maxHops) {
+        return List.of();
     }
 
     @Override
