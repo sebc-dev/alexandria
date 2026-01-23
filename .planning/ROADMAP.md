@@ -70,10 +70,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. README.md displays dynamic coverage badge updated on each CI run
   2. `./quality` script runs JaCoCo + PIT and displays consolidated quality summary
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 14-01: [TBD during planning]
+- [ ] 14-01-PLAN.md — Add coverage badge to CI and create quality script
 
 ## Progress
 
@@ -84,7 +84,7 @@ Plans:
 | 11. JaCoCo Unit Coverage | 1/1 | Complete | 2026-01-22 |
 | 12. Integration Test Coverage | 2/2 | Complete | 2026-01-23 |
 | 13. PIT Mutation Testing | 1/1 | Complete | 2026-01-23 |
-| 14. Quality Dashboard | 0/TBD | Not started | - |
+| 14. Quality Dashboard | 0/1 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-22*
