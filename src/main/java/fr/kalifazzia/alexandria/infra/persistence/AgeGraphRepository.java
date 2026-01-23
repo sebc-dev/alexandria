@@ -5,7 +5,7 @@ import fr.kalifazzia.alexandria.core.model.ChunkType;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -27,11 +27,11 @@ public class AgeGraphRepository implements GraphRepository {
     private static final Logger log = LoggerFactory.getLogger(AgeGraphRepository.class);
     private static final String GRAPH_NAME = "alexandria";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcOperations jdbcOperations;
     private final Gson gson;
 
-    public AgeGraphRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AgeGraphRepository(JdbcOperations jdbcOperations) {
+        this.jdbcOperations = jdbcOperations;
         this.gson = new Gson();
     }
 
@@ -117,7 +117,7 @@ public class AgeGraphRepository implements GraphRepository {
         );
 
         List<UUID> results = new ArrayList<>();
-        jdbcTemplate.query(sql, rs -> {
+        jdbcOperations.query(sql, rs -> {
             String agtypeValue = rs.getString("doc_id");
             String docIdStr = parseAgtypeString(agtypeValue);
             if (docIdStr != null) {
@@ -179,7 +179,7 @@ public class AgeGraphRepository implements GraphRepository {
             "SELECT * FROM cypher('%s', $cypher$ %s $cypher$) AS (result agtype)",
             GRAPH_NAME, cypher
         );
-        jdbcTemplate.execute(sql);
+        jdbcOperations.execute(sql);
     }
 
     /**
