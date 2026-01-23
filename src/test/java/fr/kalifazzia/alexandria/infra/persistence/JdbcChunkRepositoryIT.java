@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Integration tests for JdbcChunkRepository.
@@ -162,7 +163,7 @@ class JdbcChunkRepositoryIT {
                 new com.pgvector.PGvector(embedding),
                 chunkId
         );
-        assertThat(similarity).isEqualTo(1.0f); // Same embedding = similarity 1.0
+        assertThat(similarity).isCloseTo(1.0f, within(1e-6f)); // Same embedding = similarity ~1.0
     }
 
     @Test
