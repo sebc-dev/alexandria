@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 13 - PIT Mutation Testing
+**Current focus:** Phase 14 - Quality Dashboard
 
 ## Current Position
 
-Phase: 13 of 14 (PIT Mutation Testing)
-Plan: 1 of 1 complete
-Status: Phase 13 complete
-Last activity: 2026-01-23 - Completed 13-01-PLAN.md
+Phase: 14 of 14 (Quality Dashboard)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-23 - Phase 13 verified and complete
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
-Progress: v0.3 [##########......] 62.5%
+Progress: v0.3 [############....] 75%
 
 ## Performance Metrics
 
@@ -79,4 +79,4 @@ Resume file: None
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 14` to plan CI/CD Integration phase.
+Run `/gsd:discuss-phase 14` to plan Quality Dashboard phase.

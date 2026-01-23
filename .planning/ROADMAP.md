@@ -14,7 +14,7 @@ Alexandria v0.3 adds test quality visibility through JaCoCo code coverage and PI
 
 - [x] **Phase 11: JaCoCo Unit Coverage** - Code coverage foundation with local reports and CI integration
 - [x] **Phase 12: Integration Test Coverage** - Failsafe coverage and merged reports
-- [ ] **Phase 13: PIT Mutation Testing** - Mutation testing with incremental analysis
+- [x] **Phase 13: PIT Mutation Testing** - Mutation testing with incremental analysis
 - [ ] **Phase 14: Quality Dashboard** - Coverage badge and consolidated quality scripts
 
 ## Phase Details
@@ -61,7 +61,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 13-01-PLAN.md — Configure PITest Maven profile and create mutation script
+- [x] 13-01-PLAN.md — Configure PITest Maven profile and create mutation script
 
 ### Phase 14: Quality Dashboard
 **Goal**: Developer has single command for full quality analysis and visible coverage badge
@@ -83,7 +83,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 11. JaCoCo Unit Coverage | 1/1 | Complete | 2026-01-22 |
 | 12. Integration Test Coverage | 2/2 | Complete | 2026-01-23 |
-| 13. PIT Mutation Testing | 0/1 | Planned | - |
+| 13. PIT Mutation Testing | 1/1 | Complete | 2026-01-23 |
 | 14. Quality Dashboard | 0/TBD | Not started | - |
 
 ---
