@@ -1,6 +1,7 @@
 package fr.kalifazzia.alexandria.infra;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,8 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Requires Docker container running: docker compose up -d</p>
  * <p>Run with: mvn verify</p>
+ * <p>Disabled in CI: requires local Docker with Apache AGE extension</p>
  */
 @SpringBootTest
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class DatabaseConnectionIT {
 
     // Java 21: Record for test result data
