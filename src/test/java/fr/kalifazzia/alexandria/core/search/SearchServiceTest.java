@@ -84,13 +84,16 @@ class SearchServiceTest {
         // Given
         String query = "test query";
         float[] embedding = new float[]{0.1f};
+        SearchResult expectedResult = createSearchResult(0.9);
         when(embeddingGenerator.embed(query)).thenReturn(embedding);
-        when(searchRepository.searchSimilar(eq(embedding), any())).thenReturn(List.of());
+        when(searchRepository.searchSimilar(eq(embedding), any())).thenReturn(List.of(expectedResult));
 
         // When
-        searchService.search(query, 5);
+        List<SearchResult> results = searchService.search(query, 5);
 
         // Then
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0)).isEqualTo(expectedResult);
         verify(searchRepository).searchSimilar(eq(embedding), argThat(f ->
                 f.maxResults() == 5 && f.category() == null && f.tags() == null
         ));
@@ -148,13 +151,16 @@ class SearchServiceTest {
         // Given
         String query = "test query";
         float[] embedding = new float[]{0.1f};
+        SearchResult expectedResult = createSearchResult(1.5);
         when(embeddingGenerator.embed(query)).thenReturn(embedding);
-        when(searchRepository.hybridSearch(eq(embedding), eq(query), any())).thenReturn(List.of());
+        when(searchRepository.hybridSearch(eq(embedding), eq(query), any())).thenReturn(List.of(expectedResult));
 
         // When
-        searchService.hybridSearch(query, 5);
+        List<SearchResult> results = searchService.hybridSearch(query, 5);
 
         // Then
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0)).isEqualTo(expectedResult);
         verify(searchRepository).hybridSearch(eq(embedding), eq(query), argThat(f ->
                 f.maxResults() == 5 && f.vectorWeight() == 1.0 && f.textWeight() == 1.0 && f.rrfK() == 60
         ));
@@ -230,14 +236,49 @@ class SearchServiceTest {
     }
 
     @Test
-    void hybridSearchWithGraph_shouldValidateMaxHops() {
+    void hybridSearchWithGraph_shouldValidateMaxHops_rejectZero() {
         assertThatThrownBy(() -> searchService.hybridSearchWithGraph("test", HybridSearchFilters.defaults(10), 0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("maxHops");
+    }
 
+    @Test
+    void hybridSearchWithGraph_shouldValidateMaxHops_rejectEleven() {
         assertThatThrownBy(() -> searchService.hybridSearchWithGraph("test", HybridSearchFilters.defaults(10), 11))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("maxHops");
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldAcceptMaxHops_minBoundary() {
+        // Given
+        String query = "test";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of());
+
+        // When - maxHops = 1 should be accepted
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters, 1);
+
+        // Then - no exception, returns empty result
+        assertThat(result.searchResults()).isEmpty();
+    }
+
+    @Test
+    void hybridSearchWithGraph_shouldAcceptMaxHops_maxBoundary() {
+        // Given
+        String query = "test";
+        float[] embedding = new float[]{0.1f};
+        HybridSearchFilters filters = HybridSearchFilters.defaults(10);
+        when(embeddingGenerator.embed(query)).thenReturn(embedding);
+        when(searchRepository.hybridSearch(embedding, query, filters)).thenReturn(List.of());
+
+        // When - maxHops = 10 should be accepted
+        HybridSearchResult result = searchService.hybridSearchWithGraph(query, filters, 10);
+
+        // Then - no exception, returns empty result
+        assertThat(result.searchResults()).isEmpty();
     }
 
     @Test

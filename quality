@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Quality script - consolidated quality analysis (coverage + mutation testing)
+# Usage: ./quality         - Run coverage only (fast, ~30 seconds)
+#        ./quality --full  - Run coverage + mutation testing (~3-5 minutes)
+
+set -euo pipefail
+
+JACOCO_CSV="target/site/jacoco/jacoco.csv"
+PIT_CSV="target/pit-reports/mutations.csv"
+
+echo "Quality Analysis"
+echo "================"
+echo ""
+
+# --- Coverage Analysis (always run) ---
+echo "Running unit tests with coverage..."
+mvn test -q
+
+if [[ ! -f "$JACOCO_CSV" ]]; then
+    echo "Error: Coverage report not found at $JACOCO_CSV"
+    exit 1
+fi
+
+echo ""
+echo "Coverage Summary"
+echo "----------------"
+
+# Parse CSV - same logic as ./coverage script
+awk -F',' '
+NR > 1 {
+    line_missed += $8
+    line_covered += $9
+    branch_missed += $6
+    branch_covered += $7
+    method_missed += $12
+    method_covered += $13
+}
+END {
+    line_total = line_missed + line_covered
+    if (line_total > 0) {
+        line_pct = int(line_covered * 100 / line_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "LINE", line_pct, line_covered, line_total
+    }
+
+    branch_total = branch_missed + branch_covered
+    if (branch_total > 0) {
+        branch_pct = int(branch_covered * 100 / branch_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "BRANCH", branch_pct, branch_covered, branch_total
+    }
+
+    method_total = method_missed + method_covered
+    if (method_total > 0) {
+        method_pct = int(method_covered * 100 / method_total)
+        printf "%-12s: %3d%% (%d/%d)\n", "METHOD", method_pct, method_covered, method_total
+    }
+}
+' "$JACOCO_CSV"
+
+# Class coverage (count rows with at least one method covered)
+class_covered=$(awk -F',' 'NR > 1 && $13 > 0 { count++ } END { print count+0 }' "$JACOCO_CSV")
+class_total=$(awk -F',' 'NR > 1 { count++ } END { print count+0 }' "$JACOCO_CSV")
+
+if [[ $class_total -gt 0 ]]; then
+    class_pct=$((class_covered * 100 / class_total))
+    printf "%-12s: %3d%% (%d/%d)\n" "CLASS" "$class_pct" "$class_covered" "$class_total"
+fi
+
+echo ""
+
+# --- Mutation Testing (opt-in with --full flag) ---
+if [[ "${1:-}" == "--full" ]] || [[ "${1:-}" == "-f" ]]; then
+    echo "Running mutation testing (incremental)..."
+    mvn test -Ppitest -q
+
+    if [[ ! -f "$PIT_CSV" ]]; then
+        echo "Error: Mutation report not found at $PIT_CSV"
+        exit 1
+    fi
+
+    echo ""
+    echo "Mutation Summary"
+    echo "----------------"
+
+    # Parse PIT CSV - same logic as ./mutation script
+    awk -F',' '
+    {
+        total++
+        if ($6 == "KILLED") killed++
+        else if ($6 == "SURVIVED") survived++
+        else if ($6 == "NO_COVERAGE") no_coverage++
+    }
+    END {
+        if (total > 0) {
+            score = int(killed * 100 / total)
+            printf "%-12s: %3d%% (%d/%d mutants killed)\n", "MUTATION", score, killed, total
+            printf "%-12s: %3d\n", "SURVIVED", survived + 0
+            printf "%-12s: %3d\n", "NO_COVERAGE", no_coverage + 0
+        }
+    }
+    ' "$PIT_CSV"
+else
+    echo "Mutation testing: skipped (use --full to include)"
+fi
+
+echo ""
+echo "Reports:"
+echo "  Coverage: target/site/jacoco/index.html"
+if [[ "${1:-}" == "--full" ]] || [[ "${1:-}" == "-f" ]]; then
+    echo "  Mutation: target/pit-reports/index.html"
+fi

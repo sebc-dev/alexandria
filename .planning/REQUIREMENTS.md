@@ -24,13 +24,13 @@ Requirements for Better DX and Quality Gate milestone. Each maps to roadmap phas
 
 - [x] **CI-01**: Tests d'integration Testcontainers sur chaque PR + push master
 - [x] **CI-02**: Rapports JaCoCo uploades comme artifacts GitHub Actions
-- [ ] **CI-03**: Badge de couverture dynamique dans README
+- [x] **CI-03**: Badge de couverture dynamique dans README
 
 ### Developer Experience
 
 - [x] **DX-01**: Script `./coverage` lance JaCoCo et affiche resume
 - [x] **DX-02**: Script `./mutation` lance PIT incremental sur fichiers modifies
-- [ ] **DX-03**: Script `./quality` lance tout et affiche resume consolide
+- [x] **DX-03**: Script `./quality` lance tout et affiche resume consolide
 
 ## Out of Scope
 
@@ -59,10 +59,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MUT-03 | Phase 13 | Complete |
 | CI-01 | Phase 12 | Complete |
 | CI-02 | Phase 12 | Complete |
-| CI-03 | Phase 14 | Pending |
+| CI-03 | Phase 14 | Complete |
 | DX-01 | Phase 11 | Complete |
 | DX-02 | Phase 13 | Complete |
-| DX-03 | Phase 14 | Pending |
+| DX-03 | Phase 14 | Complete |
 
 **Coverage:**
 - v0.3 requirements: 13 total
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-22*
-*Last updated: 2026-01-23 after Phase 13 completion*
+*Last updated: 2026-01-23 after Phase 14 completion*

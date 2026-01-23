@@ -2,7 +2,11 @@ package fr.kalifazzia.alexandria.api.cli;
 
 import fr.kalifazzia.alexandria.core.port.ChunkRepository;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
+import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
+import fr.kalifazzia.alexandria.core.port.SearchRepository;
+import fr.kalifazzia.alexandria.core.search.SearchResult;
+import fr.kalifazzia.alexandria.core.search.SearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -12,10 +16,14 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -87,6 +95,190 @@ class AlexandriaCommandsTest {
         assertThatThrownBy(() -> commands.search("query", 21))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("between 1 and 20");
+    }
+
+    @Test
+    void search_validLimit_minBoundary_accepted() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of());
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String result = commands.search("query", 1);
+
+        assertThat(result).contains("No results found");
+    }
+
+    @Test
+    void search_validLimit_maxBoundary_accepted() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of());
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String result = commands.search("query", 20);
+
+        assertThat(result).contains("No results found");
+    }
+
+    @Test
+    void search_withResults_formatsOutput() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        SearchResult searchResult = new SearchResult(
+                UUID.randomUUID(),
+                "Child content excerpt for display",
+                0,
+                UUID.randomUUID(),
+                "Parent content here",
+                UUID.randomUUID(),
+                "Test Document",
+                "/path/to/doc.md",
+                "category",
+                List.of(),
+                0.95
+        );
+        when(embeddingGenerator.embed("test query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("test query"), any())).thenReturn(List.of(searchResult));
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String output = commands.search("test query", 5);
+
+        assertThat(output).contains("Found 1 results");
+        assertThat(output).contains("1. Test Document");  // Verify numbering starts at 1
+        assertThat(output).contains("/path/to/doc.md");
+        assertThat(output).contains("0.950");
+    }
+
+    @Test
+    void search_withResults_truncatesLongContent() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        // Content longer than 150 chars should be truncated
+        String longContent = "A".repeat(200);
+        SearchResult searchResult = new SearchResult(
+                UUID.randomUUID(),
+                longContent,
+                0,
+                UUID.randomUUID(),
+                "Parent",
+                UUID.randomUUID(),
+                "Doc",
+                "/path.md",
+                "cat",
+                List.of(),
+                0.9
+        );
+        when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String output = commands.search("query", 5);
+
+        // Output should contain truncated content (150-3=147 chars + "...")
+        assertThat(output).contains("...");
+        assertThat(output).doesNotContain(longContent);
+    }
+
+    @Test
+    void search_withResults_handlesNullContent() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        SearchResult searchResult = new SearchResult(
+                UUID.randomUUID(),
+                null,  // null content
+                0,
+                UUID.randomUUID(),
+                "Parent",
+                UUID.randomUUID(),
+                "Doc",
+                "/path.md",
+                "cat",
+                List.of(),
+                0.9
+        );
+        when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String output = commands.search("query", 5);
+
+        // Should handle null content gracefully
+        assertThat(output).contains("Doc");
+        assertThat(output).contains("Excerpt:");
+    }
+
+    @Test
+    void search_withResults_handlesShortContent() {
+        // Build a real SearchService with mocked dependencies
+        EmbeddingGenerator embeddingGenerator = mock(EmbeddingGenerator.class);
+        SearchRepository searchRepository = mock(SearchRepository.class);
+        GraphRepository graphRepo = mock(GraphRepository.class);
+        DocumentRepository docRepo = mock(DocumentRepository.class);
+
+        String shortContent = "Short content";
+        SearchResult searchResult = new SearchResult(
+                UUID.randomUUID(),
+                shortContent,
+                0,
+                UUID.randomUUID(),
+                "Parent",
+                UUID.randomUUID(),
+                "Doc",
+                "/path.md",
+                "cat",
+                List.of(),
+                0.9
+        );
+        when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
+        when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
+
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        AlexandriaCommands commands = new AlexandriaCommands(
+                null, searchService, documentRepository, chunkRepository, graphRepository);
+
+        String output = commands.search("query", 5);
+
+        // Short content should not be truncated
+        assertThat(output).contains(shortContent);
+        assertThat(output).doesNotContain("...");
     }
 
     // =====================

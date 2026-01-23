@@ -220,6 +220,62 @@ class MarkdownParserTest {
             assertTrue(result.content().contains("- First item"));
             assertNull(result.metadata().title());
         }
+
+        @Test
+        @DisplayName("handles frontmatter with no content after closing delimiter")
+        void handlesFrontmatterWithNoContentAfter() {
+            String markdown = "---\ntitle: Empty After\n---";
+
+            ParsedDocument result = parser.parse(markdown);
+
+            assertEquals("Empty After", result.metadata().title());
+            assertEquals("", result.content());
+        }
+
+        @Test
+        @DisplayName("handles frontmatter with only LF newline after closing delimiter")
+        void handlesFrontmatterWithLFNewline() {
+            String markdown = "---\ntitle: Test\n---\nContent after LF";
+
+            ParsedDocument result = parser.parse(markdown);
+
+            assertEquals("Test", result.metadata().title());
+            assertEquals("Content after LF", result.content());
+        }
+
+        @Test
+        @DisplayName("handles frontmatter with only CR newline after closing delimiter")
+        void handlesFrontmatterWithCRNewline() {
+            String markdown = "---\ntitle: Test\n---\rContent after CR";
+
+            ParsedDocument result = parser.parse(markdown);
+
+            assertEquals("Test", result.metadata().title());
+            assertEquals("Content after CR", result.content());
+        }
+
+        @Test
+        @DisplayName("handles frontmatter with CRLF newlines after closing delimiter")
+        void handlesFrontmatterWithCRLFNewline() {
+            String markdown = "---\ntitle: Test\n---\r\nContent after CRLF";
+
+            ParsedDocument result = parser.parse(markdown);
+
+            assertEquals("Test", result.metadata().title());
+            assertEquals("Content after CRLF", result.content());
+        }
+
+        @Test
+        @DisplayName("handles frontmatter with multiple newlines after closing delimiter")
+        void handlesFrontmatterWithMultipleNewlines() {
+            String markdown = "---\ntitle: Test\n---\n\n\nContent after many newlines";
+
+            ParsedDocument result = parser.parse(markdown);
+
+            assertEquals("Test", result.metadata().title());
+            assertEquals("Content after many newlines", result.content());
+        }
+
     }
 
     @Nested

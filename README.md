@@ -1,5 +1,8 @@
 # Alexandria
 
+![Coverage](.github/badges/jacoco.svg)
+![Branches](.github/badges/branches.svg)
+
 A RAG (Retrieval-Augmented Generation) system for personal technical documentation. Index your markdown files and query them semantically via MCP server for Claude Code integration.
 
 ## Features
