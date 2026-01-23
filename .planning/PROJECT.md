@@ -10,19 +10,9 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ## Current State
 
-**Latest shipped:** v0.2 Full Docker (2026-01-22)
+**Latest shipped:** v0.3 Better DX and Quality Gate (2026-01-23)
 
-**Delivered:** Docker packaging with HTTP/SSE MCP transport, CLI wrapper, and automatic GitHub Container Registry publishing.
-
-## Current Milestone: v0.3 Better DX and Quality Gate
-
-**Goal:** Improve test coverage visibility and quality validation tools for AI-generated code.
-
-**Target features:**
-- JaCoCo coverage reports (local HTML + CI artifacts)
-- PIT mutation testing (incremental local, reflection tool)
-- Integration tests in CI (Testcontainers on every PR + push master)
-- Local scripts for easy quality analysis
+**Delivered:** Test quality visibility through JaCoCo code coverage, PIT mutation testing, CI integration with coverage badges, and convenience scripts for quality analysis.
 
 ## Requirements
 
@@ -46,14 +36,16 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 - ✓ Script wrapper CLI (`alexandria` command) — v0.2
 - ✓ GitHub Actions pour build et push image — v0.2
 - ✓ Configuration externalisee (env vars, .env, volumes) — v0.2
+- ✓ JaCoCo coverage reports avec rapport HTML local — v0.3
+- ✓ JaCoCo coverage reports dans artifacts CI — v0.3
+- ✓ PIT mutation testing en mode incremental local — v0.3
+- ✓ Tests d'integration Testcontainers en CI (PR + push master) — v0.3
+- ✓ Scripts/commandes pour lancer l'analyse qualite facilement — v0.3
+- ✓ Badge de couverture dynamique dans README — v0.3
 
 ### Active
 
-- [ ] JaCoCo coverage reports avec rapport HTML local
-- [ ] JaCoCo coverage reports dans artifacts CI
-- [ ] PIT mutation testing en mode incremental local
-- [ ] Tests d'integration Testcontainers en CI (PR + push master)
-- [ ] Scripts/commandes pour lancer l'analyse qualite facilement
+(No active requirements - planning v0.4)
 
 ### Deferred (v0.4+)
 
@@ -74,13 +66,15 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ## Context
 
-**Current State (v0.2 shipped):**
-- 53 Java files, 5,751 lines of code
+**Current State (v0.3 shipped):**
+- 65 Java files, 9,163 lines of code
 - Tech stack: Java 21, Spring Boot 3.4.7, LangChain4j 1.2.0, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
 - MCP server: 4 tools (search_docs, index_docs, list_categories, get_doc) with HTTP/SSE + STDIO transports
 - CLI: 4 commands (index, search, status, clear) with Spring Shell 3.4.1 + Docker wrapper
 - Docker: Multi-stage build, auto-publishing to ghcr.io/sebc-dev/alexandria
 - Hexagonal architecture enforced by ArchUnit tests
+- Quality tools: JaCoCo (44% LINE), PIT mutation (56% mutation score), CI coverage badges
+- Scripts: ./coverage, ./mutation, ./quality for quick quality analysis
 
 **Architecture:**
 ```
@@ -132,6 +126,11 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | wget over curl | JRE image has no curl, wget is lighter | ✓ Good |
 | POSIX shell CLI wrapper | Maximum portability across systems | ✓ Good |
 | Official Docker GH Actions | Reliable GHCR publishing with gha cache | ✓ Good |
+| JaCoCo CSV + awk parsing | Portable parsing without xmllint dependency | ✓ Good |
+| PITest in Maven profile | Opt-in expensive analysis, not blocking builds | ✓ Good |
+| Incremental PITest history | 5s incremental runs vs minutes for full analysis | ✓ Good |
+| Coverage badges on main only | Avoid PR merge conflicts from badge commits | ✓ Good |
+| Quality script --full flag | Fast default (coverage only), opt-in mutation | ✓ Good |
 
 ---
-*Last updated: 2026-01-22 after starting v0.3 milestone*
+*Last updated: 2026-01-23 after v0.3 milestone*
