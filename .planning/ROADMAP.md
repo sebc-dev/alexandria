@@ -13,7 +13,7 @@ Alexandria v0.3 adds test quality visibility through JaCoCo code coverage and PI
 ## Phases
 
 - [x] **Phase 11: JaCoCo Unit Coverage** - Code coverage foundation with local reports and CI integration
-- [ ] **Phase 12: Integration Test Coverage** - Failsafe coverage and merged reports
+- [x] **Phase 12: Integration Test Coverage** - Failsafe coverage and merged reports
 - [ ] **Phase 13: PIT Mutation Testing** - Mutation testing with incremental analysis
 - [ ] **Phase 14: Quality Dashboard** - Coverage badge and consolidated quality scripts
 
@@ -42,10 +42,11 @@ Plans:
   2. `mvn verify` generates merged coverage report combining unit + integration tests
   3. GitHub Actions runs integration tests (Testcontainers) on PR and push to master
   4. GitHub Actions uploads JaCoCo reports as downloadable artifacts
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: [TBD during planning]
+- [x] 12-01-PLAN.md — Configure JaCoCo integration test goals and merged report
+- [x] 12-02-PLAN.md — Update GitHub Actions for integration tests and artifact upload
 
 ### Phase 13: PIT Mutation Testing
 **Goal**: Developer can run mutation testing locally with fast incremental analysis
@@ -81,10 +82,10 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. JaCoCo Unit Coverage | 1/1 | Complete | 2026-01-22 |
-| 12. Integration Test Coverage | 0/TBD | Not started | - |
+| 12. Integration Test Coverage | 2/2 | Complete | 2026-01-23 |
 | 13. PIT Mutation Testing | 0/TBD | Not started | - |
 | 14. Quality Dashboard | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-22*
-*Last updated: 2026-01-22*
+*Last updated: 2026-01-23*

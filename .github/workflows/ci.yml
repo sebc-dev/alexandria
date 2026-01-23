@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    name: Build & Unit Tests
+    name: Build & All Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -28,13 +28,26 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
 
-      - name: Build and run unit tests
-        run: mvn -B -T 1C verify -DskipITs
+      - name: Build and run all tests
+        run: mvn -B verify
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
-          path: target/surefire-reports/
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 7
+
+      - name: Upload JaCoCo coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-reports
+          path: |
+            target/site/jacoco/
+            target/site/jacoco-it/
+            target/site/jacoco-merged/
           retention-days: 7

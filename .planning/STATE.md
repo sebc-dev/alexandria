@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-22)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** Phase 12 - Integration Test Coverage
+**Current focus:** Phase 13 - PIT Mutation Testing
 
 ## Current Position
 
-Phase: 12 of 14 (Integration Test Coverage)
+Phase: 13 of 14 (PIT Mutation Testing)
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-01-22 - Phase 11 verified and complete
+Last activity: 2026-01-23 - Phase 12 verified and complete
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
-Progress: v0.3 [####............] 25%
+Progress: v0.3 [########........] 50%
 
 ## Performance Metrics
 
@@ -31,9 +31,9 @@ Progress: v0.3 [####............] 25%
 - Total execution time: ~19 min
 
 **v0.3 Velocity:**
-- Plans completed: 1
-- Average duration: 5 min
-- Total execution time: 5 min
+- Plans completed: 3
+- Average duration: 3 min
+- Total execution time: 9 min
 
 **By Phase:**
 
@@ -42,6 +42,7 @@ Progress: v0.3 [####............] 25%
 | 01-07 (v0.1) | 15 | 50 min | 3.3 min |
 | 08-10 (v0.2) | 6 | 19 min | 3.2 min |
 | 11 (v0.3) | 1 | 5 min | 5 min |
+| 12 (v0.3) | 2 | 4 min | 2 min |
 
 ## Accumulated Context
 
@@ -52,6 +53,8 @@ v0.1 and v0.2 decisions all marked as outcomes (all Good).
 
 **v0.3 Decisions:**
 - 11-01: Use awk CSV parsing instead of xmllint (more portable)
+- 12-01: Bind merge goal to post-integration-test phase (avoid generate-resources default)
+- 12-02: Remove -T 1C parallel flag to avoid Testcontainers race conditions
 
 ### Pending Todos
 
@@ -68,10 +71,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-22
-Stopped at: Phase 11 verified and complete
+Last session: 2026-01-23
+Stopped at: Completed 12-02-PLAN.md (Phase 12 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 12` to plan Integration Test Coverage phase.
+Run `/gsd:discuss-phase 13` to plan PIT Mutation Testing phase.
