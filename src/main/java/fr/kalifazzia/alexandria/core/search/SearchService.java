@@ -4,6 +4,8 @@ import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,16 +29,22 @@ public class SearchService {
     private final SearchRepository searchRepository;
     private final GraphRepository graphRepository;
     private final DocumentRepository documentRepository;
+    private final Timer searchTimer;
 
     public SearchService(
             EmbeddingGenerator embeddingGenerator,
             SearchRepository searchRepository,
             GraphRepository graphRepository,
-            DocumentRepository documentRepository) {
+            DocumentRepository documentRepository,
+            MeterRegistry meterRegistry) {
         this.embeddingGenerator = embeddingGenerator;
         this.searchRepository = searchRepository;
         this.graphRepository = graphRepository;
         this.documentRepository = documentRepository;
+        this.searchTimer = Timer.builder("alexandria.search.duration")
+                .description("Time spent executing search operations")
+                .publishPercentileHistogram()
+                .register(meterRegistry);
     }
 
     /**
@@ -54,15 +62,12 @@ public class SearchService {
 
         log.debug("Searching for: '{}' with filters: {}", query, filters);
 
-        // 1. Generate embedding for query text
-        float[] queryEmbedding = embeddingGenerator.embed(query);
-
-        // 2. Execute similarity search
-        List<SearchResult> results = searchRepository.searchSimilar(queryEmbedding, filters);
-
-        log.info("Search for '{}' returned {} results", truncate(query, 50), results.size());
-
-        return results;
+        return searchTimer.record(() -> {
+            float[] queryEmbedding = embeddingGenerator.embed(query);
+            List<SearchResult> results = searchRepository.searchSimilar(queryEmbedding, filters);
+            log.info("Search for '{}' returned {} results", truncate(query, 50), results.size());
+            return results;
+        });
     }
 
     /**
@@ -91,15 +96,12 @@ public class SearchService {
 
         log.debug("Hybrid searching for: '{}' with filters: {}", query, filters);
 
-        // 1. Generate embedding for vector search
-        float[] queryEmbedding = embeddingGenerator.embed(query);
-
-        // 2. Execute hybrid search (vector + full-text via RRF)
-        List<SearchResult> results = searchRepository.hybridSearch(queryEmbedding, query, filters);
-
-        log.info("Hybrid search for '{}' returned {} results", truncate(query, 50), results.size());
-
-        return results;
+        return searchTimer.record(() -> {
+            float[] queryEmbedding = embeddingGenerator.embed(query);
+            List<SearchResult> results = searchRepository.hybridSearch(queryEmbedding, query, filters);
+            log.info("Hybrid search for '{}' returned {} results", truncate(query, 50), results.size());
+            return results;
+        });
     }
 
     /**

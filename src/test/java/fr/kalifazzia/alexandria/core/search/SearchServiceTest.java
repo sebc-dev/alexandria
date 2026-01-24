@@ -5,6 +5,9 @@ import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,11 +40,14 @@ class SearchServiceTest {
     @Mock
     private DocumentRepository documentRepository;
 
+    private MeterRegistry meterRegistry;
+
     private SearchService searchService;
 
     @BeforeEach
     void setUp() {
-        searchService = new SearchService(embeddingGenerator, searchRepository, graphRepository, documentRepository);
+        meterRegistry = new SimpleMeterRegistry();
+        searchService = new SearchService(embeddingGenerator, searchRepository, graphRepository, documentRepository, meterRegistry);
     }
 
     @Test
@@ -110,6 +116,34 @@ class SearchServiceTest {
 
         // Then
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    void search_recordsTimerMetric() {
+        // Given
+        when(embeddingGenerator.embed("test")).thenReturn(new float[]{0.1f, 0.2f});
+        when(searchRepository.searchSimilar(any(), any())).thenReturn(List.of());
+
+        // When
+        searchService.search("test", 5);
+
+        // Then
+        Timer timer = meterRegistry.get("alexandria.search.duration").timer();
+        assertThat(timer.count()).isEqualTo(1);
+    }
+
+    @Test
+    void hybridSearch_recordsTimerMetric() {
+        // Given
+        when(embeddingGenerator.embed("test")).thenReturn(new float[]{0.1f, 0.2f});
+        when(searchRepository.hybridSearch(any(), eq("test"), any())).thenReturn(List.of());
+
+        // When
+        searchService.hybridSearch("test", 5);
+
+        // Then
+        Timer timer = meterRegistry.get("alexandria.search.duration").timer();
+        assertThat(timer.count()).isEqualTo(1);
     }
 
     @Test
