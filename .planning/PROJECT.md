@@ -14,6 +14,19 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 **Delivered:** Test quality visibility through JaCoCo code coverage, PIT mutation testing, CI integration with coverage badges, and convenience scripts for quality analysis.
 
+## Current Milestone: v0.4 RAG Evaluation Toolkit
+
+**Goal:** Boîte à outils optionnelle d'évaluation complète du système RAG — retrieval, embeddings, pgvector, graphe, LLM-as-judge, et monitoring temps réel.
+
+**Target features:**
+- Métriques retrieval (Precision@k, Recall@k, MRR, NDCG) avec golden dataset
+- Évaluation embeddings (silhouette score SMILE, drift detection, UMAP)
+- Benchmark pgvector HNSW (recall vs ef_search, latence p50/p95/p99)
+- Validation graphe Apache AGE (orphelins, connectivité NetworkX, visualisation)
+- LLM-as-Judge via Ollama (faithfulness, answer relevancy)
+- Stack monitoring (VictoriaMetrics + Grafana + Loki)
+- Infrastructure Docker pour tout le tooling
+
 ## Requirements
 
 ### Validated
@@ -45,7 +58,43 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 
 ### Active
 
-(No active requirements - planning v0.4)
+<!-- v0.4 RAG Evaluation Toolkit -->
+
+**Retrieval Evaluation:**
+- [ ] Métriques retrieval Java (Precision@k, Recall@k, MRR, NDCG)
+- [ ] Format golden dataset JSON avec champs KG (requires_kg, reasoning_hops)
+- [ ] Évaluation sur commande via Docker
+
+**Embeddings Evaluation:**
+- [ ] Silhouette score via SMILE (Java natif)
+- [ ] Drift detection (Evidently ou calcul centroid)
+- [ ] Visualisation UMAP des embeddings
+
+**pgvector HNSW Benchmark:**
+- [ ] Recall@k vs ef_search (40, 100, 200)
+- [ ] Latence p50/p95/p99 avec pg_stat_statements
+- [ ] Courbe recall/latence documentée
+
+**Graph Validation:**
+- [ ] Requêtes Cypher : orphelins, doublons, stats basiques
+- [ ] Analyse connectivité WCC via NetworkX (export CSV)
+- [ ] Visualisation graphe (AGE Viewer ou export Gephi)
+
+**LLM-as-Judge:**
+- [ ] Ollama avec Mistral 7B ou Llama 3.1 8B
+- [ ] Métriques faithfulness et answer relevancy
+- [ ] Intégration Quarkus LangChain4j Testing ou wrapper RAGAS
+
+**Monitoring Stack:**
+- [ ] VictoriaMetrics pour stockage métriques
+- [ ] Grafana avec dashboards RAG préconfigurés
+- [ ] Loki + Promtail pour logging centralisé
+- [ ] Métriques Micrometer exposées par l'application
+
+**Infrastructure:**
+- [ ] Docker Compose pour stack évaluation complète
+- [ ] Scripts de lancement évaluation
+- [ ] Documentation usage du toolkit
 
 ### Deferred (v0.4+)
 
@@ -133,4 +182,4 @@ Claude Code peut acceder a ma documentation technique personnelle pendant l'impl
 | Quality script --full flag | Fast default (coverage only), opt-in mutation | ✓ Good |
 
 ---
-*Last updated: 2026-01-23 after v0.3 milestone*
+*Last updated: 2026-01-24 after starting v0.4 milestone*
