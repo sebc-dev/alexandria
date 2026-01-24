@@ -19,7 +19,7 @@ This milestone delivers an optional RAG evaluation toolkit enabling systematic q
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 15: Metrics Foundation** - Micrometer instrumentation exposing application metrics
+- [x] **Phase 15: Metrics Foundation** - Micrometer instrumentation exposing application metrics
 - [ ] **Phase 16: Monitoring Stack** - VictoriaMetrics + Grafana + Loki deployment
 - [ ] **Phase 17: Golden Dataset & Retrieval Evaluation** - JSONL schema and pure Java retrieval metrics
 - [ ] **Phase 18: Embedding & Vector Index Evaluation** - SMILE clustering and pgvector benchmarks
@@ -40,7 +40,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 15-01-PLAN.md - Add Prometheus registry and instrument core services
+- [x] 15-01-PLAN.md - Add Prometheus registry and instrument core services
 
 ### Phase 16: Monitoring Stack
 **Goal**: Full observability stack running in Docker with preconfigured dashboards
@@ -139,11 +139,11 @@ Phases execute in numeric order: 15 -> 16 -> 17 -> 18 -> 19 -> 20
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 15. Metrics Foundation | v0.4 | 0/1 | Ready | - |
+| 15. Metrics Foundation | v0.4 | 1/1 | Complete | 2026-01-24 |
 | 16. Monitoring Stack | v0.4 | 0/3 | Not started | - |
 | 17. Golden Dataset & Retrieval | v0.4 | 0/3 | Not started | - |
 | 18. Embedding & Vector Index | v0.4 | 0/4 | Not started | - |
 | 19. Graph Validation | v0.4 | 0/3 | Not started | - |
 | 20. LLM-as-Judge | v0.4 | 0/4 | Not started | - |
 
-**Total:** 0/18 plans complete (0%)
+**Total:** 1/18 plans complete (6%)
