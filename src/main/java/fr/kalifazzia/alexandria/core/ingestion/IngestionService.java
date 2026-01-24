@@ -9,6 +9,9 @@ import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +66,8 @@ public class IngestionService {
     private final GraphRepository graphRepository;
     private final CrossReferenceExtractorPort crossReferenceExtractor;
     private final ApplicationEventPublisher eventPublisher;
+    private final Counter documentsIngestedCounter;
+    private final Timer embeddingTimer;
 
     // Self-injection to call @Transactional methods through proxy
     // Required because ingestDirectory() calls ingestFile() which needs proxy for transaction
@@ -82,7 +87,8 @@ public class IngestionService {
             ChunkRepository chunkRepository,
             GraphRepository graphRepository,
             CrossReferenceExtractorPort crossReferenceExtractor,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            MeterRegistry meterRegistry) {
         this.markdownParser = markdownParser;
         this.chunker = chunker;
         this.embeddingGenerator = embeddingGenerator;
@@ -91,6 +97,13 @@ public class IngestionService {
         this.graphRepository = graphRepository;
         this.crossReferenceExtractor = crossReferenceExtractor;
         this.eventPublisher = eventPublisher;
+        this.documentsIngestedCounter = Counter.builder("alexandria.documents.ingested")
+                .description("Number of documents successfully ingested")
+                .register(meterRegistry);
+        this.embeddingTimer = Timer.builder("alexandria.embedding.duration")
+                .description("Time spent generating embeddings")
+                .publishPercentileHistogram()
+                .register(meterRegistry);
     }
 
     /**
@@ -192,7 +205,7 @@ public class IngestionService {
         int totalChunks = 0;
         for (ChunkPair pair : chunkPairs) {
             // Generate and save parent chunk
-            float[] parentEmbedding = embeddingGenerator.embed(pair.parentContent());
+            float[] parentEmbedding = embeddingTimer.record(() -> embeddingGenerator.embed(pair.parentContent()));
             UUID parentId = chunkRepository.saveChunk(
                     document.id(),
                     null,
@@ -210,7 +223,7 @@ public class IngestionService {
             // Generate and save child chunks
             for (int i = 0; i < pair.childContents().size(); i++) {
                 String childContent = pair.childContents().get(i);
-                float[] childEmbedding = embeddingGenerator.embed(childContent);
+                float[] childEmbedding = embeddingTimer.record(() -> embeddingGenerator.embed(childContent));
                 UUID childId = chunkRepository.saveChunk(
                         document.id(),
                         parentId,
@@ -234,6 +247,8 @@ public class IngestionService {
         // Publish event for graph operations to execute after PostgreSQL commit
         eventPublisher.publishEvent(new DocumentIngestedEvent(
                 document.id(), document.path(), chunkOps, refOps));
+
+        documentsIngestedCounter.increment();
 
         log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references queued",
                 file.getFileName(),
