@@ -95,7 +95,7 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MON-03 | Phase 15 | Pending |
+| MON-03 | Phase 15 | Complete |
 | MON-01 | Phase 16 | Pending |
 | MON-02 | Phase 16 | Pending |
 | MON-04 | Phase 16 | Pending |
