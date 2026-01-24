@@ -22,6 +22,17 @@ spring:
     # Don't run Liquibase on startup - migrations handled by init scripts
     enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        alexandria.search.duration: true
+        alexandria.embedding.duration: true
+
 logging:
   level:
     fr.kalifazzia.alexandria: DEBUG
