@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Alexandria is a RAG (Retrieval-Augmented Generation) system for personal technical documentation. It indexes markdown files and provides semantic search via an MCP server for Claude Code integration.
 
-**Tech Stack:** Java 21, Spring Boot 3.4, LangChain4j 1.0-beta3, PostgreSQL 17, pgvector 0.8.1, Apache AGE 1.6.0
+**Tech Stack:** Java 21, Spring Boot 3.4.7, LangChain4j 1.2.0, PostgreSQL 17, pgvector 0.8.1, Apache AGE (PG17)
 
 ## Build Commands
 

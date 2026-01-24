@@ -11,15 +11,15 @@ A RAG (Retrieval-Augmented Generation) system for personal technical documentati
 - **Hybrid Search**: Combines vector similarity with full-text search (RRF fusion)
 - **Hierarchical Chunking**: Child chunks for matching, parent chunks for context
 - **Document Graph**: Apache AGE tracks document relationships via cross-references
-- **MCP Integration**: Native Claude Code integration via STDIO transport
+- **MCP Integration**: Native Claude Code integration via STDIO or HTTP/SSE transport
 - **CLI Interface**: Command-line tools for maintenance and manual operations
 - **Local Embeddings**: all-MiniLM-L6-v2 via ONNX, no external API required
 
 ## Tech Stack
 
-- Java 21, Spring Boot 3.4
-- LangChain4j 1.0-beta3
-- PostgreSQL 17 with pgvector 0.8.1 and Apache AGE 1.6.0
+- Java 21, Spring Boot 3.4.7
+- LangChain4j 1.2.0
+- PostgreSQL 17 with pgvector 0.8.1 and Apache AGE (PG17)
 - Spring AI MCP Server 1.0.0
 - Spring Shell 3.4.1
 
@@ -75,6 +75,112 @@ docker compose ps
 ./alexandria status                  # Show database status
 ./alexandria clear --force           # Clear all indexed data
 ```
+
+### Docker Architecture
+
+Alexandria runs as two containers:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Docker Compose                          │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────┐    ┌─────────────────────────────┐ │
+│  │   alexandria-app    │    │       rag-postgres          │ │
+│  │   (Java 21 + ONNX)  │───▶│  (PostgreSQL 17 + pgvector  │ │
+│  │   Port: 8080        │    │   + Apache AGE)             │ │
+│  │   Memory: 2GB       │    │   Port: 5432                │ │
+│  └─────────────────────┘    └─────────────────────────────┘ │
+│          │                              │                   │
+│          ▼                              ▼                   │
+│     /docs (ro)                    ./data (persist)          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Environment Variables
+
+All configuration is done via `.env` file. Copy `.env.example` to `.env` and customize:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DOCS_PATH` | `./docs` | Host path to markdown documentation (mounted read-only) |
+| `LOG_LEVEL` | `INFO` | Logging level: DEBUG, INFO, WARN, ERROR |
+| `MEM_LIMIT` | `2g` | App container memory limit (min 2GB recommended) |
+| `DB_HOST` | `postgres` | PostgreSQL host (use default for bundled container) |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_NAME` | `alexandria` | Database name |
+| `DB_USER` | `alexandria` | Database username |
+| `DB_PASSWORD` | `alexandria` | Database password |
+
+### Docker Operations
+
+```bash
+# Start all services
+docker compose up -d
+
+# View container status
+docker compose ps
+
+# View application logs
+docker compose logs -f app
+
+# View database logs
+docker compose logs -f postgres
+
+# Restart application only
+docker compose restart app
+
+# Stop all services
+docker compose down
+
+# Reset database (delete all data)
+docker compose down && rm -rf data/ && docker compose up -d
+
+# Rebuild images after code changes
+docker compose build --no-cache && docker compose up -d
+```
+
+### Health Checks and Troubleshooting
+
+Both containers have health checks configured:
+
+```bash
+# Check services health status
+docker compose ps
+
+# Check app health endpoint
+curl http://localhost:8080/actuator/health
+
+# Check if database is ready
+docker compose exec postgres pg_isready -U alexandria
+```
+
+**Startup times:**
+- PostgreSQL: ~30 seconds
+- Application: ~2 minutes (ONNX model loading)
+
+**Common issues:**
+
+| Symptom | Cause | Solution |
+|---------|-------|----------|
+| App container restarting | Insufficient memory | Increase `MEM_LIMIT` to 4g in `.env` |
+| Slow startup | ONNX model loading | Wait 2 minutes, this is normal |
+| Database connection refused | Postgres not ready | Wait for postgres healthcheck to pass |
+| "Out of memory" in logs | Large documentation set | Increase `MEM_LIMIT` and Docker memory |
+
+### Memory Configuration
+
+The application requires significant memory for the ONNX embedding model:
+
+- **Minimum**: 2GB (small documentation sets)
+- **Recommended**: 4GB (large documentation sets)
+- **PostgreSQL**: Uses 3GB shared memory for HNSW index operations
+
+To increase memory, edit `.env`:
+```bash
+MEM_LIMIT=4g
+```
+
+For Docker Desktop, also ensure Docker has sufficient memory allocated in Settings > Resources.
 
 ### MCP Integration (Docker - HTTP/SSE)
 
@@ -201,22 +307,38 @@ Supported frontmatter fields:
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         API LAYER                               │
-├─────────────────────────────────────────────────────────────────┤
-│  MCP Server (STDIO transport)    CLI (Spring Shell)            │
-├─────────────────────────────────────────────────────────────────┤
-│                         CORE LAYER                              │
-├─────────────────────────────────────────────────────────────────┤
-│  IngestionService                SearchService                  │
-│  Ports: DocumentRepository, ChunkRepository, GraphRepository    │
-├─────────────────────────────────────────────────────────────────┤
-│                        INFRA LAYER                              │
-├─────────────────────────────────────────────────────────────────┤
-│  JDBC Repositories (pgvector, Apache AGE)                       │
-│  LangChain4j Embeddings (ONNX)   CommonMark Parser              │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph API["API Layer"]
+        MCP["MCP Server<br/>(STDIO/HTTP)"]
+        CLI["CLI<br/>(Spring Shell)"]
+    end
+
+    subgraph CORE["Core Layer"]
+        IS["IngestionService"]
+        SS["SearchService"]
+        subgraph PORTS["Ports"]
+            DR["DocumentRepository"]
+            CR["ChunkRepository"]
+            GR["GraphRepository"]
+        end
+    end
+
+    subgraph INFRA["Infra Layer"]
+        JDBC["JDBC Repositories<br/>(pgvector, Apache AGE)"]
+        EMB["LangChain4j Embeddings<br/>(ONNX)"]
+        PARSER["CommonMark Parser"]
+    end
+
+    MCP --> IS
+    MCP --> SS
+    CLI --> IS
+    CLI --> SS
+    IS --> PORTS
+    SS --> PORTS
+    JDBC -.->|implements| PORTS
+    EMB -.->|implements| PORTS
+    PARSER -.->|implements| PORTS
 ```
 
 Hexagonal architecture enforced by ArchUnit tests. Dependencies flow inward: API and Infra depend on Core, never the reverse.
