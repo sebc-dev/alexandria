@@ -37,10 +37,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Search latency tracked with Timer (p50/p95/p99 percentiles available)
   3. Embedding generation latency tracked with Timer
   4. Document ingestion count tracked with Counter
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 15-01: Add Micrometer + Prometheus registry and instrument core services
+- [ ] 15-01-PLAN.md - Add Prometheus registry and instrument core services
 
 ### Phase 16: Monitoring Stack
 **Goal**: Full observability stack running in Docker with preconfigured dashboards
@@ -139,7 +139,7 @@ Phases execute in numeric order: 15 -> 16 -> 17 -> 18 -> 19 -> 20
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 15. Metrics Foundation | v0.4 | 0/1 | Not started | - |
+| 15. Metrics Foundation | v0.4 | 0/1 | Ready | - |
 | 16. Monitoring Stack | v0.4 | 0/3 | Not started | - |
 | 17. Golden Dataset & Retrieval | v0.4 | 0/3 | Not started | - |
 | 18. Embedding & Vector Index | v0.4 | 0/4 | Not started | - |
