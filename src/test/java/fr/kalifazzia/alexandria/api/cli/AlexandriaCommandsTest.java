@@ -7,6 +7,7 @@ import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
 import fr.kalifazzia.alexandria.core.search.SearchResult;
 import fr.kalifazzia.alexandria.core.search.SearchService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -108,7 +109,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of());
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 
@@ -128,7 +129,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of());
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 
@@ -161,7 +162,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("test query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("test query"), any())).thenReturn(List.of(searchResult));
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 
@@ -199,7 +200,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 
@@ -234,7 +235,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 
@@ -270,7 +271,7 @@ class AlexandriaCommandsTest {
         when(embeddingGenerator.embed("query")).thenReturn(new float[]{0.1f});
         when(searchRepository.hybridSearch(any(), eq("query"), any())).thenReturn(List.of(searchResult));
 
-        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo);
+        SearchService searchService = new SearchService(embeddingGenerator, searchRepository, graphRepo, docRepo, new SimpleMeterRegistry());
         AlexandriaCommands commands = new AlexandriaCommands(
                 null, searchService, documentRepository, chunkRepository, graphRepository);
 

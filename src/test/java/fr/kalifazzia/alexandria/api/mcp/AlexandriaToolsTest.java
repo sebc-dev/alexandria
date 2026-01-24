@@ -11,6 +11,7 @@ import fr.kalifazzia.alexandria.core.port.SearchRepository;
 import fr.kalifazzia.alexandria.core.search.HybridSearchFilters;
 import fr.kalifazzia.alexandria.core.search.SearchResult;
 import fr.kalifazzia.alexandria.core.search.SearchService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -56,7 +57,7 @@ class AlexandriaToolsTest {
         graphRepository = mock(GraphRepository.class);
 
         // Create real SearchService with mocked dependencies
-        searchService = new SearchService(embeddingGenerator, searchRepository, graphRepository, documentRepository);
+        searchService = new SearchService(embeddingGenerator, searchRepository, graphRepository, documentRepository, new SimpleMeterRegistry());
     }
 
     private AlexandriaTools createTools(Path allowedPath) {
