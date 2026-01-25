@@ -1,0 +1,84 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: Alexandria Alerts
+    folder: Alexandria
+    interval: 60s
+    rules:
+      - uid: alexandria-search-latency
+        title: High Search Latency
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: histogram_quantile(0.95, sum(rate(alexandria_search_duration_seconds_bucket[5m])) by (le))
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [2]
+              refId: C
+        for: 60s
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: Search latency P95 exceeds 2 seconds
+          description: "Current P95 latency: {{ $values.B.Value }}s"
+
+      - uid: alexandria-error-rate
+        title: High Error Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.1]
+              refId: C
+        for: 60s
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: Error rate exceeds 0.1 req/s
+          description: "Current error rate: {{ $values.B.Value }} req/s"
