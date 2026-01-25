@@ -9,15 +9,15 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Current Position
 
-Phase: 15 of 20 (Metrics Foundation)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-01-24 - Completed 15-01-PLAN.md
+Phase: 16 of 20 (Monitoring Stack)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-25 - Completed 16-01-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
 Progress: v0.3 [################] 100% SHIPPED
-Progress: v0.4 [#---------------] 6% (1/18 plans)
+Progress: v0.4 [##--------------] 11% (2/18 plans)
 
 ## Performance Metrics
 
@@ -34,7 +34,8 @@ Progress: v0.4 [#---------------] 6% (1/18 plans)
 | 08-10 (v0.2) | 6 | 19 min | 3.2 min |
 | 11-14 (v0.3) | 5 | 15 min | 3.0 min |
 | 15 (v0.4) | 1/1 | 5 min | 5.0 min |
-| 16-20 (v0.4) | 0/17 | - | - |
+| 16 (v0.4) | 1/3 | 1 min | 1.0 min |
+| 17-20 (v0.4) | 0/14 | - | - |
 
 ## Accumulated Context
 
@@ -48,6 +49,9 @@ v0.1, v0.2, and v0.3 decisions all marked as outcomes (all Good).
 |-------|----------|-----------|
 | 15-01 | MeterRegistry injection via constructor | Testability with SimpleMeterRegistry |
 | 15-01 | publishPercentileHistogram() enabled | Server-side p50/p95/p99 calculation by Prometheus |
+| 16-01 | Eval profile isolates monitoring from normal stack | Only needed during evaluation runs |
+| 16-01 | VictoriaMetrics over full Prometheus | Simpler single-binary deployment |
+| 16-01 | Grafana depends_on with service_healthy | Proper startup ordering |
 
 ### Pending Todos
 
@@ -64,10 +68,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-24T08:07:13Z
-Stopped at: Completed 15-01-PLAN.md (Phase 15 complete)
+Last session: 2026-01-25T13:34:53Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:plan-phase 16` to plan Monitoring Stack phase.
+Run `/gsd:execute-plan 16 02` to execute Grafana dashboard provisioning.
