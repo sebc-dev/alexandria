@@ -79,6 +79,12 @@ services:
       - "-storageDataPath=/victoria-metrics-data"
       - "-retentionPeriod=30d"
       - "-promscrape.config=/etc/vm/scrape.yaml"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
   loki:
@@ -142,7 +148,7 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       victoriametrics:
-        condition: service_started
+        condition: service_healthy
       loki:
         condition: service_healthy
     healthcheck:
