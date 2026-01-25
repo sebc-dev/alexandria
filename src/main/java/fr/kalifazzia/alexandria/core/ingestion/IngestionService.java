@@ -19,6 +19,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -248,7 +250,18 @@ public class IngestionService {
         eventPublisher.publishEvent(new DocumentIngestedEvent(
                 document.id(), document.path(), chunkOps, refOps));
 
-        documentsIngestedCounter.increment();
+        // Increment counter only after successful commit to avoid overcounting on rollback
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    documentsIngestedCounter.increment();
+                }
+            });
+        } else {
+            // No active transaction (e.g., in unit tests) - increment directly
+            documentsIngestedCounter.increment();
+        }
 
         log.info("Ingested file: {} with {} chunks ({} parents, {} children) and {} references queued",
                 file.getFileName(),
