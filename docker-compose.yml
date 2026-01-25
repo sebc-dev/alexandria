@@ -36,7 +36,7 @@ services:
     container_name: alexandria-app
     networks:
       - internal
-      - caddy-net
+      - caddy_network
     environment:
       # Spring profiles for HTTP/SSE transport
       SPRING_PROFILES_ACTIVE: http,docker
@@ -129,6 +129,7 @@ services:
     profiles: ["eval"]
     networks:
       - internal
+      - caddy_network
     ports:
       - "3000:3000"
     environment:
@@ -155,7 +156,7 @@ services:
 networks:
   internal:
     # Internal network for postgres <-> app communication
-  caddy-net:
+  caddy_network:
     external: true
 
 volumes:
