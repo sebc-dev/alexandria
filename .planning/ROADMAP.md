@@ -20,7 +20,7 @@ This milestone delivers an optional RAG evaluation toolkit enabling systematic q
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 15: Metrics Foundation** - Micrometer instrumentation exposing application metrics
-- [ ] **Phase 16: Monitoring Stack** - VictoriaMetrics + Grafana + Loki deployment
+- [x] **Phase 16: Monitoring Stack** - VictoriaMetrics + Grafana + Loki deployment
 - [ ] **Phase 17: Golden Dataset & Retrieval Evaluation** - JSONL schema and pure Java retrieval metrics
 - [ ] **Phase 18: Embedding & Vector Index Evaluation** - SMILE clustering and pgvector benchmarks
 - [ ] **Phase 19: Graph Validation** - Cypher queries and WCC analysis via Python sidecar
@@ -55,9 +55,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 16-01-PLAN.md - Add VictoriaMetrics + Grafana to docker-compose with eval profile
-- [ ] 16-02-PLAN.md - Add Loki + Alloy for log aggregation
-- [ ] 16-03-PLAN.md - Create Grafana dashboards and alerts
+- [x] 16-01-PLAN.md - Add VictoriaMetrics + Grafana to docker-compose with eval profile
+- [x] 16-02-PLAN.md - Add Loki + Alloy for log aggregation
+- [x] 16-03-PLAN.md - Create Grafana dashboards and alerts
 
 ### Phase 17: Golden Dataset & Retrieval Evaluation
 **Goal**: Golden dataset infrastructure and pure Java retrieval metrics enabling reproducible evaluation
@@ -140,10 +140,10 @@ Phases execute in numeric order: 15 -> 16 -> 17 -> 18 -> 19 -> 20
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 15. Metrics Foundation | v0.4 | 1/1 | Complete | 2026-01-24 |
-| 16. Monitoring Stack | v0.4 | 0/3 | Not started | - |
+| 16. Monitoring Stack | v0.4 | 3/3 | Complete | 2026-01-25 |
 | 17. Golden Dataset & Retrieval | v0.4 | 0/3 | Not started | - |
 | 18. Embedding & Vector Index | v0.4 | 0/4 | Not started | - |
 | 19. Graph Validation | v0.4 | 0/3 | Not started | - |
 | 20. LLM-as-Judge | v0.4 | 0/4 | Not started | - |
 
-**Total:** 1/18 plans complete (6%)
+**Total:** 4/18 plans complete (22%)

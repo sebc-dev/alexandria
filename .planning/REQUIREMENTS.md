@@ -96,12 +96,12 @@ Deferred to future release. Tracked but not in current roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | MON-03 | Phase 15 | Complete |
-| MON-01 | Phase 16 | Pending |
-| MON-02 | Phase 16 | Pending |
-| MON-04 | Phase 16 | Pending |
-| MON-05 | Phase 16 | Pending |
-| INFRA-01 | Phase 16 | Pending |
-| INFRA-04 | Phase 16 | Pending |
+| MON-01 | Phase 16 | Complete |
+| MON-02 | Phase 16 | Complete |
+| MON-04 | Phase 16 | Complete |
+| MON-05 | Phase 16 | Complete |
+| INFRA-01 | Phase 16 | Complete |
+| INFRA-04 | Phase 16 | Complete |
 | RETR-01 | Phase 17 | Pending |
 | RETR-02 | Phase 17 | Pending |
 | RETR-03 | Phase 17 | Pending |
