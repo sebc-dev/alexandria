@@ -5,12 +5,12 @@ services:
   postgres:
     build: .
     container_name: rag-postgres
-    ports:
-      - "5432:5432"
+    networks:
+      - internal
     environment:
-      POSTGRES_USER: alexandria
-      POSTGRES_PASSWORD: alexandria
-      POSTGRES_DB: alexandria
+      POSTGRES_USER: ${DB_USER:-alexandria}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-alexandria}
+      POSTGRES_DB: ${DB_NAME:-alexandria}
     volumes:
       # Data persistence
       - ./data:/var/lib/postgresql/data
@@ -22,7 +22,7 @@ services:
     # Must be >= maintenance_work_mem in postgresql.conf (2GB + margin)
     shm_size: 3g
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U alexandria -d alexandria"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-alexandria} -d ${DB_NAME:-alexandria}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,19 +34,20 @@ services:
       context: .
       dockerfile: Dockerfile.app
     container_name: alexandria-app
-    ports:
-      - "8080:8080"
+    networks:
+      - internal
+      - caddy_network
     environment:
       # Spring profiles for HTTP/SSE transport
       SPRING_PROFILES_ACTIVE: http,docker
       # Database connection (uses service name as hostname)
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: alexandria
-      DB_USER: alexandria
-      DB_PASSWORD: alexandria
+      DB_NAME: ${DB_NAME:-alexandria}
+      DB_USER: ${DB_USER:-alexandria}
+      DB_PASSWORD: ${DB_PASSWORD:-alexandria}
       # Logging level (optional override)
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       # Documentation directory (read-only mount)
       - ${DOCS_PATH:-./docs}:/docs:ro
@@ -64,3 +65,107 @@ services:
     restart: unless-stopped
     # Memory limit (ONNX model needs ~500MB, app needs ~500MB, buffer for GC)
     mem_limit: ${MEM_LIMIT:-2g}
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.114.0
+    container_name: alexandria-vm
+    profiles: ["eval"]
+    networks:
+      - internal
+    volumes:
+      - vm-data:/victoria-metrics-data
+      - ./monitoring/victoriametrics/scrape.yaml:/etc/vm/scrape.yaml:ro
+    command:
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-retentionPeriod=30d"
+      - "-promscrape.config=/etc/vm/scrape.yaml"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.4.0
+    container_name: alexandria-loki
+    profiles: ["eval"]
+    networks:
+      - internal
+    volumes:
+      - loki-data:/loki
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/config.yaml:ro
+    command: -config.file=/etc/loki/config.yaml
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.8.0
+    container_name: alexandria-alloy
+    profiles: ["eval"]
+    networks:
+      - internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+    depends_on:
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:12345/-/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: alexandria-grafana
+    profiles: ["eval"]
+    networks:
+      - internal
+      - caddy_network
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+networks:
+  internal:
+    # Internal network for postgres <-> app communication
+  caddy_network:
+    external: true
+
+volumes:
+  vm-data:
+  loki-data:
+  grafana-data:
