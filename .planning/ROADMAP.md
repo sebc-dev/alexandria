@@ -52,12 +52,12 @@ Plans:
   3. Application logs visible in Grafana via Loki datasource
   4. Alerts fire when latency exceeds threshold or error rate spikes
   5. All services have health checks with `service_healthy` condition
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 16-01: Add VictoriaMetrics + Grafana to docker-compose with eval profile
-- [ ] 16-02: Add Loki + Alloy for log aggregation
-- [ ] 16-03: Create Grafana dashboards and alerts
+- [ ] 16-01-PLAN.md - Add VictoriaMetrics + Grafana to docker-compose with eval profile
+- [ ] 16-02-PLAN.md - Add Loki + Alloy for log aggregation
+- [ ] 16-03-PLAN.md - Create Grafana dashboards and alerts
 
 ### Phase 17: Golden Dataset & Retrieval Evaluation
 **Goal**: Golden dataset infrastructure and pure Java retrieval metrics enabling reproducible evaluation
