@@ -106,7 +106,7 @@ services:
     restart: unless-stopped
 
   alloy:
-    image: grafana/alloy:1.8.0
+    image: grafana/alloy:v1.8.0
     container_name: alexandria-alloy
     profiles: ["eval"]
     networks:
