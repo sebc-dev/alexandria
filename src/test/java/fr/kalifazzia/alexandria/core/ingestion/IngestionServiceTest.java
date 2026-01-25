@@ -9,6 +9,10 @@ import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
 import fr.kalifazzia.alexandria.core.port.MarkdownParserPort;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -70,6 +74,8 @@ class IngestionServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    private MeterRegistry meterRegistry;
+
     private IngestionService service;
 
     @TempDir
@@ -77,6 +83,7 @@ class IngestionServiceTest {
 
     @BeforeEach
     void setUp() {
+        meterRegistry = new SimpleMeterRegistry();
         service = new IngestionService(
                 markdownParser,
                 chunker,
@@ -85,7 +92,8 @@ class IngestionServiceTest {
                 chunkRepository,
                 graphRepository,
                 crossReferenceExtractor,
-                eventPublisher
+                eventPublisher,
+                meterRegistry
         );
         // Set self-reference for ingestDirectory to call ingestFile properly
         service.setSelf(service);
@@ -761,6 +769,85 @@ class IngestionServiceTest {
             ArgumentCaptor<DocumentIngestedEvent> eventCaptor = ArgumentCaptor.forClass(DocumentIngestedEvent.class);
             verify(eventPublisher).publishEvent(eventCaptor.capture());
             assertThat(eventCaptor.getValue().chunkOperations()).hasSize(6);
+        }
+
+        @Test
+        @DisplayName("should increment documents ingested counter on success")
+        void incrementsDocumentCounter() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nContent here");
+            UUID documentId = UUID.randomUUID();
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content here")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of());
+
+            // When
+            service.ingestFile(file);
+
+            // Then
+            Counter counter = meterRegistry.get("alexandria.documents.ingested").counter();
+            assertThat(counter.count()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("should record embedding timer for each chunk")
+        void recordsEmbeddingTimer() throws IOException {
+            // Given
+            Path file = createTempMarkdownFile("# Test\n\nContent here");
+            UUID documentId = UUID.randomUUID();
+            float[] embedding = new float[]{0.1f, 0.2f};
+
+            when(documentRepository.findByPath(anyString())).thenReturn(Optional.empty());
+            when(markdownParser.parse(anyString())).thenReturn(
+                    new ParsedDocument(DocumentMetadata.empty(), "Content here")
+            );
+            when(documentRepository.save(any())).thenReturn(
+                    new Document(documentId, file.toString(), null, null, List.of(),
+                            "hash", Map.of(), Instant.now(), Instant.now())
+            );
+            when(chunker.chunk(anyString())).thenReturn(List.of(
+                    new ChunkPair("Parent content", List.of("Child 1", "Child 2"), 0)
+            ));
+            when(embeddingGenerator.embed(anyString())).thenReturn(embedding);
+            when(chunkRepository.saveChunk(any(), any(), any(), anyString(), any(), anyInt()))
+                    .thenReturn(UUID.randomUUID());
+
+            // When
+            service.ingestFile(file);
+
+            // Then - 1 parent + 2 children = 3 embeddings timed
+            Timer timer = meterRegistry.get("alexandria.embedding.duration").timer();
+            assertThat(timer.count()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("should not increment counter when file unchanged")
+        void noCounterIncrementWhenUnchanged() throws IOException {
+            // Given
+            String content = "# Test\n\nContent here";
+            Path file = createTempMarkdownFile(content);
+            String filePath = file.toAbsolutePath().toString();
+
+            String contentHash = computeSha256(content);
+            Document existingDoc = new Document(
+                    UUID.randomUUID(), filePath, "Test", null, List.of(),
+                    contentHash, Map.of(), Instant.now(), Instant.now()
+            );
+            when(documentRepository.findByPath(filePath)).thenReturn(Optional.of(existingDoc));
+
+            // When
+            service.ingestFile(file);
+
+            // Then - counter should not be incremented
+            Counter counter = meterRegistry.get("alexandria.documents.ingested").counter();
+            assertThat(counter.count()).isEqualTo(0);
         }
     }
 
