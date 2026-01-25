@@ -49,6 +49,9 @@ cp .env.example .env
 ### 2. Start Services
 
 ```bash
+# Create external network for reverse proxy integration (required)
+docker network create caddy_network 2>/dev/null || true
+
 docker compose up -d
 
 # Wait for services to be healthy (~2 minutes for ONNX model loading)
