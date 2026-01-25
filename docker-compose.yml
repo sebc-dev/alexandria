@@ -87,6 +87,33 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: alexandria-grafana
+    profiles: ["eval"]
+    networks:
+      - internal
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
 networks:
   internal:
     # Internal network for postgres <-> app communication
@@ -95,3 +122,4 @@ networks:
 
 volumes:
   vm-data:
+  grafana-data:
