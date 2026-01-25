@@ -68,12 +68,12 @@ Plans:
   2. Running evaluation command outputs Precision@5, Precision@10, Recall@10, Recall@20, MRR, NDCG@10
   3. Results are segmented by question type (factual, multi-hop, graph_traversal)
   4. Evaluation report shows breakdown by category with pass/fail indication
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 17-01: Golden dataset JSONL schema and loader
-- [ ] 17-02: Pure Java retrieval metrics (Precision@k, Recall@k, MRR, NDCG)
-- [ ] 17-03: EvaluationService and CLI command with segmented reporting
+- [ ] 17-01-PLAN.md - Golden dataset JSONL schema and loader
+- [ ] 17-02-PLAN.md - Pure Java retrieval metrics (Precision@k, Recall@k, MRR, NDCG)
+- [ ] 17-03-PLAN.md - EvaluationService and CLI command with segmented reporting
 
 ### Phase 18: Embedding & Vector Index Evaluation
 **Goal**: Embedding quality and pgvector HNSW performance benchmarking
@@ -141,7 +141,7 @@ Phases execute in numeric order: 15 -> 16 -> 17 -> 18 -> 19 -> 20
 |-------|-----------|----------------|--------|-----------|
 | 15. Metrics Foundation | v0.4 | 1/1 | Complete | 2026-01-24 |
 | 16. Monitoring Stack | v0.4 | 3/3 | Complete | 2026-01-25 |
-| 17. Golden Dataset & Retrieval | v0.4 | 0/3 | Not started | - |
+| 17. Golden Dataset & Retrieval | v0.4 | 0/3 | Planned | - |
 | 18. Embedding & Vector Index | v0.4 | 0/4 | Not started | - |
 | 19. Graph Validation | v0.4 | 0/3 | Not started | - |
 | 20. LLM-as-Judge | v0.4 | 0/4 | Not started | - |
