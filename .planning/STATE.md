@@ -10,14 +10,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Phase: 16 of 20 (Monitoring Stack)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-25 - Completed 16-01-PLAN.md
+Last activity: 2026-01-25 - Completed 16-02-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
 Progress: v0.3 [################] 100% SHIPPED
-Progress: v0.4 [##--------------] 11% (2/18 plans)
+Progress: v0.4 [###-------------] 17% (3/18 plans)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Progress: v0.4 [##--------------] 11% (2/18 plans)
 | 08-10 (v0.2) | 6 | 19 min | 3.2 min |
 | 11-14 (v0.3) | 5 | 15 min | 3.0 min |
 | 15 (v0.4) | 1/1 | 5 min | 5.0 min |
-| 16 (v0.4) | 1/3 | 1 min | 1.0 min |
+| 16 (v0.4) | 2/3 | 2.5 min | 1.3 min |
 | 17-20 (v0.4) | 0/14 | - | - |
 
 ## Accumulated Context
@@ -52,6 +52,8 @@ v0.1, v0.2, and v0.3 decisions all marked as outcomes (all Good).
 | 16-01 | Eval profile isolates monitoring from normal stack | Only needed during evaluation runs |
 | 16-01 | VictoriaMetrics over full Prometheus | Simpler single-binary deployment |
 | 16-01 | Grafana depends_on with service_healthy | Proper startup ordering |
+| 16-02 | Loki 3.4.0 for reliable health check compatibility | Newer versions have health check issues |
+| 16-02 | Alloy with Docker socket mount | Container log discovery via discovery.docker |
 
 ### Pending Todos
 
@@ -68,10 +70,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-25T13:34:53Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-01-25T13:37:23Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-plan 16 02` to execute Grafana dashboard provisioning.
+Run `/gsd:execute-plan 16 03` to execute the UAT and Grafana dashboard plan.
