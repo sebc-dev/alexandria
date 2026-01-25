@@ -80,11 +80,11 @@ services:
       - "-retentionPeriod=30d"
       - "-promscrape.config=/etc/vm/scrape.yaml"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8428/health"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8428/health"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     restart: unless-stopped
 
   loki:
