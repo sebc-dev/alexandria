@@ -5,12 +5,12 @@ services:
   postgres:
     build: .
     container_name: rag-postgres
-    ports:
-      - "5432:5432"
+    networks:
+      - internal
     environment:
-      POSTGRES_USER: alexandria
-      POSTGRES_PASSWORD: alexandria
-      POSTGRES_DB: alexandria
+      POSTGRES_USER: ${DB_USER:-alexandria}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-alexandria}
+      POSTGRES_DB: ${DB_NAME:-alexandria}
     volumes:
       # Data persistence
       - ./data:/var/lib/postgresql/data
@@ -22,7 +22,7 @@ services:
     # Must be >= maintenance_work_mem in postgresql.conf (2GB + margin)
     shm_size: 3g
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U alexandria -d alexandria"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-alexandria} -d ${DB_NAME:-alexandria}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,19 +34,20 @@ services:
       context: .
       dockerfile: Dockerfile.app
     container_name: alexandria-app
-    ports:
-      - "8080:8080"
+    networks:
+      - internal
+      - caddy-net
     environment:
       # Spring profiles for HTTP/SSE transport
       SPRING_PROFILES_ACTIVE: http,docker
       # Database connection (uses service name as hostname)
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: alexandria
-      DB_USER: alexandria
-      DB_PASSWORD: alexandria
+      DB_NAME: ${DB_NAME:-alexandria}
+      DB_USER: ${DB_USER:-alexandria}
+      DB_PASSWORD: ${DB_PASSWORD:-alexandria}
       # Logging level (optional override)
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       # Documentation directory (read-only mount)
       - ${DOCS_PATH:-./docs}:/docs:ro
@@ -64,3 +65,33 @@ services:
     restart: unless-stopped
     # Memory limit (ONNX model needs ~500MB, app needs ~500MB, buffer for GC)
     mem_limit: ${MEM_LIMIT:-2g}
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.114.0
+    container_name: alexandria-vm
+    profiles: ["eval"]
+    networks:
+      - internal
+    volumes:
+      - vm-data:/victoria-metrics-data
+      - ./monitoring/victoriametrics/scrape.yaml:/etc/vm/scrape.yaml:ro
+    command:
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-retentionPeriod=30d"
+      - "-promscrape.config=/etc/vm/scrape.yaml"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  internal:
+    # Internal network for postgres <-> app communication
+  caddy-net:
+    external: true
+
+volumes:
+  vm-data:
