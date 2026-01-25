@@ -5,19 +5,19 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** v0.4 RAG Evaluation Toolkit - Phase 16 Monitoring Stack
+**Current focus:** v0.4 RAG Evaluation Toolkit - Phase 16 Complete, ready for Phase 17
 
 ## Current Position
 
 Phase: 16 of 20 (Monitoring Stack)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-25 - Completed 16-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-25 - Completed 16-03-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
 Progress: v0.3 [################] 100% SHIPPED
-Progress: v0.4 [###-------------] 17% (3/18 plans)
+Progress: v0.4 [####------------] 22% (4/18 plans)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Progress: v0.4 [###-------------] 17% (3/18 plans)
 | 08-10 (v0.2) | 6 | 19 min | 3.2 min |
 | 11-14 (v0.3) | 5 | 15 min | 3.0 min |
 | 15 (v0.4) | 1/1 | 5 min | 5.0 min |
-| 16 (v0.4) | 2/3 | 2.5 min | 1.3 min |
+| 16 (v0.4) | 3/3 | 4.5 min | 1.5 min |
 | 17-20 (v0.4) | 0/14 | - | - |
 
 ## Accumulated Context
@@ -54,6 +54,8 @@ v0.1, v0.2, and v0.3 decisions all marked as outcomes (all Good).
 | 16-01 | Grafana depends_on with service_healthy | Proper startup ordering |
 | 16-02 | Loki 3.4.0 for reliable health check compatibility | Newer versions have health check issues |
 | 16-02 | Alloy with Docker socket mount | Container log discovery via discovery.docker |
+| 16-03 | Dashboard UID 'alexandria-rag' for stable references | Allows consistent linking and updates |
+| 16-03 | Alert thresholds: 2s P95 latency, 0.1 req/s errors | Conservative defaults, configurable later |
 
 ### Pending Todos
 
@@ -70,10 +72,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-25T13:37:23Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-01-25T19:36:33Z
+Stopped at: Completed 16-03-PLAN.md (Phase 16 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-plan 16 03` to execute the UAT and Grafana dashboard plan.
+Run `/gsd:plan-phase 17` to plan the Evaluation Dataset phase.
