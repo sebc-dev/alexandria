@@ -1,0 +1,3 @@
+{"query": "How to configure Spring Boot?", "expected_doc_ids": ["550e8400-e29b-41d4-a716-446655440001"], "requires_kg": false, "reasoning_hops": 0, "question_type": "factual"}
+{"query": "What libraries does the auth module depend on?", "expected_doc_ids": ["550e8400-e29b-41d4-a716-446655440002", "550e8400-e29b-41d4-a716-446655440003"], "requires_kg": false, "reasoning_hops": 1, "question_type": "multi_hop"}
+{"query": "Which documents reference the architecture guide?", "expected_doc_ids": ["550e8400-e29b-41d4-a716-446655440004"], "requires_kg": true, "reasoning_hops": 2, "question_type": "graph_traversal"}

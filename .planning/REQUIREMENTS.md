@@ -9,13 +9,13 @@ Requirements for RAG evaluation toolkit. Each maps to roadmap phases.
 
 ### Retrieval Evaluation
 
-- [ ] **RETR-01**: Precision@k calcule pour k=5 et k=10 sur golden dataset
-- [ ] **RETR-02**: Recall@k calcule pour k=10 et k=20 sur golden dataset
-- [ ] **RETR-03**: Mean Reciprocal Rank (MRR) calcule sur golden dataset
-- [ ] **RETR-04**: NDCG@k calcule pour evaluation ranking qualite
-- [ ] **RETR-05**: Format golden dataset JSON avec champs requires_kg, reasoning_hops, question type
-- [ ] **RETR-06**: Evaluation segmentee par type de question (factual, multi-hop, graph_traversal)
-- [ ] **RETR-07**: Rapport d'evaluation avec breakdown par categorie
+- [x] **RETR-01**: Precision@k calcule pour k=5 et k=10 sur golden dataset
+- [x] **RETR-02**: Recall@k calcule pour k=10 et k=20 sur golden dataset
+- [x] **RETR-03**: Mean Reciprocal Rank (MRR) calcule sur golden dataset
+- [x] **RETR-04**: NDCG@k calcule pour evaluation ranking qualite
+- [x] **RETR-05**: Format golden dataset JSON avec champs requires_kg, reasoning_hops, question type
+- [x] **RETR-06**: Evaluation segmentee par type de question (factual, multi-hop, graph_traversal)
+- [x] **RETR-07**: Rapport d'evaluation avec breakdown par categorie
 
 ### Embeddings Evaluation
 
@@ -102,13 +102,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | MON-05 | Phase 16 | Complete |
 | INFRA-01 | Phase 16 | Complete |
 | INFRA-04 | Phase 16 | Complete |
-| RETR-01 | Phase 17 | Pending |
-| RETR-02 | Phase 17 | Pending |
-| RETR-03 | Phase 17 | Pending |
-| RETR-04 | Phase 17 | Pending |
-| RETR-05 | Phase 17 | Pending |
-| RETR-06 | Phase 17 | Pending |
-| RETR-07 | Phase 17 | Pending |
+| RETR-01 | Phase 17 | Complete |
+| RETR-02 | Phase 17 | Complete |
+| RETR-03 | Phase 17 | Complete |
+| RETR-04 | Phase 17 | Complete |
+| RETR-05 | Phase 17 | Complete |
+| RETR-06 | Phase 17 | Complete |
+| RETR-07 | Phase 17 | Complete |
 | EMB-01 | Phase 18 | Pending |
 | EMB-02 | Phase 18 | Pending |
 | EMB-03 | Phase 18 | Pending |
@@ -139,4 +139,4 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after roadmap creation*
+*Last updated: 2026-01-26 after Phase 17 completion*

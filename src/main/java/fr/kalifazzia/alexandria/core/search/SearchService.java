@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Converts text queries to embeddings, then searches by similarity.
  */
 @Service
-public class SearchService {
+public class SearchService implements SearchPort {
 
     private static final Logger log = LoggerFactory.getLogger(SearchService.class);
 
@@ -111,6 +111,7 @@ public class SearchService {
      * @param maxResults Maximum number of results
      * @return List of search results
      */
+    @Override
     public List<SearchResult> hybridSearch(String query, int maxResults) {
         return hybridSearch(query, HybridSearchFilters.defaults(maxResults));
     }
