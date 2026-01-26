@@ -98,14 +98,13 @@ public class EvaluationCommands {
 
         // Overall metrics
         sb.append("Overall Metrics:\n");
-        sb.append(String.format("  Precision@5:  %.3f  %s\n",
-                overall.precisionAt5(), passIndicator(overall.precisionAt5() >= 0.5)));
+        sb.append(String.format("  Precision@5:  %.3f\n", overall.precisionAt5()));
         sb.append(String.format("  Precision@10: %.3f\n", overall.precisionAt10()));
         sb.append(String.format("  Recall@10:    %.3f\n", overall.recallAt10()));
         sb.append(String.format("  Recall@20:    %.3f\n", overall.recallAt20()));
         sb.append(String.format("  MRR:          %.3f\n", overall.mrr()));
-        sb.append(String.format("  NDCG@10:      %.3f  %s\n",
-                overall.ndcgAt10(), passIndicator(overall.ndcgAt10() >= 0.5)));
+        sb.append(String.format("  NDCG@10:      %.3f\n", overall.ndcgAt10()));
+        sb.append(String.format("\nStatus: %s\n", passIndicator(overall.passed())));
 
         // By question type
         if (!report.byQuestionType().isEmpty()) {
