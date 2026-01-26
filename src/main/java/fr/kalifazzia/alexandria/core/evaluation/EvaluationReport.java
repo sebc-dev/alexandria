@@ -3,6 +3,7 @@ package fr.kalifazzia.alexandria.core.evaluation;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Complete evaluation report with overall metrics and breakdown by question type.
@@ -28,9 +29,11 @@ public record EvaluationReport(
 ) {
 
     /**
-     * Compact constructor with defensive copies for collections.
+     * Compact constructor with null checks and defensive copies for collections.
      */
     public EvaluationReport {
+        overall = Objects.requireNonNull(overall, "overall metrics cannot be null");
+        evaluatedAt = Objects.requireNonNull(evaluatedAt, "evaluatedAt timestamp cannot be null");
         byQuestionType = byQuestionType != null
                 ? Map.copyOf(byQuestionType)
                 : Map.of();

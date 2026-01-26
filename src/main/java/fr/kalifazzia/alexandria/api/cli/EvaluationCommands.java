@@ -58,6 +58,12 @@ public class EvaluationCommands {
         if (!Files.exists(path)) {
             throw new IllegalArgumentException("Dataset file does not exist: " + path);
         }
+        if (!Files.isRegularFile(path)) {
+            throw new IllegalArgumentException("Dataset path is not a regular file: " + path);
+        }
+        if (!Files.isReadable(path)) {
+            throw new IllegalArgumentException("Dataset file is not readable: " + path);
+        }
 
         EvaluationReport report = evaluationService.evaluate(path);
 

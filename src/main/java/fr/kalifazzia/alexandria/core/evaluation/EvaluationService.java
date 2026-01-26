@@ -44,8 +44,13 @@ public class EvaluationService {
      * Sets the Precision@5 threshold for passing evaluation.
      *
      * @param threshold minimum Precision@5 value (0.0-1.0)
+     * @throws IllegalArgumentException if threshold is not in range [0.0, 1.0]
      */
     public void setPrecisionAt5Threshold(double threshold) {
+        if (threshold < 0.0 || threshold > 1.0) {
+            throw new IllegalArgumentException(
+                    "Precision@5 threshold must be between 0.0 and 1.0, got: " + threshold);
+        }
         this.precisionAt5Threshold = threshold;
     }
 
@@ -53,8 +58,13 @@ public class EvaluationService {
      * Sets the NDCG@10 threshold for passing evaluation.
      *
      * @param threshold minimum NDCG@10 value (0.0-1.0)
+     * @throws IllegalArgumentException if threshold is not in range [0.0, 1.0]
      */
     public void setNdcgAt10Threshold(double threshold) {
+        if (threshold < 0.0 || threshold > 1.0) {
+            throw new IllegalArgumentException(
+                    "NDCG@10 threshold must be between 0.0 and 1.0, got: " + threshold);
+        }
         this.ndcgAt10Threshold = threshold;
     }
 
