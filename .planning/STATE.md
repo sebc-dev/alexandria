@@ -10,14 +10,14 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Phase: 17 of 20 (Golden Dataset & Retrieval Evaluation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-26 - Completed 17-01-PLAN.md
+Last activity: 2026-01-26 - Completed 17-02-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
 Progress: v0.3 [################] 100% SHIPPED
-Progress: v0.4 [#####-----------] 28% (5/18 plans)
+Progress: v0.4 [######----------] 33% (6/18 plans)
 
 ## Performance Metrics
 
@@ -35,7 +35,7 @@ Progress: v0.4 [#####-----------] 28% (5/18 plans)
 | 11-14 (v0.3) | 5 | 15 min | 3.0 min |
 | 15 (v0.4) | 1/1 | 5 min | 5.0 min |
 | 16 (v0.4) | 3/3 | 4.5 min | 1.5 min |
-| 17 (v0.4) | 1/3 | 3 min | 3.0 min |
+| 17 (v0.4) | 2/3 | 5.5 min | 2.8 min |
 | 18-20 (v0.4) | 0/11 | - | - |
 
 ## Accumulated Context
@@ -59,6 +59,9 @@ v0.1, v0.2, and v0.3 decisions all marked as outcomes (all Good).
 | 16-03 | Alert thresholds: 2s P95 latency, 0.1 req/s errors | Conservative defaults, configurable later |
 | 17-01 | JSONL format for golden dataset | Streaming line-by-line, handles nested arrays cleanly |
 | 17-01 | Record compact constructor validation | Ensures domain model invariants |
+| 17-02 | Pure Java metrics implementation | No external libraries needed for simple formulas |
+| 17-02 | Precision@k divides by k (not retrieved size) | Standard IR definition |
+| 17-02 | All edge cases return 0.0 | Avoid NaN/exceptions for empty inputs |
 
 ### Pending Todos
 
@@ -75,10 +78,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-26T14:36:22Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-01-26T14:36:44Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-phase` with 17-02-PLAN.md to create RetrievalEvaluator service.
+Run `/gsd:execute-phase` with 17-03-PLAN.md to implement GoldenDatasetLoader, EvaluationService, and CLI evaluate command.
