@@ -9,6 +9,7 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.stereotype.Component;
 
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneId;
@@ -83,7 +84,7 @@ public class EvaluationCommands {
         try {
             return objectMapper.writeValueAsString(report);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize report to JSON", e);
+            throw new UncheckedIOException("Failed to serialize report to JSON", e);
         }
     }
 
