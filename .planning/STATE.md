@@ -5,19 +5,19 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Claude Code peut acceder a ma documentation technique personnelle pendant l'implementation pour respecter mes conventions et bonnes pratiques.
-**Current focus:** v0.4 RAG Evaluation Toolkit - Phase 17 Golden Dataset in progress
+**Current focus:** v0.4 RAG Evaluation Toolkit - Phase 17 complete, ready for Phase 18
 
 ## Current Position
 
 Phase: 17 of 20 (Golden Dataset & Retrieval Evaluation)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-26 - Completed 17-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-26 - Completed 17-03-PLAN.md
 
 Progress: v0.1 [################] 100% SHIPPED
 Progress: v0.2 [################] 100% SHIPPED
 Progress: v0.3 [################] 100% SHIPPED
-Progress: v0.4 [######----------] 33% (6/18 plans)
+Progress: v0.4 [#######---------] 39% (7/18 plans)
 
 ## Performance Metrics
 
@@ -35,7 +35,7 @@ Progress: v0.4 [######----------] 33% (6/18 plans)
 | 11-14 (v0.3) | 5 | 15 min | 3.0 min |
 | 15 (v0.4) | 1/1 | 5 min | 5.0 min |
 | 16 (v0.4) | 3/3 | 4.5 min | 1.5 min |
-| 17 (v0.4) | 2/3 | 5.5 min | 2.8 min |
+| 17 (v0.4) | 3/3 | 9.8 min | 3.3 min |
 | 18-20 (v0.4) | 0/11 | - | - |
 
 ## Accumulated Context
@@ -62,6 +62,9 @@ v0.1, v0.2, and v0.3 decisions all marked as outcomes (all Good).
 | 17-02 | Pure Java metrics implementation | No external libraries needed for simple formulas |
 | 17-02 | Precision@k divides by k (not retrieved size) | Standard IR definition |
 | 17-02 | All edge cases return 0.0 | Avoid NaN/exceptions for empty inputs |
+| 17-03 | SearchPort interface for testability | Mockito cannot mock concrete classes on Java 25 |
+| 17-03 | Document deduplication in evaluation | Multiple chunks from same doc counted once |
+| 17-03 | Pass thresholds P@5>=0.5, NDCG@10>=0.5 | Conservative defaults, configurable |
 
 ### Pending Todos
 
@@ -78,10 +81,15 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-26T14:36:44Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-01-26T14:43:02Z
+Stopped at: Completed 17-03-PLAN.md (Phase 17 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-phase` with 17-03-PLAN.md to implement GoldenDatasetLoader, EvaluationService, and CLI evaluate command.
+Phase 17 (Golden Dataset & Retrieval Evaluation) complete. All 3 plans executed:
+- 17-01: Golden dataset schema and JSONL loader
+- 17-02: Retrieval metrics (P@k, R@k, MRR, NDCG@k)
+- 17-03: EvaluationService and CLI evaluate command
+
+Ready for Phase 18 (A/B Testing Framework) or golden dataset creation for actual evaluation runs.
