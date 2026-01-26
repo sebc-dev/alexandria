@@ -3,6 +3,7 @@ package fr.kalifazzia.alexandria.core.search;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
+import fr.kalifazzia.alexandria.core.port.SearchPort;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * Converts text queries to embeddings, then searches by similarity.
  */
 @Service
-public class SearchService {
+public class SearchService implements SearchPort {
 
     private static final Logger log = LoggerFactory.getLogger(SearchService.class);
 
@@ -111,6 +112,7 @@ public class SearchService {
      * @param maxResults Maximum number of results
      * @return List of search results
      */
+    @Override
     public List<SearchResult> hybridSearch(String query, int maxResults) {
         return hybridSearch(query, HybridSearchFilters.defaults(maxResults));
     }
