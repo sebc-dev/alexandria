@@ -3,7 +3,6 @@ package fr.kalifazzia.alexandria.core.search;
 import fr.kalifazzia.alexandria.core.port.DocumentRepository;
 import fr.kalifazzia.alexandria.core.port.EmbeddingGenerator;
 import fr.kalifazzia.alexandria.core.port.GraphRepository;
-import fr.kalifazzia.alexandria.core.port.SearchPort;
 import fr.kalifazzia.alexandria.core.port.SearchRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;

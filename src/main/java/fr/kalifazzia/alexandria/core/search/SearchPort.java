@@ -1,15 +1,13 @@
-package fr.kalifazzia.alexandria.core.port;
-
-import fr.kalifazzia.alexandria.core.search.SearchResult;
+package fr.kalifazzia.alexandria.core.search;
 
 import java.util.List;
 
 /**
- * Port interface for search operations.
+ * Internal interface for search operations used within core services.
  *
- * <p>Abstracts the search capability for use in evaluation and other
- * services that need to execute searches without coupling to
- * the concrete SearchService implementation.
+ * <p>This interface exists for testability (Mockito on Java 25 cannot mock
+ * concrete classes). Unlike infrastructure ports in {@code core/port/},
+ * this is an internal abstraction within the search domain.
  */
 public interface SearchPort {
 

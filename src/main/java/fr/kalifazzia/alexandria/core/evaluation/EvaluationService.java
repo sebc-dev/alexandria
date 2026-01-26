@@ -1,7 +1,7 @@
 package fr.kalifazzia.alexandria.core.evaluation;
 
 import fr.kalifazzia.alexandria.core.port.GoldenDatasetLoader;
-import fr.kalifazzia.alexandria.core.port.SearchPort;
+import fr.kalifazzia.alexandria.core.search.SearchPort;
 import fr.kalifazzia.alexandria.core.search.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

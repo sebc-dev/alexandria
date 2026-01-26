@@ -1,7 +1,7 @@
 package fr.kalifazzia.alexandria.core.evaluation;
 
 import fr.kalifazzia.alexandria.core.port.GoldenDatasetLoader;
-import fr.kalifazzia.alexandria.core.port.SearchPort;
+import fr.kalifazzia.alexandria.core.search.SearchPort;
 import fr.kalifazzia.alexandria.core.search.SearchResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
