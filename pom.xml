@@ -27,7 +27,7 @@
         <spring-ai.version>1.0.0</spring-ai.version>
         <sonar.organization>sebc-dev</sonar.organization>
         <!-- Empty default allows tests to run without JaCoCo -->
-        <argLine></argLine>
+        <argLine/>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
-            <version>0.22.0</version>
+            <version>0.27.0</version>
         </dependency>
         <dependency>
             <groupId>org.commonmark</groupId>
