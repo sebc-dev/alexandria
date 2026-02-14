@@ -37,6 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CHUNK-04**: System generates embeddings via ONNX in-process (bge-small-en-v1.5-q, 384 dimensions)
 - [ ] **CHUNK-05**: System extracts code examples as separate chunks tagged with language and content_type="code"
 - [ ] **CHUNK-06**: User can tag each source with a version label (e.g., "React 19", "Spring Boot 3.5")
+- [ ] **CHUNK-07**: User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) instead of relying on built-in automatic chunking
 
 ### Search & Retrieval
 
@@ -99,53 +100,54 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRC-01 | — | Pending |
-| SRC-02 | — | Pending |
-| SRC-03 | — | Pending |
-| SRC-04 | — | Pending |
-| SRC-05 | — | Pending |
-| CRWL-01 | — | Pending |
-| CRWL-02 | — | Pending |
-| CRWL-03 | — | Pending |
-| CRWL-04 | — | Pending |
-| CRWL-05 | — | Pending |
-| CRWL-06 | — | Pending |
-| CRWL-07 | — | Pending |
-| CRWL-08 | — | Pending |
-| CRWL-09 | — | Pending |
-| CRWL-10 | — | Pending |
-| CRWL-11 | — | Pending |
-| CHUNK-01 | — | Pending |
-| CHUNK-02 | — | Pending |
-| CHUNK-03 | — | Pending |
-| CHUNK-04 | — | Pending |
-| CHUNK-05 | — | Pending |
-| CHUNK-06 | — | Pending |
-| SRCH-01 | — | Pending |
-| SRCH-02 | — | Pending |
-| SRCH-03 | — | Pending |
-| SRCH-04 | — | Pending |
-| SRCH-05 | — | Pending |
-| SRCH-06 | — | Pending |
-| SRCH-07 | — | Pending |
-| SRCH-08 | — | Pending |
-| SRCH-09 | — | Pending |
-| SRCH-10 | — | Pending |
-| MCP-01 | — | Pending |
-| MCP-02 | — | Pending |
-| MCP-03 | — | Pending |
-| MCP-04 | — | Pending |
-| MCP-05 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
+| SRC-01 | Phase 6 | Pending |
+| SRC-02 | Phase 6 | Pending |
+| SRC-03 | Phase 6 | Pending |
+| SRC-04 | Phase 6 | Pending |
+| SRC-05 | Phase 6 | Pending |
+| CRWL-01 | Phase 3 | Pending |
+| CRWL-02 | Phase 3 | Pending |
+| CRWL-03 | Phase 7 | Pending |
+| CRWL-04 | Phase 3 | Pending |
+| CRWL-05 | Phase 3 | Pending |
+| CRWL-06 | Phase 7 | Pending |
+| CRWL-07 | Phase 7 | Pending |
+| CRWL-08 | Phase 3 | Pending |
+| CRWL-09 | Phase 7 | Pending |
+| CRWL-10 | Phase 7 | Pending |
+| CRWL-11 | Phase 7 | Pending |
+| CHUNK-01 | Phase 4 | Pending |
+| CHUNK-02 | Phase 4 | Pending |
+| CHUNK-03 | Phase 4 | Pending |
+| CHUNK-04 | Phase 1 | Pending |
+| CHUNK-05 | Phase 4 | Pending |
+| CHUNK-06 | Phase 8 | Pending |
+| CHUNK-07 | Phase 4 | Pending |
+| SRCH-01 | Phase 2 | Pending |
+| SRCH-02 | Phase 2 | Pending |
+| SRCH-03 | Phase 2 | Pending |
+| SRCH-04 | Phase 8 | Pending |
+| SRCH-05 | Phase 2 | Pending |
+| SRCH-06 | Phase 2 | Pending |
+| SRCH-07 | Phase 8 | Pending |
+| SRCH-08 | Phase 8 | Pending |
+| SRCH-09 | Phase 8 | Pending |
+| SRCH-10 | Phase 8 | Pending |
+| MCP-01 | Phase 5 | Pending |
+| MCP-02 | Phase 5 | Pending |
+| MCP-03 | Phase 5 | Pending |
+| MCP-04 | Phase 5 | Pending |
+| MCP-05 | Phase 5 | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 5 | Pending |
+| INFRA-04 | Phase 1 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39
+- v1 requirements: 40 total
+- Mapped to phases: 40
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-14*
-*Last updated: 2026-02-14 after initial definition*
+*Last updated: 2026-02-14 after roadmap creation*
