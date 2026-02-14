@@ -12,6 +12,7 @@ Alexandria delivers a self-hosted RAG system that crawls, indexes, and exposes t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
+- [ ] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
 - [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
 - [ ] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [ ] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
@@ -23,9 +24,26 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ## Phase Details
 
+### Phase 0: CI & Quality Gate
+**Goal**: A CI pipeline running locally and on GitHub that enforces quality gates -- unit tests, integration tests, mutation testing, dead code detection, and architecture tests -- so every subsequent phase is built with automated quality assurance from the start
+**Depends on**: Nothing (first phase)
+**Requirements**: None (cross-cutting concern)
+**Success Criteria** (what must be TRUE):
+  1. `./gradlew check` (or equivalent) runs all quality gates locally: unit tests, integration tests, mutation tests, dead code detection, and architecture tests
+  2. GitHub Actions workflow runs the same quality gates on every push and PR, blocking merge on failure
+  3. Mutation testing (via PIT or equivalent) runs on the codebase and reports a mutation coverage score
+  4. Dead code detection (via detekt/UnusedDeclarations or equivalent) flags unused code as build warnings or errors
+  5. Architecture tests (via ArchUnit) enforce package dependency rules and architectural constraints
+  6. CI pipeline completes in under 5 minutes for an empty/skeleton project
+**Plans:** 2 plans
+
+Plans:
+- [ ] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
+- [ ] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
+
 ### Phase 1: Foundation & Infrastructure
 **Goal**: A running Docker Compose stack with PostgreSQL+pgvector, Spring Boot application, and in-process ONNX embedding generation -- the base layer everything else builds on
-**Depends on**: Nothing (first phase)
+**Depends on**: Phase 0
 **Requirements**: INFRA-01, INFRA-02, INFRA-04, CHUNK-04
 **Success Criteria** (what must be TRUE):
   1. `docker compose up` starts all services (Java app, PostgreSQL+pgvector) and they reach healthy status without manual intervention
@@ -157,11 +175,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
+Phases execute in numeric order: 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
+| 0. CI & Quality Gate | 0/2 | Planned | - |
 | 1. Foundation & Infrastructure | 0/TBD | Not started | - |
 | 2. Core Search | 0/TBD | Not started | - |
 | 3. Web Crawling | 0/TBD | Not started | - |
