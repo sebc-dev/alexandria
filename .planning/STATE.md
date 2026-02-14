@@ -9,30 +9,30 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 1 of 9 (Foundation & Infrastructure)
-Plan: 1 of 2 in current phase (01-01 complete)
-Status: Plan 01-01 complete, ready for Plan 01-02
-Last activity: 2026-02-14 -- Completed 01-01-PLAN.md (project skeleton, dependencies, Docker Compose)
+Phase: 1 of 9 (Foundation & Infrastructure) -- COMPLETE
+Plan: 2 of 2 in current phase (01-01, 01-02 complete)
+Status: Phase 01 complete, ready for Phase 02
+Last activity: 2026-02-14 -- Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
 
-Progress: [██░░░░░░░░] 15%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 4.7min
-- Total execution time: 0.23 hours
+- Total plans completed: 4
+- Average duration: 4.5min
+- Total execution time: 0.30 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
-| 01-foundation-infrastructure | 1 | 3min | 3min |
+| 01-foundation-infrastructure | 2 | 7min | 3.5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 4min, 3min
-- Trend: improving
+- Last 5 plans: 7min, 4min, 3min, 4min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -61,6 +61,10 @@ Recent decisions affecting current work:
 - [01-01]: Spring AI BOM 1.0.3 manages spring-ai-starter-mcp-server-webmvc version
 - [01-01]: App service internal-only in Docker Compose (no host port exposure)
 - [01-01]: JVM MaxRAMPercentage=75 for container-aware sizing instead of fixed Xmx
+- [01-02]: PgVectorEmbeddingStore.datasourceBuilder() shares HikariCP pool with JPA (no duplicate connections)
+- [01-02]: ddl-auto=none because Hibernate cannot validate vector(384) column type -- Flyway is source of truth
+- [01-02]: Deleted AlexandriaApplicationTest (SmokeIntegrationTest covers context loading with real DB)
+- [01-02]: HNSW index with vector_cosine_ops and m=16, ef_construction=64 for cosine similarity search
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 01-01-PLAN.md (project skeleton, dependencies, Docker Compose)
+Stopped at: Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
 Resume file: None
-Next: 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
+Next: Phase 02 planning (Core Search or Web Crawling -- parallel eligible)
