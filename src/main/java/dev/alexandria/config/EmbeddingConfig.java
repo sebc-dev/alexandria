@@ -24,8 +24,8 @@ public class EmbeddingConfig {
                 .datasource(dataSource)
                 .table("document_chunks")
                 .dimension(384)
-                .createTable(false)
-                .useIndex(false)
+                .createTable(false)  // Schema managed by Flyway migrations
+                .useIndex(false)    // HNSW index managed by Flyway V5
                 .build();
     }
 }

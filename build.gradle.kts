@@ -18,14 +18,16 @@ repositories {
     mavenCentral()
 }
 
+val langchain4jVersion = "1.11.0"
+val langchain4jBetaVersion = "1.11.0-beta19" // satellite modules only ship as beta
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("dev.langchain4j:langchain4j:1.11.0")
-    implementation("dev.langchain4j:langchain4j-spring-boot-starter:1.11.0-beta19")
-    implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:1.11.0-beta19")
-    implementation("dev.langchain4j:langchain4j-pgvector:1.11.0-beta19")
+    implementation("dev.langchain4j:langchain4j:$langchain4jVersion")
+    implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:$langchain4jBetaVersion")
+    implementation("dev.langchain4j:langchain4j-pgvector:$langchain4jBetaVersion")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
@@ -53,9 +55,9 @@ testing {
                 implementation("org.springframework.boot:spring-boot-testcontainers")
                 implementation("org.testcontainers:postgresql")
                 implementation("org.testcontainers:junit-jupiter")
-                implementation("dev.langchain4j:langchain4j:1.11.0")
-                implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:1.11.0-beta19")
-                implementation("dev.langchain4j:langchain4j-pgvector:1.11.0-beta19")
+                implementation("dev.langchain4j:langchain4j:$langchain4jVersion")
+                implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:$langchain4jBetaVersion")
+                implementation("dev.langchain4j:langchain4j-pgvector:$langchain4jBetaVersion")
             }
             targets {
                 all {
@@ -71,6 +73,9 @@ testing {
 tasks.named("check") {
     dependsOn(testing.suites.named("integrationTest"))
 }
+
+// Disable plain jar — only produce the Spring Boot fat jar
+tasks.named<Jar>("jar") { enabled = false }
 
 // ---------------------------------------------------------------------------
 // JaCoCo - Code Coverage

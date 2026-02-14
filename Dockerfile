@@ -24,7 +24,7 @@ LABEL description="Alexandria - RAG documentation search service"
 WORKDIR /app
 
 # Copy the fat JAR from builder
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/build/libs/alexandria-*.jar app.jar
 
 EXPOSE 8080
 

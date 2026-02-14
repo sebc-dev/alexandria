@@ -13,7 +13,3 @@ CREATE INDEX idx_document_chunks_text_fts
 -- Index for looking up chunks by source
 CREATE INDEX idx_document_chunks_source_id
     ON document_chunks (source_id);
-
--- Index for ingestion state lookups
-CREATE INDEX idx_ingestion_state_source_page
-    ON ingestion_state (source_id, page_url);

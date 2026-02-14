@@ -2,9 +2,13 @@ package dev.alexandria.source;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
@@ -23,8 +27,9 @@ public class Source {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status = "PENDING";
+    private SourceStatus status = SourceStatus.PENDING;
 
     @Column(name = "last_crawled_at")
     private Instant lastCrawledAt;
@@ -45,9 +50,18 @@ public class Source {
     public Source(String url, String name) {
         this.url = url;
         this.name = name;
-        this.status = "PENDING";
+        this.status = SourceStatus.PENDING;
         this.chunkCount = 0;
+    }
+
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = Instant.now();
     }
 
@@ -63,13 +77,12 @@ public class Source {
         return name;
     }
 
-    public String getStatus() {
+    public SourceStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(SourceStatus status) {
         this.status = status;
-        this.updatedAt = Instant.now();
     }
 
     public Instant getLastCrawledAt() {
@@ -78,7 +91,6 @@ public class Source {
 
     public void setLastCrawledAt(Instant lastCrawledAt) {
         this.lastCrawledAt = lastCrawledAt;
-        this.updatedAt = Instant.now();
     }
 
     public int getChunkCount() {
@@ -87,7 +99,6 @@ public class Source {
 
     public void setChunkCount(int chunkCount) {
         this.chunkCount = chunkCount;
-        this.updatedAt = Instant.now();
     }
 
     public Instant getCreatedAt() {

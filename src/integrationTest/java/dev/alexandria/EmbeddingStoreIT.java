@@ -9,25 +9,10 @@ import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Testcontainers
-class EmbeddingStoreIT {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            DockerImageName.parse("pgvector/pgvector:pg16")
-                    .asCompatibleSubstituteFor("postgres")
-    );
+class EmbeddingStoreIT extends BaseIntegrationTest {
 
     @Autowired
     EmbeddingModel embeddingModel;
@@ -41,22 +26,18 @@ class EmbeddingStoreIT {
         Embedding embedding = response.content();
 
         assertThat(embedding.vector()).hasSize(384);
-        // Verify vector is not all zeros (model actually computed something)
         assertThat(embedding.vector()).isNotEqualTo(new float[384]);
     }
 
     @Test
     void embed_store_retrieve_roundtrip() {
-        // Generate embedding
         String text = "Spring Boot auto-configuration simplifies application setup";
         Embedding embedding = embeddingModel.embed(text).content();
         TextSegment segment = TextSegment.from(text);
 
-        // Store
         String id = embeddingStore.add(embedding, segment);
         assertThat(id).isNotNull().isNotBlank();
 
-        // Retrieve via search -- search for similar content
         EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
                 .queryEmbedding(embeddingModel.embed("Spring Boot configuration").content())
                 .maxResults(1)
@@ -67,14 +48,11 @@ class EmbeddingStoreIT {
         assertThat(results.matches()).hasSize(1);
         assertThat(results.matches().get(0).embedded().text())
                 .isEqualTo(text);
-        // Cosine similarity should be high for semantically similar queries
         assertThat(results.matches().get(0).score()).isGreaterThan(0.8);
     }
 
     @Test
-    void flyway_migrations_created_tables_and_indexes() {
-        // Verify Flyway ran successfully by checking that the app context loaded
-        // (Flyway runs on startup -- if migrations fail, context won't load)
+    void spring_context_loads_with_embedding_beans() {
         assertThat(embeddingModel).isNotNull();
         assertThat(embeddingStore).isNotNull();
     }
