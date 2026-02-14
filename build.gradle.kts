@@ -1,9 +1,10 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     java
-    id("org.springframework.boot") version "3.5.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("org.springframework.boot") version "4.0.2"
     jacoco
-    id("info.solidsoft.pitest") version "1.15.0"
+    id("info.solidsoft.pitest") version "1.19.0-rc.3"
     id("com.github.spotbugs") version "6.4.8"
     id("org.sonarqube") version "7.2.2.6593"
 }
@@ -19,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
     implementation("org.springframework.boot:spring-boot-starter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
@@ -32,11 +34,12 @@ testing {
         val integrationTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
             dependencies {
+                implementation(platform(SpringBootPlugin.BOM_COORDINATES))
                 implementation(project())
                 implementation("org.springframework.boot:spring-boot-starter-test")
                 implementation("org.springframework.boot:spring-boot-testcontainers")
-                implementation("org.testcontainers:postgresql")
-                implementation("org.testcontainers:junit-jupiter")
+                implementation("org.testcontainers:testcontainers-postgresql:2.0.3")
+                implementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
             }
             targets {
                 all {
@@ -73,7 +76,7 @@ tasks.jacocoTestReport {
 // PIT - Mutation Testing
 // ---------------------------------------------------------------------------
 pitest {
-    pitestVersion.set("1.19.1")
+    pitestVersion.set("1.21.0")
     junit5PluginVersion.set("1.2.3")
     val pitTargetClasses = providers.gradleProperty("pitest.targetClasses")
     targetClasses.set(
