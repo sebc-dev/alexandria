@@ -3,17 +3,21 @@ FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
-# Copy Gradle wrapper and build files first for layer caching
+# Copy Gradle wrapper and build files first for dependency layer caching
 COPY gradlew gradlew
 COPY gradle/ gradle/
 COPY build.gradle.kts settings.gradle.kts ./
+RUN chmod +x gradlew
 
-# Copy source code
+# Download dependencies in a separate layer (cached until build files change)
+RUN ./gradlew dependencies --no-daemon
+
+# Copy source code (only this layer invalidates on code changes)
 COPY src/ src/
 COPY config/ config/
 
 # Build the fat JAR (skip tests -- they run in CI)
-RUN chmod +x gradlew && ./gradlew bootJar -x test -x integrationTest --no-daemon
+RUN ./gradlew bootJar -x test -x integrationTest --no-daemon
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre
