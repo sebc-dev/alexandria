@@ -98,14 +98,15 @@ spotbugs {
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
+    val taskName = name
     reports {
         create("html") {
             required = true
-            outputLocation = layout.buildDirectory.file("reports/spotbugs/spotbugs.html")
+            outputLocation = layout.buildDirectory.file("reports/spotbugs/${taskName}.html")
         }
         create("xml") {
             required = true
-            outputLocation = layout.buildDirectory.file("reports/spotbugs/spotbugs.xml")
+            outputLocation = layout.buildDirectory.file("reports/spotbugs/${taskName}.xml")
         }
     }
 }

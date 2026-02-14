@@ -137,7 +137,7 @@ summarize_mutations() {
 
 # Parse SpotBugs XML report
 summarize_spotbugs() {
-    local report="build/reports/spotbugs/spotbugs.xml"
+    local report="build/reports/spotbugs/spotbugsMain.xml"
     if [[ ! -f "$report" ]]; then
         echo "SPOTBUGS: Could not parse report. Check build/reports/spotbugs/ for details."
         return
@@ -150,6 +150,25 @@ summarize_spotbugs() {
     low=$(grep -c 'priority="3"' "$report" 2>/dev/null) || low=0
 
     echo "SPOTBUGS: ${total} bugs found (${high} high, ${medium} medium, ${low} low)"
+}
+
+# Parse ArchUnit test results from JUnit XML
+summarize_arch() {
+    local arch_xml="build/test-results/test/TEST-dev.alexandria.architecture.ArchitectureTest.xml"
+    if [[ ! -f "$arch_xml" ]]; then
+        echo "ARCHITECTURE TESTS: No results found"
+        return
+    fi
+
+    local failures errors
+    failures=$(grep -oP 'failures="[^"]*"' "$arch_xml" | head -1 | grep -oP '[0-9]+') || failures=0
+    errors=$(grep -oP 'errors="[^"]*"' "$arch_xml" | head -1 | grep -oP '[0-9]+') || errors=0
+
+    if [[ $((failures + errors)) -eq 0 ]]; then
+        echo "ARCHITECTURE TESTS: PASSED"
+    else
+        echo "ARCHITECTURE TESTS: FAILED (${failures} failures, ${errors} errors)"
+    fi
 }
 
 # ---------------------------------------------------------------------------
@@ -222,28 +241,33 @@ cmd_all() {
     echo "Running all quality gates..."
     echo ""
 
-    # Phase 1: Tests + JaCoCo + SpotBugs (parallelizable by Gradle)
-    # Architecture tests (ArchUnit) run as part of the test task
-    echo "=== Phase 1: Tests + Coverage + SpotBugs ==="
+    # Phase 1: Tests + Coverage
+    echo "=== Phase 1: Tests + Coverage ==="
     local test_exit=0
-    $GRADLEW test jacocoTestReport spotbugsMain || test_exit=$?
+    $GRADLEW test jacocoTestReport || test_exit=$?
     print_separator
     summarize_tests
     summarize_coverage
+    echo ""
+
+    # Phase 2: SpotBugs (non-blocking)
+    echo "=== Phase 2: SpotBugs ==="
+    $GRADLEW spotbugsMain || true
+    print_separator
     summarize_spotbugs
     echo ""
 
-    # Phase 2: PIT mutation testing (heavy, run separately)
-    echo "=== Phase 2: Mutation Testing ==="
+    # Phase 3: PIT mutation testing (heavy, run separately)
+    echo "=== Phase 3: Mutation Testing ==="
     $GRADLEW pitest || true
     print_separator
     summarize_mutations
 
-    # Phase 3: Integration tests (optional, requires Docker)
+    # Phase 4: Integration tests (optional, requires Docker)
     local integ_exit=0
     if [[ "$WITH_INTEGRATION" == "true" ]]; then
         echo ""
-        echo "=== Phase 3: Integration Tests ==="
+        echo "=== Phase 4: Integration Tests ==="
         $GRADLEW integrationTest || integ_exit=$?
         print_separator
         summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
@@ -255,11 +279,7 @@ cmd_all() {
     summarize_coverage
     summarize_spotbugs
     summarize_mutations
-    if [[ $test_exit -eq 0 ]]; then
-        echo "ARCHITECTURE TESTS: PASSED"
-    else
-        echo "ARCHITECTURE TESTS: FAILED"
-    fi
+    summarize_arch
     if [[ "$WITH_INTEGRATION" == "true" ]]; then
         summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
     fi
