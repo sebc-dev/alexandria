@@ -16,6 +16,7 @@ public class DocumentChunk {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "embedding_id")
     private UUID id;
 
     @Column(nullable = false, columnDefinition = "TEXT")

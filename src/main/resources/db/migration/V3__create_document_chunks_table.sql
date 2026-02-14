@@ -1,5 +1,5 @@
 CREATE TABLE document_chunks (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    embedding_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     embedding vector(384) NOT NULL,
     text TEXT NOT NULL,
     metadata JSONB,
