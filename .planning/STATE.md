@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 0 of 9 (CI & Quality Gate)
-Plan: 2 of 2 in current phase
-Status: Awaiting checkpoint verification (00-02 Task 3)
-Last activity: 2026-02-14 -- Completed 00-02-PLAN.md Tasks 1-2 (quality.sh + CI workflow)
+Phase: 0 of 9 (CI & Quality Gate) -- COMPLETE
+Plan: 2 of 2 in current phase (all plans complete)
+Status: Phase 0 complete, ready for Phase 1
+Last activity: 2026-02-14 -- Completed 00-02-PLAN.md (quality.sh + CI pipeline + stack upgrade)
 
 Progress: [██░░░░░░░░] 10%
 
@@ -48,9 +48,14 @@ Recent decisions affecting current work:
 - [00-01]: Used allowEmptyShould(true) on ArchUnit rules for skeleton project compatibility
 - [00-01]: Added failWhenNoMutations=false to PIT config since skeleton has no mutable code
 - [00-01]: Non-blocking quality gates: only test failures block the build
-- [00-02]: quality.sh uses || true after Gradle to always print summary even on failure
+- [00-02]: quality.sh uses || true after Gradle for non-blocking gates, propagates exit codes for blocking ones
 - [00-02]: PIT runs separately in quality.sh all (heavyweight, not parallelizable with tests)
 - [00-02]: CI test job is the only blocking job; coverage/spotbugs/mutation/sonarcloud are non-blocking
+- [00-02]: GitHub Actions pinned to commit SHAs for supply chain security
+- [00-02]: SonarCloud config via environment variables (SONAR_PROJECT_KEY, SONAR_ORGANIZATION)
+- [00-02]: Shared build job in CI avoids redundant compilation across parallel jobs
+- [00-02]: Stack upgraded: Gradle 9.3.1, Spring Boot 4.0.2, PIT 1.21.0, Testcontainers 2.0.3
+- [00-02]: Restored io.spring.dependency-management plugin for IDE compatibility
 
 ### Pending Todos
 
@@ -69,5 +74,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: 00-02-PLAN.md checkpoint (Task 3: human-verify CI pipeline)
+Stopped at: Completed Phase 0 (CI & Quality Gate) -- all 2 plans done
 Resume file: None
+Next: Phase 1 (Foundation)
