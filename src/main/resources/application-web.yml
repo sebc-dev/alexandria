@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+spring:
+  ai:
+    mcp:
+      server:
+        name: alexandria
+        version: 1.0.0
+        type: SYNC
+        stdio: false

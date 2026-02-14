@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.2"
+    id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
     jacoco
     id("info.solidsoft.pitest") version "1.19.0-rc.3"
@@ -19,9 +19,25 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("dev.langchain4j:langchain4j:1.11.0")
+    implementation("dev.langchain4j:langchain4j-spring-boot-starter:1.11.0-beta19")
+    implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:1.11.0-beta19")
+    implementation("dev.langchain4j:langchain4j-pgvector:1.11.0-beta19")
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:1.0.3")
+    }
 }
 
 testing {
@@ -35,8 +51,11 @@ testing {
                 implementation(project())
                 implementation("org.springframework.boot:spring-boot-starter-test")
                 implementation("org.springframework.boot:spring-boot-testcontainers")
-                implementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-                implementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
+                implementation("org.testcontainers:postgresql")
+                implementation("org.testcontainers:junit-jupiter")
+                implementation("dev.langchain4j:langchain4j:1.11.0")
+                implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:1.11.0-beta19")
+                implementation("dev.langchain4j:langchain4j-pgvector:1.11.0-beta19")
             }
             targets {
                 all {
