@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Unit & Integration Tests
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +23,36 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      - name: Compile all sources
+        run: ./gradlew classes testClasses integrationTestClasses --console=plain
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            build/
+            .gradle/
+
+  test:
+    name: Unit & Integration Tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Run unit tests
         run: ./gradlew test --console=plain
@@ -39,6 +69,7 @@ jobs:
 
   coverage:
     name: Code Coverage (JaCoCo)
+    needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -50,6 +81,11 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport --console=plain
@@ -62,6 +98,7 @@ jobs:
 
   spotbugs:
     name: SpotBugs Analysis
+    needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -73,6 +110,11 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Run SpotBugs
         run: ./gradlew spotbugsMain --console=plain
@@ -86,6 +128,7 @@ jobs:
 
   mutation:
     name: Mutation Testing (PIT)
+    needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -97,6 +140,11 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Run PIT mutation testing
         run: ./gradlew pitest --console=plain
@@ -110,6 +158,7 @@ jobs:
 
   sonarcloud:
     name: SonarCloud Analysis
+    needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -123,6 +172,11 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Run SonarCloud analysis
         run: ./gradlew test jacocoTestReport sonar --info --console=plain
