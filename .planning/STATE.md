@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 0 of 9 (CI & Quality Gate)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-02-14 -- Completed 00-01-PLAN.md (Gradle skeleton + quality gates)
+Plan: 2 of 2 in current phase
+Status: Awaiting checkpoint verification (00-02 Task 3)
+Last activity: 2026-02-14 -- Completed 00-02-PLAN.md Tasks 1-2 (quality.sh + CI workflow)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 7min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 5.5min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 00-ci-quality-gate | 1 | 7min | 7min |
+| 00-ci-quality-gate | 2 | 11min | 5.5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min
-- Trend: baseline
+- Last 5 plans: 7min, 4min
+- Trend: improving
 
 *Updated after each plan completion*
 
@@ -48,6 +48,9 @@ Recent decisions affecting current work:
 - [00-01]: Used allowEmptyShould(true) on ArchUnit rules for skeleton project compatibility
 - [00-01]: Added failWhenNoMutations=false to PIT config since skeleton has no mutable code
 - [00-01]: Non-blocking quality gates: only test failures block the build
+- [00-02]: quality.sh uses || true after Gradle to always print summary even on failure
+- [00-02]: PIT runs separately in quality.sh all (heavyweight, not parallelizable with tests)
+- [00-02]: CI test job is the only blocking job; coverage/spotbugs/mutation/sonarcloud are non-blocking
 
 ### Pending Todos
 
@@ -66,5 +69,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 00-01-PLAN.md (Gradle skeleton + quality gates)
+Stopped at: 00-02-PLAN.md checkpoint (Task 3: human-verify CI pipeline)
 Resume file: None
