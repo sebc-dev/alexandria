@@ -150,13 +150,15 @@ summarize_spotbugs() {
 
 cmd_test() {
     echo "Running unit tests..."
+    local exit_code=0
     if [[ -n "$PACKAGE" ]]; then
-        $GRADLEW test --tests "${PACKAGE}.*" || true
+        $GRADLEW test --tests "${PACKAGE}.*" || exit_code=$?
     else
-        $GRADLEW test || true
+        $GRADLEW test || exit_code=$?
     fi
     print_separator
     summarize_tests
+    return $exit_code
 }
 
 cmd_mutation() {
@@ -192,9 +194,11 @@ cmd_arch() {
 
 cmd_coverage() {
     echo "Running tests with coverage..."
-    $GRADLEW test jacocoTestReport || true
+    local exit_code=0
+    $GRADLEW test jacocoTestReport || exit_code=$?
     print_separator
     summarize_coverage
+    return $exit_code
 }
 
 cmd_all() {
@@ -202,8 +206,10 @@ cmd_all() {
     echo ""
 
     # Phase 1: Tests + JaCoCo + SpotBugs (parallelizable by Gradle)
+    # Architecture tests (ArchUnit) run as part of the test task
     echo "=== Phase 1: Tests + Coverage + SpotBugs ==="
-    $GRADLEW test jacocoTestReport spotbugsMain || true
+    local test_exit=0
+    $GRADLEW test jacocoTestReport spotbugsMain || test_exit=$?
     print_separator
     summarize_tests
     summarize_coverage
@@ -215,18 +221,6 @@ cmd_all() {
     $GRADLEW pitest || true
     print_separator
     summarize_mutations
-    echo ""
-
-    # Phase 3: Architecture tests
-    echo "=== Phase 3: Architecture Tests ==="
-    local arch_exit=0
-    $GRADLEW test --tests "dev.alexandria.architecture.*" || arch_exit=$?
-    print_separator
-    if [[ $arch_exit -eq 0 ]]; then
-        echo "ARCHITECTURE TESTS: PASSED"
-    else
-        echo "ARCHITECTURE TESTS: FAILED"
-    fi
 
     echo ""
     echo "=== Quality Gate Summary ==="
@@ -234,11 +228,13 @@ cmd_all() {
     summarize_coverage
     summarize_spotbugs
     summarize_mutations
-    if [[ $arch_exit -eq 0 ]]; then
+    if [[ $test_exit -eq 0 ]]; then
         echo "ARCHITECTURE TESTS: PASSED"
     else
         echo "ARCHITECTURE TESTS: FAILED"
     fi
+
+    return $test_exit
 }
 
 cmd_help() {
