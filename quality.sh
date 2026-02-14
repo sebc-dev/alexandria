@@ -12,11 +12,16 @@ shift || true
 
 # Parse optional flags
 PACKAGE=""
+WITH_INTEGRATION=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --package)
             PACKAGE="${2:-}"
             shift 2
+            ;;
+        --with-integration)
+            WITH_INTEGRATION=true
+            shift
             ;;
         *)
             echo "Unknown option: $1"
@@ -34,11 +39,14 @@ print_separator() {
     echo "---"
 }
 
-# Parse JUnit XML results from build/test-results/test/
+# Parse JUnit XML results from a test results directory
+# $1: results directory (default: build/test-results/test)
+# $2: label prefix (default: TESTS)
 summarize_tests() {
-    local results_dir="build/test-results/test"
+    local results_dir="${1:-build/test-results/test}"
+    local label="${2:-TESTS}"
     if [[ ! -d "$results_dir" ]]; then
-        echo "TESTS: Could not parse report. Check build/reports/ for details."
+        echo "${label}: Could not parse report. Check build/reports/ for details."
         return
     fi
 
@@ -56,7 +64,7 @@ summarize_tests() {
     done
 
     local passed=$((total - failures - skipped))
-    echo "TESTS: ${passed} passed, ${failures} failed, ${skipped} skipped (total: ${total})"
+    echo "${label}: ${passed} passed, ${failures} failed, ${skipped} skipped (total: ${total})"
 }
 
 # Parse JaCoCo XML report for coverage percentages
@@ -192,6 +200,15 @@ cmd_arch() {
     fi
 }
 
+cmd_integration() {
+    echo "Running integration tests (requires Docker)..."
+    local exit_code=0
+    $GRADLEW integrationTest || exit_code=$?
+    print_separator
+    summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
+    return $exit_code
+}
+
 cmd_coverage() {
     echo "Running tests with coverage..."
     local exit_code=0
@@ -222,6 +239,16 @@ cmd_all() {
     print_separator
     summarize_mutations
 
+    # Phase 3: Integration tests (optional, requires Docker)
+    local integ_exit=0
+    if [[ "$WITH_INTEGRATION" == "true" ]]; then
+        echo ""
+        echo "=== Phase 3: Integration Tests ==="
+        $GRADLEW integrationTest || integ_exit=$?
+        print_separator
+        summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
+    fi
+
     echo ""
     echo "=== Quality Gate Summary ==="
     summarize_tests
@@ -233,8 +260,15 @@ cmd_all() {
     else
         echo "ARCHITECTURE TESTS: FAILED"
     fi
+    if [[ "$WITH_INTEGRATION" == "true" ]]; then
+        summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
+    fi
 
-    return $test_exit
+    # Fail if unit tests or integration tests failed
+    if [[ $test_exit -ne 0 ]]; then
+        return $test_exit
+    fi
+    return $integ_exit
 }
 
 cmd_help() {
@@ -245,27 +279,31 @@ USAGE:
     ./quality.sh <command> [options]
 
 COMMANDS:
-    test        Run unit tests, print pass/fail summary
-    mutation    Run PIT mutation testing, print mutation score
-    spotbugs    Run SpotBugs analysis, print bug count
-    arch        Run ArchUnit architecture tests, print pass/fail
-    coverage    Run tests + JaCoCo, print coverage percentages
-    all         Run all quality gates, print combined summary
-    help        Show this help message
+    test           Run unit tests, print pass/fail summary
+    integration    Run integration tests (requires Docker), print pass/fail
+    mutation       Run PIT mutation testing, print mutation score
+    spotbugs       Run SpotBugs analysis, print bug count
+    arch           Run ArchUnit architecture tests, print pass/fail
+    coverage       Run tests + JaCoCo, print coverage percentages
+    all            Run all quality gates, print combined summary
+    help           Show this help message
 
 OPTIONS:
-    --package <pkg>    Target a specific package (test, mutation only)
-                       Example: ./quality.sh test --package dev.alexandria.search
+    --package <pkg>       Target a specific package (test, mutation only)
+                          Example: ./quality.sh test --package dev.alexandria.search
+    --with-integration    Include integration tests in 'all' (requires Docker)
 
 EXAMPLES:
     ./quality.sh test                                    # Run all unit tests
     ./quality.sh test --package dev.alexandria.search     # Test specific package
+    ./quality.sh integration                             # Run integration tests
     ./quality.sh mutation                                # Run mutation testing
     ./quality.sh mutation --package dev.alexandria.core   # Mutate specific package
     ./quality.sh spotbugs                                # Run SpotBugs analysis
     ./quality.sh coverage                                # Generate coverage report
     ./quality.sh arch                                    # Run architecture tests
-    ./quality.sh all                                     # Run everything
+    ./quality.sh all                                     # Run everything (no integ)
+    ./quality.sh all --with-integration                  # Run everything + integ
 USAGE
 }
 
@@ -274,12 +312,13 @@ USAGE
 # ---------------------------------------------------------------------------
 
 case "$COMMAND" in
-    test)       cmd_test ;;
-    mutation)   cmd_mutation ;;
-    spotbugs)   cmd_spotbugs ;;
-    arch)       cmd_arch ;;
-    coverage)   cmd_coverage ;;
-    all)        cmd_all ;;
+    test)          cmd_test ;;
+    integration)   cmd_integration ;;
+    mutation)      cmd_mutation ;;
+    spotbugs)      cmd_spotbugs ;;
+    arch)          cmd_arch ;;
+    coverage)      cmd_coverage ;;
+    all)           cmd_all ;;
     help|--help|-h)  cmd_help ;;
     *)
         echo "Unknown command: $COMMAND"
