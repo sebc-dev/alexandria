@@ -115,8 +115,8 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
 // ---------------------------------------------------------------------------
 sonar {
     properties {
-        property("sonar.projectKey", "PLACEHOLDER_PROJECT_KEY")
-        property("sonar.organization", "PLACEHOLDER_ORGANIZATION")
+        property("sonar.projectKey", providers.environmentVariable("SONAR_PROJECT_KEY").getOrElse(""))
+        property("sonar.organization", providers.environmentVariable("SONAR_ORGANIZATION").getOrElse(""))
         property("sonar.host.url", "https://sonarcloud.io")
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
