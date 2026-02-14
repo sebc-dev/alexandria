@@ -1,8 +1,7 @@
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
-
 plugins {
     java
     id("org.springframework.boot") version "4.0.2"
+    id("io.spring.dependency-management") version "1.1.7"
     jacoco
     id("info.solidsoft.pitest") version "1.19.0-rc.3"
     id("com.github.spotbugs") version "6.4.8"
@@ -20,7 +19,6 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
     implementation("org.springframework.boot:spring-boot-starter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
@@ -34,7 +32,6 @@ testing {
         val integrationTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
             dependencies {
-                implementation(platform(SpringBootPlugin.BOM_COORDINATES))
                 implementation(project())
                 implementation("org.springframework.boot:spring-boot-starter-test")
                 implementation("org.springframework.boot:spring-boot-testcontainers")
