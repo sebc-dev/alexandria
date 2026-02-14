@@ -52,6 +52,7 @@ testing {
             dependencies {
                 implementation(project())
                 implementation("org.springframework.boot:spring-boot-starter-test")
+                implementation("org.springframework.boot:spring-boot-starter-data-jpa")
                 implementation("org.springframework.boot:spring-boot-testcontainers")
                 implementation("org.testcontainers:postgresql")
                 implementation("org.testcontainers:junit-jupiter")
@@ -76,6 +77,13 @@ tasks.named("check") {
 
 // Disable plain jar — only produce the Spring Boot fat jar
 tasks.named<Jar>("jar") { enabled = false }
+
+// With jar disabled, implementation(project()) in test suites cannot resolve main classes.
+// Explicitly wire main output into the integrationTest classpath.
+sourceSets.named("integrationTest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+}
 
 // ---------------------------------------------------------------------------
 // JaCoCo - Code Coverage
