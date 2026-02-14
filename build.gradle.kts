@@ -75,7 +75,11 @@ tasks.jacocoTestReport {
 pitest {
     pitestVersion.set("1.19.1")
     junit5PluginVersion.set("1.2.3")
-    targetClasses.set(listOf("dev.alexandria.*"))
+    val pitTargetClasses = providers.gradleProperty("pitest.targetClasses")
+    targetClasses.set(
+        if (pitTargetClasses.isPresent) listOf(pitTargetClasses.get())
+        else listOf("dev.alexandria.*")
+    )
     threads.set(Runtime.getRuntime().availableProcessors())
     outputFormats.set(listOf("HTML", "XML"))
     timestampedReports.set(false)
