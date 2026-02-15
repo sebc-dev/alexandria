@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 3 - Web Crawling
+**Current focus:** Phase 3 - Web Crawling (complete)
 
 ## Current Position
 
 Phase: 3 of 9 (Web Crawling)
-Plan: 1 of 2 in current phase (03-01 complete)
-Status: Plan 03-01 complete, ready for 03-02
-Last activity: 2026-02-15 -- Completed 03-01-PLAN.md (Crawl4AI REST client, DTOs, integration tests)
+Plan: 2 of 2 complete in Phase 03 (03-01, 03-02 complete)
+Status: Phase 03 complete
+Last activity: 2026-02-15 -- Completed 03-02-PLAN.md (page discovery, crawl orchestration)
 
 Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 4.2min
-- Total execution time: 0.35 hours
+- Total plans completed: 7
+- Average duration: 4.3min
+- Total execution time: 0.50 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [███░░░░░░░] 30%
 |-------|-------|-------|----------|
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
-| 03-web-crawling | 1 | 4min | 4min |
+| 03-web-crawling | 2 | 9min | 4.5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 4min, 3min, 4min, 4min
+- Last 5 plans: 3min, 4min, 4min, 4min, 5min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -72,6 +72,9 @@ Recent decisions affecting current work:
 - [03-01]: Catch RestClientException in Crawl4AiClient for graceful failure handling (Crawl4AI returns HTTP 500 for unreachable URLs)
 - [03-01]: Made BaseIntegrationTest public for cross-package extension from crawl test package
 - [03-01]: PruningContentFilter threshold 0.48 with min_word_threshold 20 for documentation content density
+- [03-02]: UrlNormalizer as static utility (no Spring bean) since it has no dependencies
+- [03-02]: CrawlService follows links only in LINK_CRAWL mode; trusts sitemap URL list when available
+- [03-02]: Sequential page crawling (no concurrency) to keep Crawl4AI sidecar stable
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 03-01-PLAN.md (Crawl4AI REST client, DTOs, integration tests)
+Stopped at: Completed 03-02-PLAN.md (page discovery, crawl orchestration)
 Resume file: None
-Next: Phase 03 Plan 02 (page discovery and orchestration)
+Next: Phase 02 (parallel eligible) -- Phase 03 complete
