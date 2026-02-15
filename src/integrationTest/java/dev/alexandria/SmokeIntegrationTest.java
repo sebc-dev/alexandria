@@ -10,6 +10,6 @@ class SmokeIntegrationTest extends BaseIntegrationTest {
         // - Flyway migrations applied
         // - EmbeddingModel bean created (ONNX model loaded)
         // - EmbeddingStore bean created (pgvector connection)
-        // - JPA entities validated against schema
+        // - JpaSchemaDriftIT validated against schema
     }
 }
