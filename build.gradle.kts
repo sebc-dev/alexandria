@@ -61,6 +61,8 @@ testing {
                 all {
                     testTask.configure {
                         shouldRunAfter(test)
+                        // Docker 29+ requires API version >= 1.44; Testcontainers defaults to 1.32
+                        systemProperty("api.version", "1.44")
                     }
                 }
             }

@@ -56,15 +56,6 @@ jobs:
       - name: Run unit tests with coverage
         run: ./gradlew test jacocoTestReport --continue --console=plain
 
-      - name: Verify Docker availability
-        run: |
-          echo "=== docker version ==="
-          docker version || echo "docker version FAILED"
-          echo "=== docker info ==="
-          docker info || echo "docker info FAILED"
-          echo "=== socket check ==="
-          ls -la /var/run/docker.sock || echo "no docker socket"
-
       - name: Run integration tests
         run: ./gradlew integrationTest --console=plain
 
