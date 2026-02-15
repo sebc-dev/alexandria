@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
 - [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
 - [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
-- [ ] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
+- [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
 - [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
 - [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
@@ -86,8 +86,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Crawl4AI REST client, Spring RestClient config, request/response DTOs, Docker Compose shm_size fix, integration test
-- [ ] 03-02-PLAN.md -- SitemapParser, UrlNormalizer, PageDiscoveryService, CrawlService orchestrator, integration test
+- [x] 03-01-PLAN.md -- Crawl4AI REST client, Spring RestClient config, request/response DTOs, Docker Compose shm_size fix, integration test
+- [x] 03-02-PLAN.md -- SitemapParser, UrlNormalizer, PageDiscoveryService, CrawlService orchestrator, integration test
 
 ### Phase 4: Ingestion Pipeline
 **Goal**: Crawled Markdown is transformed into richly-annotated, searchable chunks that preserve code block integrity and heading hierarchy -- the quality-critical transformation layer
@@ -183,7 +183,7 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 | 0. CI & Quality Gate | 0/2 | Planned | - |
 | 1. Foundation & Infrastructure | 0/2 | Planned | - |
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
-| 3. Web Crawling | 0/TBD | Not started | - |
+| 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 0/TBD | Not started | - |
 | 5. MCP Server | 0/TBD | Not started | - |
 | 6. Source Management | 0/TBD | Not started | - |
