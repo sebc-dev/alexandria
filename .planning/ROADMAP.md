@@ -67,11 +67,11 @@ Plans:
   3. Hybrid search combines vector and keyword results via Reciprocal Rank Fusion and returns better results than either method alone
   4. Every search result includes a source URL and section path suitable for citation
   5. User can configure the number of results returned (defaulting to 10)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- V2 Flyway migration (GIN index fix), hybrid EmbeddingStore config, SearchService + domain DTOs
+- [ ] 02-02-PLAN.md -- Unit tests (SearchRequest, SearchService) + HybridSearchIT integration tests proving all 5 success criteria
 
 ### Phase 3: Web Crawling
 **Goal**: The system can crawl a documentation site from a root URL, handle JavaScript-rendered pages, and produce clean Markdown output -- the raw material for the ingestion pipeline
