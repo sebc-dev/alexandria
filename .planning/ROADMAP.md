@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
 - [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
-- [ ] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
+- [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [ ] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
 - [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
 - [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
@@ -70,8 +70,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- V2 Flyway migration (GIN index fix), hybrid EmbeddingStore config, SearchService + domain DTOs
-- [ ] 02-02-PLAN.md -- Unit tests (SearchRequest, SearchService) + HybridSearchIT integration tests proving all 5 success criteria
+- [x] 02-01-PLAN.md -- V2 Flyway migration (GIN index fix), hybrid EmbeddingStore config, SearchService + domain DTOs
+- [x] 02-02-PLAN.md -- Unit tests (SearchRequest, SearchService) + HybridSearchIT integration tests proving all 5 success criteria
 
 ### Phase 3: Web Crawling
 **Goal**: The system can crawl a documentation site from a root URL, handle JavaScript-rendered pages, and produce clean Markdown output -- the raw material for the ingestion pipeline
@@ -182,7 +182,7 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 |-------|----------------|--------|-----------|
 | 0. CI & Quality Gate | 0/2 | Planned | - |
 | 1. Foundation & Infrastructure | 0/2 | Planned | - |
-| 2. Core Search | 0/TBD | Not started | - |
+| 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 0/TBD | Not started | - |
 | 4. Ingestion Pipeline | 0/TBD | Not started | - |
 | 5. MCP Server | 0/TBD | Not started | - |
