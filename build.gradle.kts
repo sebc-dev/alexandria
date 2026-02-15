@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.langchain4j.embeddings.bge)
     implementation(libs.langchain4j.pgvector)
     implementation(libs.spring.ai.mcp.server.webmvc)
+    implementation(libs.crawler.commons)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
     runtimeOnly(libs.postgresql)

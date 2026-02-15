@@ -20,6 +20,11 @@ services:
 
   crawl4ai:
     image: unclecode/crawl4ai:0.8.0
+    shm_size: 1g
+    deploy:
+      resources:
+        limits:
+          memory: 2g
     networks:
       - alexandria
     healthcheck:

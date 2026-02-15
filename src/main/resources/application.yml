@@ -19,6 +19,12 @@ spring:
     virtual:
       enabled: true
 
+alexandria:
+  crawl4ai:
+    base-url: http://${CRAWL4AI_HOST:localhost}:${CRAWL4AI_PORT:11235}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 120000
+
 management:
   endpoints:
     web:
