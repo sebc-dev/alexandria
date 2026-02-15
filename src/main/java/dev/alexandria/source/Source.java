@@ -50,7 +50,6 @@ public class Source {
     public Source(String url, String name) {
         this.url = url;
         this.name = name;
-        this.status = SourceStatus.PENDING;
         this.chunkCount = 0;
     }
 
