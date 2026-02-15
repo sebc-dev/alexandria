@@ -83,11 +83,11 @@ Plans:
   3. JavaScript-rendered pages (e.g., React/Vue doc sites) produce the same quality Markdown as static HTML pages
   4. Boilerplate content (navigation bars, footers, sidebars) is stripped from crawled output
   5. System checks for sitemap.xml and uses it for page discovery when available, falling back to recursive link crawling
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md -- Crawl4AI REST client, Spring RestClient config, request/response DTOs, Docker Compose shm_size fix, integration test
+- [ ] 03-02-PLAN.md -- SitemapParser, UrlNormalizer, PageDiscoveryService, CrawlService orchestrator, integration test
 
 ### Phase 4: Ingestion Pipeline
 **Goal**: Crawled Markdown is transformed into richly-annotated, searchable chunks that preserve code block integrity and heading hierarchy -- the quality-critical transformation layer
