@@ -1,0 +1,17 @@
+spring:
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: alexandria
+        version: 1.0.0
+        type: SYNC
+        stdio: true
+
+logging:
+  pattern:
+    console: ""
+  file:
+    name: ./logs/alexandria-mcp.log

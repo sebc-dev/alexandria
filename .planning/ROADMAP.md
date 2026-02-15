@@ -51,11 +51,11 @@ Plans:
   3. Application can store an embedding with metadata in pgvector and retrieve it by ID
   4. Total memory usage of the running stack stays under 14 GB on a 24 GB machine
   5. Database schema is managed by Flyway migrations (no manual SQL execution required)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
+- [ ] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
 
 ### Phase 2: Core Search
 **Goal**: Users can perform hybrid semantic+keyword search over indexed documentation and get relevant, cited results -- verifiable with manually inserted test data before any crawling exists
@@ -181,7 +181,7 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. CI & Quality Gate | 0/2 | Planned | - |
-| 1. Foundation & Infrastructure | 0/TBD | Not started | - |
+| 1. Foundation & Infrastructure | 0/2 | Planned | - |
 | 2. Core Search | 0/TBD | Not started | - |
 | 3. Web Crawling | 0/TBD | Not started | - |
 | 4. Ingestion Pipeline | 0/TBD | Not started | - |

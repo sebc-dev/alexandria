@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - alexandria-data:/var/lib/postgresql/data
+    networks:
+      - alexandria
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  crawl4ai:
+    image: unclecode/crawl4ai:0.8.0
+    networks:
+      - alexandria
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11235/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      crawl4ai:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: web
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    networks:
+      - alexandria
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  alexandria:
+    driver: bridge
+
+volumes:
+  alexandria-data:

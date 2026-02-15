@@ -1,14 +1,15 @@
 package dev.alexandria;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+class SmokeIntegrationTest extends BaseIntegrationTest {
 
-@SpringBootTest
-class SmokeIntegrationTest {
     @Test
     void contextLoads() {
-        assertThat(true).isTrue();
+        // Spring context loaded successfully with:
+        // - Flyway migrations applied
+        // - EmbeddingModel bean created (ONNX model loaded)
+        // - EmbeddingStore bean created (pgvector connection)
+        // - JpaSchemaDriftIT validated against schema
     }
 }

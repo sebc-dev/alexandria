@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Set up the project skeleton: Docker Compose stack with PostgreSQL+pgvector, Spring Boot 3.5 application with dual-profile (web + stdio), ONNX embedding generation, and Flyway-managed database schema. This is the base layer everything else builds on. No crawling, no search logic, no MCP tools — just the infrastructure that makes those possible.
+Set up the project skeleton: Docker Compose stack with PostgreSQL+pgvector, Spring Boot 3.5.7 application with dual-profile (web + stdio), ONNX embedding generation, and Flyway-managed database schema. This is the base layer everything else builds on. No crawling, no search logic, no MCP tools — just the infrastructure that makes those possible.
 
 Reference architecture: `docs/architecture.md` — adopt its structure and patterns.
 
@@ -17,7 +17,7 @@ Reference architecture: `docs/architecture.md` — adopt its structure and patte
 
 ### Structure de packages
 - Adopter l'arborescence hybride pragmatique de `docs/architecture.md` telle quelle
-- Group ID Maven : `dev.alexandria`
+- Group ID : `dev.alexandria`
 - Packages par feature : `ingestion/`, `search/`, `source/`, `document/`, `mcp/`, `api/`, `config/`
 - Inclure le package `api/` (REST admin) des le v1 — endpoints REST en plus du MCP
 - Interfaces uniquement aux frontieres d'integration : `ContentCrawler` pour Crawl4AI + interfaces LangChain4j (`EmbeddingModel`, `EmbeddingStore`)
@@ -39,11 +39,19 @@ Reference architecture: `docs/architecture.md` — adopt its structure and patte
 - Colonnes embedding en `vector(384)` (precision maximale, pas halfvec)
 - Index HNSW et GIN pour FTS crees dans les migrations Flyway
 
-### Profils Spring Boot
+### Build & Profils Spring Boot
+- Gradle comme outil de build (Phase 0 a etabli l'infrastructure Gradle 8.14.4 avec quality gates)
+- Spring Boot 3.5.7 (LangChain4j incompatible avec Boot 4.x — issue #4268)
 - JAR unique, 2 profils de lancement : `web` (REST + MCP SSE) et `stdio` (MCP Claude Code)
-- Maven comme outil de build
 - Virtual threads activees pour l'I/O (crawl, DB writes), pool platform threads pour ONNX
 - Spring Boot banner et console logging desactives en mode stdio (pitfall MCP)
+
+### Versions de stack verrouillees
+- Spring Boot 3.5.7, Gradle 8.14.4
+- LangChain4j 1.11.0 (avec spring-boot-starter compatible Boot 3.5.x)
+- Spring AI 1.0.3 GA (MCP server — pas le milestone 2.0.0-M2)
+- Testcontainers 1.x (gere par le BOM Spring Boot 3.5.x)
+- Flyway : flyway-core + flyway-database-postgresql (auto-config Boot 3.x)
 
 ### Claude's Discretion
 - Strategie de logging MCP (fichier log vs stderr vs les deux)
@@ -59,7 +67,7 @@ Reference architecture: `docs/architecture.md` — adopt its structure and patte
 
 - L'architecture complete est documentee dans `docs/architecture.md` — utiliser comme reference principale pour les patterns d'implementation (injection constructeur, pas de @Autowired sur champs, services < 200 lignes, etc.)
 - La pile `spring-ai-starter-mcp-server-webmvc` gere nativement le dual transport MCP (stdio + SSE)
-- Le rapport `docs/stack.md` documente les choix de stack et versions cibles (LangChain4j 1.11.0, Spring Boot 3.5.10, MCP Java SDK 0.17.2)
+- Le rapport `docs/stack.md` documente les choix de stack et versions cibles (LangChain4j 1.11.0, Spring Boot 3.5.7, Spring AI 1.0.3)
 - La recherche `.planning/research/PITFALLS.md` documente les pieges a eviter des cette phase (ONNX native memory, virtual thread pinning, Docker memory limits)
 
 </specifics>

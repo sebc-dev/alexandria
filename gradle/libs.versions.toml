@@ -1,0 +1,41 @@
+[versions]
+spring-boot = "3.5.7"
+spring-dependency-management = "1.1.7"
+spring-ai = "1.0.3"
+langchain4j = "1.11.0"
+langchain4j-beta = "1.11.0-beta19"
+flyway = "11.8.2"
+archunit = "1.4.1"
+jacoco = "0.8.14"
+pitest-plugin = "1.19.0-rc.3"
+pitest-engine = "1.21.0"
+pitest-junit5 = "1.2.3"
+spotbugs-plugin = "6.4.8"
+sonarqube = "7.1.0.6387"
+testcontainers = "1.21.1"
+
+[libraries]
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
+spring-ai-mcp-server-webmvc = { module = "org.springframework.ai:spring-ai-starter-mcp-server-webmvc" }
+langchain4j-core = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
+langchain4j-embeddings-bge = { module = "dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q", version.ref = "langchain4j-beta" }
+langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }
+flyway-core = { module = "org.flywaydb:flyway-core" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
+postgresql = { module = "org.postgresql:postgresql" }
+archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitest-plugin" }
+spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+

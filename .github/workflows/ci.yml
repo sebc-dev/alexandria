@@ -51,6 +51,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: build-output
+          path: build/
 
       - name: Run unit tests with coverage
         run: ./gradlew test jacocoTestReport --continue --console=plain
@@ -91,6 +92,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: build-output
+          path: build/
 
       - name: Run SpotBugs
         run: ./gradlew spotbugsMain --console=plain
@@ -121,6 +123,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: build-output
+          path: build/
 
       - name: Run PIT mutation testing
         run: ./gradlew pitest --console=plain
@@ -153,11 +156,13 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: build-output
+          path: build/
 
       - name: Restore coverage report
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: coverage-report
+          path: build/reports/jacoco/
 
       - name: Run SonarCloud analysis
         run: ./gradlew sonar --info --console=plain

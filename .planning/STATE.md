@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 0 - CI & Quality Gate
+**Current focus:** Phase 1 - Foundation & Infrastructure
 
 ## Current Position
 
-Phase: 0 of 9 (CI & Quality Gate) -- COMPLETE
-Plan: 2 of 2 in current phase (all plans complete)
-Status: Phase 0 complete, ready for Phase 1
-Last activity: 2026-02-14 -- Completed 00-02-PLAN.md (quality.sh + CI pipeline + stack upgrade)
+Phase: 1 of 9 (Foundation & Infrastructure) -- COMPLETE
+Plan: 2 of 2 in current phase (01-01, 01-02 complete)
+Status: Phase 01 complete, ready for Phase 02
+Last activity: 2026-02-14 -- Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
 
-Progress: [██░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 5.5min
-- Total execution time: 0.2 hours
+- Total plans completed: 4
+- Average duration: 4.5min
+- Total execution time: 0.30 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
+| 01-foundation-infrastructure | 2 | 7min | 3.5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 4min
-- Trend: improving
+- Last 5 plans: 7min, 4min, 3min, 4min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -56,6 +57,14 @@ Recent decisions affecting current work:
 - [00-02]: Shared build job in CI avoids redundant compilation across parallel jobs
 - [00-02]: Stack upgraded: Gradle 9.3.1, Spring Boot 4.0.2, PIT 1.21.0, Testcontainers 2.0.3
 - [00-02]: Restored io.spring.dependency-management plugin for IDE compatibility
+- [01-01]: Kept AlexandriaApplicationTest enabled -- no @SpringBootTest, passes without DB
+- [01-01]: Spring AI BOM 1.0.3 manages spring-ai-starter-mcp-server-webmvc version
+- [01-01]: App service internal-only in Docker Compose (no host port exposure)
+- [01-01]: JVM MaxRAMPercentage=75 for container-aware sizing instead of fixed Xmx
+- [01-02]: PgVectorEmbeddingStore.datasourceBuilder() shares HikariCP pool with JPA (no duplicate connections)
+- [01-02]: ddl-auto=none because Hibernate cannot validate vector(384) column type -- Flyway is source of truth
+- [01-02]: Deleted AlexandriaApplicationTest (SmokeIntegrationTest covers context loading with real DB)
+- [01-02]: HNSW index with vector_cosine_ops and m=16, ef_construction=64 for cosine similarity search
 
 ### Pending Todos
 
@@ -74,6 +83,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed Phase 0 (CI & Quality Gate) -- all 2 plans done
+Stopped at: Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
 Resume file: None
-Next: Phase 1 (Foundation)
+Next: Phase 02 planning (Core Search or Web Crawling -- parallel eligible)

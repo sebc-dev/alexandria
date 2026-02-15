@@ -1,11 +1,11 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
     jacoco
-    id("info.solidsoft.pitest") version "1.19.0-rc.3"
-    id("com.github.spotbugs") version "6.4.8"
-    id("org.sonarqube") version "7.2.2.6593"
+    alias(libs.plugins.pitest)
+    alias(libs.plugins.spotbugs)
+    alias(libs.plugins.sonarqube)
 }
 
 java {
@@ -19,9 +19,24 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.langchain4j.core)
+    implementation(libs.langchain4j.embeddings.bge)
+    implementation(libs.langchain4j.pgvector)
+    implementation(libs.spring.ai.mcp.server.webmvc)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
+    runtimeOnly(libs.postgresql)
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.archunit)
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(libs.spring.ai.bom.get().toString())
+    }
 }
 
 testing {
@@ -33,15 +48,21 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
-                implementation("org.springframework.boot:spring-boot-starter-test")
-                implementation("org.springframework.boot:spring-boot-testcontainers")
-                implementation("org.testcontainers:testcontainers-postgresql:2.0.3")
-                implementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
+                implementation(libs.spring.boot.starter.test)
+                implementation(libs.spring.boot.starter.data.jpa)
+                implementation(libs.spring.boot.testcontainers)
+                implementation(libs.testcontainers.postgresql)
+                implementation(libs.testcontainers.junit5)
+                implementation(libs.langchain4j.core)
+                implementation(libs.langchain4j.embeddings.bge)
+                implementation(libs.langchain4j.pgvector)
             }
             targets {
                 all {
                     testTask.configure {
                         shouldRunAfter(test)
+                        // Docker 29+ requires API version >= 1.44; Testcontainers defaults to 1.32
+                        systemProperty("api.version", "1.44")
                     }
                 }
             }
@@ -53,11 +74,21 @@ tasks.named("check") {
     dependsOn(testing.suites.named("integrationTest"))
 }
 
+// Disable plain jar — only produce the Spring Boot fat jar
+tasks.named<Jar>("jar") { enabled = false }
+
+// With jar disabled, implementation(project()) in test suites cannot resolve main classes.
+// Explicitly wire main output into the integrationTest classpath.
+sourceSets.named("integrationTest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+}
+
 // ---------------------------------------------------------------------------
 // JaCoCo - Code Coverage
 // ---------------------------------------------------------------------------
 jacoco {
-    toolVersion = "0.8.14"
+    toolVersion = libs.versions.jacoco.get()
 }
 
 tasks.jacocoTestReport {
@@ -73,8 +104,8 @@ tasks.jacocoTestReport {
 // PIT - Mutation Testing
 // ---------------------------------------------------------------------------
 pitest {
-    pitestVersion.set("1.21.0")
-    junit5PluginVersion.set("1.2.3")
+    pitestVersion.set(libs.versions.pitest.engine.get())
+    junit5PluginVersion.set(libs.versions.pitest.junit5.get())
     val pitTargetClasses = providers.gradleProperty("pitest.targetClasses")
     targetClasses.set(
         if (pitTargetClasses.isPresent) listOf(pitTargetClasses.get())
@@ -116,8 +147,8 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
 // ---------------------------------------------------------------------------
 sonar {
     properties {
-        property("sonar.projectKey", providers.environmentVariable("SONAR_PROJECT_KEY").getOrElse(""))
-        property("sonar.organization", providers.environmentVariable("SONAR_ORGANIZATION").getOrElse(""))
+        property("sonar.projectKey", "sebc-dev_alexandria")
+        property("sonar.organization", "sebc-dev")
         property("sonar.host.url", "https://sonarcloud.io")
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
