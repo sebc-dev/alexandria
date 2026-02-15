@@ -59,7 +59,7 @@ jobs:
       - name: Run integration tests
         run: ./gradlew integrationTest --console=plain
         env:
-          TESTCONTAINERS_RYUK_DISABLED: true
+          DOCKER_API_VERSION: 1.44
 
       - name: Upload test reports
         if: always()
