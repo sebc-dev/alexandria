@@ -1,11 +1,11 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.5.7"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
     jacoco
-    id("info.solidsoft.pitest") version "1.19.0-rc.3"
-    id("com.github.spotbugs") version "6.4.8"
-    id("org.sonarqube") version "7.2.2.6593"
+    alias(libs.plugins.pitest)
+    alias(libs.plugins.spotbugs)
+    alias(libs.plugins.sonarqube)
 }
 
 java {
@@ -18,27 +18,24 @@ repositories {
     mavenCentral()
 }
 
-val langchain4jVersion = "1.11.0"
-val langchain4jBetaVersion = "1.11.0-beta19" // satellite modules only ship as beta
-
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("dev.langchain4j:langchain4j:$langchain4jVersion")
-    implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:$langchain4jBetaVersion")
-    implementation("dev.langchain4j:langchain4j-pgvector:$langchain4jBetaVersion")
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.langchain4j.core)
+    implementation(libs.langchain4j.embeddings.bge)
+    implementation(libs.langchain4j.pgvector)
+    implementation(libs.spring.ai.mcp.server.webmvc)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
+    runtimeOnly(libs.postgresql)
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.archunit)
 }
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:1.0.3")
+        mavenBom(libs.spring.ai.bom.get().toString())
     }
 }
 
@@ -51,14 +48,14 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
-                implementation("org.springframework.boot:spring-boot-starter-test")
-                implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-                implementation("org.springframework.boot:spring-boot-testcontainers")
-                implementation("org.testcontainers:postgresql")
-                implementation("org.testcontainers:junit-jupiter")
-                implementation("dev.langchain4j:langchain4j:$langchain4jVersion")
-                implementation("dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q:$langchain4jBetaVersion")
-                implementation("dev.langchain4j:langchain4j-pgvector:$langchain4jBetaVersion")
+                implementation(libs.spring.boot.starter.test)
+                implementation(libs.spring.boot.starter.data.jpa)
+                implementation(libs.spring.boot.testcontainers)
+                implementation(libs.testcontainers.postgresql)
+                implementation(libs.testcontainers.junit5)
+                implementation(libs.langchain4j.core)
+                implementation(libs.langchain4j.embeddings.bge)
+                implementation(libs.langchain4j.pgvector)
             }
             targets {
                 all {
@@ -89,7 +86,7 @@ sourceSets.named("integrationTest") {
 // JaCoCo - Code Coverage
 // ---------------------------------------------------------------------------
 jacoco {
-    toolVersion = "0.8.14"
+    toolVersion = libs.versions.jacoco.get()
 }
 
 tasks.jacocoTestReport {
@@ -105,8 +102,8 @@ tasks.jacocoTestReport {
 // PIT - Mutation Testing
 // ---------------------------------------------------------------------------
 pitest {
-    pitestVersion.set("1.21.0")
-    junit5PluginVersion.set("1.2.3")
+    pitestVersion.set(libs.versions.pitest.engine.get())
+    junit5PluginVersion.set(libs.versions.pitest.junit5.get())
     val pitTargetClasses = providers.gradleProperty("pitest.targetClasses")
     targetClasses.set(
         if (pitTargetClasses.isPresent) listOf(pitTargetClasses.get())
