@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.langchain4j.pgvector)
     implementation(libs.spring.ai.mcp.server.webmvc)
     implementation(libs.crawler.commons)
+    implementation(libs.spring.retry)
+    implementation(libs.spring.boot.starter.aop)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
     runtimeOnly(libs.postgresql)

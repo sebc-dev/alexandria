@@ -6,6 +6,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -24,21 +27,24 @@ public class Crawl4AiClient {
     /**
      * Crawl a single URL via Crawl4AI sidecar.
      * Uses PruningContentFilter for boilerplate removal and headless Chromium for JS rendering.
+     * Retries on transient RestClientException with exponential backoff.
      */
+    @Retryable(
+            retryFor = RestClientException.class,
+            maxAttemptsExpression = "${alexandria.crawl4ai.retry.max-attempts}",
+            backoff = @Backoff(
+                    delayExpression = "${alexandria.crawl4ai.retry.delay-ms}",
+                    multiplierExpression = "${alexandria.crawl4ai.retry.multiplier}"
+            )
+    )
     public CrawlResult crawl(String url) {
         Crawl4AiRequest request = buildRequest(url);
 
-        Crawl4AiResponse response;
-        try {
-            response = restClient.post()
-                    .uri("/crawl")
-                    .body(request)
-                    .retrieve()
-                    .body(Crawl4AiResponse.class);
-        } catch (RestClientException e) {
-            log.warn("Crawl4AI request failed for {}: {}", url, e.getMessage());
-            return new CrawlResult(url, null, List.of(), false, e.getMessage());
-        }
+        Crawl4AiResponse response = restClient.post()
+                .uri("/crawl")
+                .body(request)
+                .retrieve()
+                .body(Crawl4AiResponse.class);
 
         if (response == null || !response.success() || response.results().isEmpty()) {
             return new CrawlResult(url, null, List.of(), false,
@@ -47,16 +53,30 @@ public class Crawl4AiClient {
 
         Crawl4AiPageResult page = response.results().getFirst();
         if (!page.success()) {
-            return new CrawlResult(url, null, List.of(), false, page.error_message());
+            return new CrawlResult(url, null, List.of(), false, page.errorMessage());
         }
 
-        // Prefer fit_markdown (boilerplate-removed) over raw_markdown
-        String markdown = page.markdown() != null && page.markdown().fit_markdown() != null
-                && !page.markdown().fit_markdown().isBlank()
-                ? page.markdown().fit_markdown()
-                : (page.markdown() != null ? page.markdown().raw_markdown() : null);
+        return new CrawlResult(url, extractMarkdown(page.markdown()),
+                page.internalLinkHrefs(), true, null);
+    }
 
-        return new CrawlResult(url, markdown, page.internalLinkHrefs(), true, null);
+    @Recover
+    CrawlResult recoverCrawl(RestClientException e, String url) {
+        log.warn("Crawl4AI request failed after retries for {}: {}", url, e.getMessage());
+        return new CrawlResult(url, null, List.of(), false, e.getMessage());
+    }
+
+    /**
+     * Prefer fitMarkdown (boilerplate-removed) over rawMarkdown.
+     */
+    private String extractMarkdown(Crawl4AiMarkdown markdown) {
+        if (markdown == null) {
+            return null;
+        }
+        if (markdown.fitMarkdown() != null && !markdown.fitMarkdown().isBlank()) {
+            return markdown.fitMarkdown();
+        }
+        return markdown.rawMarkdown();
     }
 
     private Crawl4AiRequest buildRequest(String url) {

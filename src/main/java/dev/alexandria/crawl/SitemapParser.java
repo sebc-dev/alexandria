@@ -25,9 +25,11 @@ public class SitemapParser {
     private static final Logger log = LoggerFactory.getLogger(SitemapParser.class);
 
     private final RestClient.Builder restClientBuilder;
+    private final long maxSitemapSizeBytes;
 
-    public SitemapParser(RestClient.Builder restClientBuilder) {
+    public SitemapParser(RestClient.Builder restClientBuilder, Crawl4AiProperties props) {
         this.restClientBuilder = restClientBuilder;
+        this.maxSitemapSizeBytes = props.maxSitemapSizeBytes();
     }
 
     /**
@@ -35,7 +37,7 @@ public class SitemapParser {
      * Returns empty list if no sitemap found or unparseable.
      */
     public List<String> discoverFromSitemap(String rootUrl) {
-        String baseUrl = normalizeToBase(rootUrl);
+        String baseUrl = UrlNormalizer.normalizeToBase(rootUrl);
         List<String> candidates = List.of(
                 baseUrl + "/sitemap.xml",
                 baseUrl + "/sitemap_index.xml"
@@ -47,11 +49,8 @@ public class SitemapParser {
 
         for (String sitemapUrl : candidates) {
             try {
-                byte[] content = httpClient.get()
-                        .uri(sitemapUrl)
-                        .retrieve()
-                        .body(byte[].class);
-                if (content == null || content.length == 0) {
+                byte[] content = fetchSitemap(httpClient, sitemapUrl);
+                if (content == null) {
                     continue;
                 }
 
@@ -76,35 +75,28 @@ public class SitemapParser {
     }
 
     /**
-     * Extract scheme + host (+ port if non-default) from a URL.
-     * Example: "https://docs.spring.io/boot/reference/" -> "https://docs.spring.io"
+     * Fetch sitemap content with size limit to prevent OOM on giant sitemaps.
      */
-    String normalizeToBase(String rootUrl) {
-        try {
-            URI uri = URI.create(rootUrl);
-            URL url = uri.toURL();
-            String protocol = url.getProtocol();
-            String host = url.getHost();
-            int port = url.getPort();
-
-            if (port == -1 || (protocol.equals("http") && port == 80)
-                    || (protocol.equals("https") && port == 443)) {
-                return protocol + "://" + host;
-            }
-            return protocol + "://" + host + ":" + port;
-        } catch (Exception e) {
-            log.warn("Could not parse base URL from {}: {}", rootUrl, e.getMessage());
-            return rootUrl;
+    private byte[] fetchSitemap(RestClient httpClient, String sitemapUrl) {
+        byte[] content = httpClient.get()
+                .uri(sitemapUrl)
+                .retrieve()
+                .body(byte[].class);
+        if (content == null || content.length == 0) {
+            return null;
         }
+        if (content.length > maxSitemapSizeBytes) {
+            log.warn("Sitemap at {} exceeds size limit ({} bytes > {} bytes), skipping",
+                    sitemapUrl, content.length, maxSitemapSizeBytes);
+            return null;
+        }
+        return content;
     }
 
     private List<String> parseSingleSitemap(RestClient httpClient, String sitemapUrl) {
         try {
-            byte[] content = httpClient.get()
-                    .uri(sitemapUrl)
-                    .retrieve()
-                    .body(byte[].class);
-            if (content == null || content.length == 0) {
+            byte[] content = fetchSitemap(httpClient, sitemapUrl);
+            if (content == null) {
                 return List.of();
             }
 

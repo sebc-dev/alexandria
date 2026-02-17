@@ -24,6 +24,11 @@ alexandria:
     base-url: http://${CRAWL4AI_HOST:localhost}:${CRAWL4AI_PORT:11235}
     connect-timeout-ms: 5000
     read-timeout-ms: 120000
+    max-sitemap-size-bytes: 10485760
+    retry:
+      max-attempts: 3
+      delay-ms: 1000
+      multiplier: 2.0
 
 management:
   endpoints:

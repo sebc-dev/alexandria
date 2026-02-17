@@ -33,6 +33,8 @@ archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "arc
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 crawler-commons = { module = "com.github.crawler-commons:crawler-commons", version.ref = "crawler-commons" }
+spring-retry = { module = "org.springframework.retry:spring-retry" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
