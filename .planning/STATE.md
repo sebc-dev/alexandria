@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 1 - Foundation & Infrastructure
+**Current focus:** Phase 2 - Core Search
 
 ## Current Position
 
-Phase: 1 of 9 (Foundation & Infrastructure) -- COMPLETE
-Plan: 2 of 2 in current phase (01-01, 01-02 complete)
-Status: Phase 01 complete, ready for Phase 02
-Last activity: 2026-02-14 -- Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
+Phase: 2 of 9 (Core Search)
+Plan: 1 of 2 complete in Phase 02 (02-01 complete)
+Status: 02-01 complete, ready for 02-02
+Last activity: 2026-02-15 -- Completed 02-01-PLAN.md (hybrid search infrastructure, SearchService, domain DTOs)
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 4.5min
-- Total execution time: 0.30 hours
+- Total plans completed: 5
+- Average duration: 4.3min
+- Total execution time: 0.36 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [██░░░░░░░░] 20%
 |-------|-------|-------|----------|
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
+| 02-core-search | 1 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 4min, 3min, 4min
+- Last 5 plans: 4min, 3min, 4min, 4min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [01-02]: ddl-auto=none because Hibernate cannot validate vector(384) column type -- Flyway is source of truth
 - [01-02]: Deleted AlexandriaApplicationTest (SmokeIntegrationTest covers context loading with real DB)
 - [01-02]: HNSW index with vector_cosine_ops and m=16, ef_construction=64 for cosine similarity search
+- [02-01]: SearchMode is nested enum PgVectorEmbeddingStore.SearchMode, not top-level class (research doc was incorrect)
+- [02-01]: Metadata keys use snake_case convention: source_url, section_path -- must match ingestion-time keys
+- [02-01]: RRF k=60 (standard default from original RRF paper) for v1, tunable in Phase 8
 
 ### Pending Todos
 
@@ -77,12 +81,12 @@ None yet.
 ### Blockers/Concerns
 
 - [Research]: Flexmark-java chunking API needs validation during Phase 4 planning (hands-on prototyping recommended)
-- [Research]: LangChain4j 1.11.0 hybrid search exact builder methods need code verification during Phase 2
+- [Resolved]: LangChain4j 1.11.0-beta19 hybrid search API verified: SearchMode is nested enum, DatasourceBuilder has searchMode/textSearchConfig/rrfK methods, EmbeddingSearchRequest has query() builder method
 - [Research]: Spring AI MCP @Tool annotation with stdio transport may differ from webmvc -- test early in Phase 5
 
 ## Session Continuity
 
-Last session: 2026-02-14
-Stopped at: Completed 01-02-PLAN.md (Flyway migrations, embedding beans, integration tests)
+Last session: 2026-02-15
+Stopped at: Completed 02-01-PLAN.md (hybrid search infrastructure, SearchService, domain DTOs)
 Resume file: None
-Next: Phase 02 planning (Core Search or Web Crawling -- parallel eligible)
+Next: Phase 02 Plan 02 (search integration tests)

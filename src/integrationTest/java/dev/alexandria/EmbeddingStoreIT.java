@@ -46,6 +46,7 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
 
         EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
                 .queryEmbedding(embeddingModel.embed("Spring Boot configuration").content())
+                .query("Spring Boot configuration")  // Required for HYBRID search mode
                 .maxResults(1)
                 .build();
 
@@ -54,7 +55,8 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
         assertThat(results.matches()).hasSize(1);
         assertThat(results.matches().getFirst().embedded().text())
                 .isEqualTo(text);
-        assertThat(results.matches().getFirst().score()).isGreaterThan(0.8);
+        // In HYBRID mode, scores use RRF formula (not raw cosine similarity), so values are lower
+        assertThat(results.matches().getFirst().score()).isGreaterThan(0);
     }
 
     @Test

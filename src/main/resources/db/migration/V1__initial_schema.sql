@@ -42,7 +42,7 @@ CREATE INDEX idx_document_chunks_embedding_hnsw
 -- GIN index for PostgreSQL full-text search
 CREATE INDEX idx_document_chunks_text_fts
     ON document_chunks
-    USING gin (to_tsvector('english', text));
+    USING gin (to_tsvector('english', coalesce(text, '')));
 
 -- B-tree index for looking up chunks by source
 CREATE INDEX idx_document_chunks_source_id

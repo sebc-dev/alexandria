@@ -6,7 +6,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
-abstract class BaseIntegrationTest {
+public abstract class BaseIntegrationTest {
 
     @ServiceConnection
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(

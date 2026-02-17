@@ -5,6 +5,7 @@ import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.bgesmallenv15q.BgeSmallEnV15QuantizedEmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
+import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore.SearchMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,6 +27,9 @@ public class EmbeddingConfig {
                 .dimension(384)
                 .createTable(false)  // Schema managed by Flyway migrations
                 .useIndex(false)    // HNSW index managed by Flyway V1
+                .searchMode(SearchMode.HYBRID)
+                .textSearchConfig("english")  // Must match GIN index config in V1 migration
+                .rrfK(60)  // RRF constant (standard default from original RRF paper)
                 .build();
     }
 }
