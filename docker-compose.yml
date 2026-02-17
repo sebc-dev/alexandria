@@ -20,6 +20,9 @@ services:
 
   crawl4ai:
     image: unclecode/crawl4ai:0.8.0
+    # Uncomment to expose Crawl4AI API for local debugging
+    # ports:
+    #   - "11235:11235"
     shm_size: 1g
     deploy:
       resources:

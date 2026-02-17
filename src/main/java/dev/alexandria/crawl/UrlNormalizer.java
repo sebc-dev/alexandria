@@ -144,6 +144,7 @@ public final class UrlNormalizer {
                     String key = param.contains("=") ? param.substring(0, param.indexOf('=')) : param;
                     return !TRACKING_PARAMS.contains(key.toLowerCase());
                 })
+                .sorted()
                 .collect(Collectors.joining("&"));
         return filtered.isEmpty() ? null : filtered;
     }

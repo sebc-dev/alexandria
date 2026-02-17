@@ -24,25 +24,32 @@ class CrawlServiceIT extends BaseIntegrationTest {
 
     @Test
     void crawlSite_crawls_at_least_one_page() {
-        List<CrawlResult> results = crawlService.crawlSite("https://example.com", 5);
+        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 5);
 
-        assertThat(results).isNotEmpty();
-        assertThat(results.getFirst().success()).isTrue();
-        assertThat(results.getFirst().markdown()).isNotBlank();
+        assertThat(result.successPages()).isNotEmpty();
+        assertThat(result.successPages().getFirst().success()).isTrue();
+        assertThat(result.successPages().getFirst().markdown()).isNotBlank();
     }
 
     @Test
     void crawlSite_respects_maxPages_limit() {
-        List<CrawlResult> results = crawlService.crawlSite("https://example.com", 1);
+        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 1);
 
-        assertThat(results).hasSizeLessThanOrEqualTo(1);
+        assertThat(result.successPages()).hasSizeLessThanOrEqualTo(1);
     }
 
     @Test
     void crawlSite_normalizes_urls_for_dedup() {
-        List<CrawlResult> results = crawlService.crawlSite("https://example.com/", 5);
+        CrawlSiteResult result = crawlService.crawlSite("https://example.com/", 5);
 
-        List<String> urls = results.stream().map(CrawlResult::url).toList();
+        List<String> urls = result.successPages().stream().map(CrawlResult::url).toList();
         assertThat(new HashSet<>(urls)).hasSameSizeAs(urls);
+    }
+
+    @Test
+    void crawlSite_returns_failed_urls_list() {
+        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 5);
+
+        assertThat(result.failedUrls()).isNotNull();
     }
 }
