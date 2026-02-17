@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 2 - Core Search
+**Current focus:** Phase 3 - Web Crawling (complete)
 
 ## Current Position
 
-Phase: 2 of 9 (Core Search)
-Plan: 1 of 2 complete in Phase 02 (02-01 complete)
-Status: 02-01 complete, ready for 02-02
-Last activity: 2026-02-15 -- Completed 02-01-PLAN.md (hybrid search infrastructure, SearchService, domain DTOs)
+Phase: 3 of 9 (Web Crawling)
+Plan: 2 of 2 complete in Phase 03 (03-01, 03-02 complete)
+Status: Phase 03 complete
+Last activity: 2026-02-15 -- Completed phase 03 verification
 
 Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 4.3min
-- Total execution time: 0.36 hours
+- Total plans completed: 8
+- Average duration: 4.4min
+- Total execution time: 0.58 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [███░░░░░░░] 30%
 |-------|-------|-------|----------|
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
-| 02-core-search | 1 | 4min | 4min |
+| 03-web-crawling | 2 | 9min | 4.5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 3min, 4min, 4min
+- Last 5 plans: 4min, 4min, 4min, 5min, 5min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -69,6 +69,12 @@ Recent decisions affecting current work:
 - [02-01]: SearchMode is nested enum PgVectorEmbeddingStore.SearchMode, not top-level class (research doc was incorrect)
 - [02-01]: Metadata keys use snake_case convention: source_url, section_path -- must match ingestion-time keys
 - [02-01]: RRF k=60 (standard default from original RRF paper) for v1, tunable in Phase 8
+- [03-01]: Catch RestClientException in Crawl4AiClient for graceful failure handling (Crawl4AI returns HTTP 500 for unreachable URLs)
+- [03-01]: Made BaseIntegrationTest public for cross-package extension from crawl test package
+- [03-01]: PruningContentFilter threshold 0.48 with min_word_threshold 20 for documentation content density
+- [03-02]: UrlNormalizer as static utility (no Spring bean) since it has no dependencies
+- [03-02]: CrawlService follows links only in LINK_CRAWL mode; trusts sitemap URL list when available
+- [03-02]: Sequential page crawling (no concurrency) to keep Crawl4AI sidecar stable
 
 ### Pending Todos
 
@@ -87,6 +93,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 02-01-PLAN.md (hybrid search infrastructure, SearchService, domain DTOs)
+Stopped at: Completed phase 03 verification -- web crawling verified
 Resume file: None
-Next: Phase 02 Plan 02 (search integration tests)
+Next: Phase 02 (parallel eligible) -- Phase 03 complete

@@ -19,16 +19,28 @@ repositories {
 }
 
 dependencies {
+    // Spring Boot
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.aop)
+    implementation(libs.spring.retry)
+
+    // AI / Embeddings
     implementation(libs.langchain4j.core)
     implementation(libs.langchain4j.embeddings.bge)
     implementation(libs.langchain4j.pgvector)
     implementation(libs.spring.ai.mcp.server.webmvc)
+
+    // Web Crawling
+    implementation(libs.crawler.commons)
+
+    // Database
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
     runtimeOnly(libs.postgresql)
+
+    // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.archunit)
 }

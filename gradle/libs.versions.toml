@@ -13,6 +13,7 @@ pitest-junit5 = "1.2.3"
 spotbugs-plugin = "6.4.8"
 sonarqube = "7.1.0.6387"
 testcontainers = "1.21.1"
+crawler-commons = "1.6"
 
 [libraries]
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -31,6 +32,9 @@ postgresql = { module = "org.postgresql:postgresql" }
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+crawler-commons = { module = "com.github.crawler-commons:crawler-commons", version.ref = "crawler-commons" }
+spring-retry = { module = "org.springframework.retry:spring-retry" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
