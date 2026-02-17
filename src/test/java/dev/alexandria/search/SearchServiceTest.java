@@ -68,6 +68,33 @@ class SearchServiceTest {
     }
 
     @Test
+    void search_passes_maxResults_to_embedding_store() {
+        Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
+        when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
+
+        EmbeddingSearchResult<TextSegment> storeResult = new EmbeddingSearchResult<>(List.of());
+        when(embeddingStore.search(searchRequestCaptor.capture())).thenReturn(storeResult);
+
+        searchService.search(new SearchRequest("test query", 3));
+
+        EmbeddingSearchRequest capturedRequest = searchRequestCaptor.getValue();
+        assertThat(capturedRequest.maxResults()).isEqualTo(3);
+    }
+
+    @Test
+    void search_returns_empty_list_when_no_matches() {
+        Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
+        when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
+
+        EmbeddingSearchResult<TextSegment> storeResult = new EmbeddingSearchResult<>(List.of());
+        when(embeddingStore.search(any(EmbeddingSearchRequest.class))).thenReturn(storeResult);
+
+        List<SearchResult> results = searchService.search(new SearchRequest("test query"));
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
     void search_handles_null_metadata_gracefully() {
         Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));

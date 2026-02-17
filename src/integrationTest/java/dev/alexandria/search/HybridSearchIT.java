@@ -169,9 +169,9 @@ class HybridSearchIT extends BaseIntegrationTest {
         // Either empty or all results have very low relevance scores
         if (!results.isEmpty()) {
             boolean allLowScores = results.stream()
-                    .allMatch(r -> r.score() < 0.3);
+                    .allMatch(r -> r.score() < 0.05);
             assertThat(allLowScores)
-                    .as("All results for unrelated query should have low scores (< 0.3), but got: %s",
+                    .as("All results for unrelated query should have low scores (< 0.05), but got: %s",
                             results.stream().map(r -> String.format("%.3f", r.score())).toList())
                     .isTrue();
         }

@@ -28,7 +28,7 @@ public class EmbeddingConfig {
                 .createTable(false)  // Schema managed by Flyway migrations
                 .useIndex(false)    // HNSW index managed by Flyway V1
                 .searchMode(SearchMode.HYBRID)
-                .textSearchConfig("english")  // Must match GIN index config in V2 migration
+                .textSearchConfig("english")  // Must match GIN index config in V1 migration
                 .rrfK(60)  // RRF constant (standard default from original RRF paper)
                 .build();
     }
