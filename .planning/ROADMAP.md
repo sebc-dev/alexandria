@@ -100,11 +100,11 @@ Plans:
   4. Code examples are extracted as separate chunks tagged with language and content_type="code"
   5. User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) bypassing automatic chunking
   6. End-to-end pipeline works: crawl a real documentation site and produce searchable results via hybrid search
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- MarkdownChunker (AST-based heading splitter + code extractor), LanguageDetector, DocumentChunkData record, TDD with comprehensive unit tests
+- [ ] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter with JSON validation and replacement, integration tests proving ingest-search roundtrip
 
 ### Phase 5: MCP Server
 **Goal**: Claude Code can connect to Alexandria via MCP stdio transport and search indexed documentation -- the integration layer that makes everything usable
@@ -184,7 +184,7 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 | 1. Foundation & Infrastructure | 0/2 | Planned | - |
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
-| 4. Ingestion Pipeline | 0/TBD | Not started | - |
+| 4. Ingestion Pipeline | 0/2 | Planned | - |
 | 5. MCP Server | 0/TBD | Not started | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
