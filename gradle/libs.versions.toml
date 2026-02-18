@@ -36,6 +36,9 @@ testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.r
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 crawler-commons = { module = "com.github.crawler-commons:crawler-commons", version.ref = "crawler-commons" }
+spring-retry = { module = "org.springframework.retry:spring-retry" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
