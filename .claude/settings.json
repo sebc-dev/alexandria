@@ -15,5 +15,7 @@
     "type": "command",
     "command": "node .claude/hooks/gsd-statusline.js"
   },
-  "CLAUDE_CODE_TASK_LIST_ID": "alexandria"
+  "env": {
+    "CLAUDE_CODE_TASK_LIST_ID": "mon-projet-auth"
+  }
 }
