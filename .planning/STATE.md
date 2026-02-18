@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 4 - Ingestion Pipeline (in progress)
+**Current focus:** Phase 4 - Ingestion Pipeline (complete)
 
 ## Current Position
 
 Phase: 4 of 9 (Ingestion Pipeline)
-Plan: 1 of 2 complete in Phase 04 (04-01 complete)
-Status: Phase 04 in progress
-Last activity: 2026-02-18 -- Completed 04-01 Markdown chunking engine
+Plan: 2 of 2 complete in Phase 04 (04-02 complete)
+Status: Phase 04 complete
+Last activity: 2026-02-18 -- Completed 04-02 Ingestion pipeline orchestration
 
-Progress: [████░░░░░░] 40%
+Progress: [█████░░░░░] 45%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 4.6min
-- Total execution time: 0.68 hours
+- Total plans completed: 10
+- Average duration: 4.5min
+- Total execution time: 0.75 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [████░░░░░░] 40%
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
 | 03-web-crawling | 2 | 9min | 4.5min |
-| 04-ingestion-pipeline | 1 | 6min | 6min |
+| 04-ingestion-pipeline | 2 | 10min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 4min, 5min, 5min, 6min
+- Last 5 plans: 4min, 5min, 5min, 6min, 4min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -80,6 +80,10 @@ Recent decisions affecting current work:
 - [04-01]: IncludeSourceSpans.BLOCKS for preserving original Markdown formatting in prose chunks
 - [04-01]: Heading text excluded from prose chunk when section has only code blocks
 - [04-01]: TablesExtension added to both Parser and TextContentRenderer for full GFM table support
+- [04-02]: spring-boot-starter-validation added explicitly (Jakarta Bean Validation not transitive from starter-web)
+- [04-02]: Batch embedding via embedAll() for efficient multi-chunk processing
+- [04-02]: @Transactional on importChunks for delete+insert atomicity in replacement import
+- [04-02]: Metadata-based deletion via removeAll(metadataKey filter) for replacement semantics
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Completed 04-01-PLAN.md -- Markdown chunking engine
+Stopped at: Completed 04-02-PLAN.md -- Ingestion pipeline orchestration (Phase 04 complete)
 Resume file: None
-Next: 04-02-PLAN.md (ingestion pipeline orchestration and storage)
+Next: Phase 05 (MCP Server)
