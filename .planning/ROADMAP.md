@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
 - [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
-- [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
+- [x] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
 - [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
 - [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
@@ -103,8 +103,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- MarkdownChunker (AST-based heading splitter + code extractor), LanguageDetector, DocumentChunkData record, TDD with comprehensive unit tests
-- [ ] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter with JSON validation and replacement, integration tests proving ingest-search roundtrip
+- [x] 04-01-PLAN.md -- MarkdownChunker (AST-based heading splitter + code extractor), LanguageDetector, DocumentChunkData record, TDD with comprehensive unit tests
+- [x] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter with JSON validation and replacement, integration tests proving ingest-search roundtrip
 
 ### Phase 5: MCP Server
 **Goal**: Claude Code can connect to Alexandria via MCP stdio transport and search indexed documentation -- the integration layer that makes everything usable
@@ -184,7 +184,7 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 | 1. Foundation & Infrastructure | 0/2 | Planned | - |
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
-| 4. Ingestion Pipeline | 0/2 | Planned | - |
+| 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 5. MCP Server | 0/TBD | Not started | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
