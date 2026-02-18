@@ -4,18 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record Crawl4AiPageResult(
         String url,
         boolean success,
-        String statusCode,
+        String status_code,
         Crawl4AiMarkdown markdown,
         Map<String, List<Crawl4AiLink>> links,
-        String errorMessage
+        String error_message
 ) {
 
     /**

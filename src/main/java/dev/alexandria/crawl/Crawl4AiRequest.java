@@ -3,12 +3,11 @@ package dev.alexandria.crawl;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record Crawl4AiRequest(
         List<String> urls,
-        Map<String, Object> browserConfig,
-        Map<String, Object> crawlerConfig
+        Map<String, Object> browser_config,
+        Map<String, Object> crawler_config
 ) {}
