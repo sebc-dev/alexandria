@@ -2,7 +2,6 @@ package dev.alexandria.ingestion;
 
 import dev.alexandria.BaseIntegrationTest;
 import dev.alexandria.crawl.CrawlResult;
-import dev.alexandria.crawl.CrawlSiteResult;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
@@ -45,9 +44,8 @@ class IngestionServiceIT extends BaseIntegrationTest {
         CrawlResult page = new CrawlResult(
                 "https://docs.spring.io/config", markdown, List.of(), true, null
         );
-        CrawlSiteResult crawlResult = new CrawlSiteResult(List.of(page), List.of());
 
-        int chunkCount = ingestionService.ingest(crawlResult);
+        int chunkCount = ingestionService.ingest(List.of(page));
         assertThat(chunkCount).isGreaterThanOrEqualTo(2); // at least 1 prose + 1 code
 
         List<SearchResult> results = searchService.search(new SearchRequest("Spring auto-configuration"));
@@ -81,9 +79,8 @@ class IngestionServiceIT extends BaseIntegrationTest {
         CrawlResult page2 = new CrawlResult(
                 "https://docs.example.com/auth", markdown2, List.of(), true, null
         );
-        CrawlSiteResult crawlResult = new CrawlSiteResult(List.of(page1, page2), List.of());
 
-        int chunkCount = ingestionService.ingest(crawlResult);
+        int chunkCount = ingestionService.ingest(List.of(page1, page2));
         assertThat(chunkCount).isGreaterThanOrEqualTo(2); // at least 1 chunk per page
 
         List<SearchResult> dbResults = searchService.search(new SearchRequest("PostgreSQL connection pooling"));

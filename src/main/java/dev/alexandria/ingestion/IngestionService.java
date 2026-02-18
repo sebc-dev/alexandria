@@ -1,7 +1,6 @@
 package dev.alexandria.ingestion;
 
 import dev.alexandria.crawl.CrawlResult;
-import dev.alexandria.crawl.CrawlSiteResult;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import dev.alexandria.ingestion.chunking.MarkdownChunker;
 import dev.langchain4j.data.document.Metadata;
@@ -17,8 +16,8 @@ import java.util.List;
 /**
  * Orchestrates the ingestion pipeline: crawl result -> chunk -> embed -> store.
  *
- * <p>Takes crawled pages from Phase 3's CrawlSiteResult, chunks each page's Markdown
- * via MarkdownChunker (Plan 01), embeds the chunks, and stores them in the EmbeddingStore
+ * <p>Takes crawled pages from Phase 3's CrawlService, chunks each page's Markdown
+ * via MarkdownChunker, embeds the chunks, and stores them in the EmbeddingStore
  * where they become searchable by Phase 2's SearchService.
  */
 @Service
@@ -37,14 +36,14 @@ public class IngestionService {
     }
 
     /**
-     * Ingests all successful pages from a crawl result into the EmbeddingStore.
+     * Ingests all crawled pages into the EmbeddingStore.
      *
-     * @param crawlResult the crawl site result containing successful pages
+     * @param pages the successfully crawled pages from CrawlService
      * @return total number of chunks stored across all pages
      */
-    public int ingest(CrawlSiteResult crawlResult) {
+    public int ingest(List<CrawlResult> pages) {
         int totalChunks = 0;
-        for (CrawlResult page : crawlResult.successPages()) {
+        for (CrawlResult page : pages) {
             List<DocumentChunkData> chunks = chunker.chunk(
                     page.markdown(), page.url(), Instant.now().toString()
             );
