@@ -1,6 +1,7 @@
 package dev.alexandria.ingestion.prechunked;
 
 import dev.alexandria.BaseIntegrationTest;
+import dev.alexandria.ingestion.chunking.ContentType;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
@@ -37,7 +38,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "Spring Boot simplifies application development with auto-configuration.",
                 "https://docs.spring.io/boot",
                 "getting-started/overview",
-                "prose",
+                ContentType.PROSE,
                 "2026-02-18T10:00:00Z",
                 null
         );
@@ -45,7 +46,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "@SpringBootApplication\npublic class MyApp {}",
                 "https://docs.spring.io/boot",
                 "getting-started/overview",
-                "code",
+                ContentType.CODE,
                 "2026-02-18T10:00:00Z",
                 "java"
         );
@@ -74,7 +75,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "Original content about Kubernetes container orchestration and pod scheduling.",
                 sourceUrl,
                 "kubernetes/pods",
-                "prose",
+                ContentType.PROSE,
                 "2026-02-18T10:00:00Z",
                 null
         );
@@ -85,7 +86,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "Replacement content about Docker containerization and image building.",
                 sourceUrl,
                 "docker/containers",
-                "prose",
+                ContentType.PROSE,
                 "2026-02-18T11:00:00Z",
                 null
         );
@@ -113,7 +114,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "Valid content about microservices architecture patterns.",
                 "https://example.com/valid",
                 "architecture/microservices",
-                "prose",
+                ContentType.PROSE,
                 "2026-02-18T10:00:00Z",
                 null
         );
@@ -121,7 +122,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
                 "",  // blank text -- violates @NotBlank
                 "https://example.com/valid",
                 "architecture/invalid",
-                "prose",
+                ContentType.PROSE,
                 "2026-02-18T10:00:00Z",
                 null
         );
@@ -142,22 +143,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
         assertThat(validChunkStored).as("Valid chunk should NOT be stored when batch is invalid").isFalse();
     }
 
-    @Test
-    void import_rejects_invalid_content_type() {
-        PreChunkedChunk invalidTypeChunk = new PreChunkedChunk(
-                "Some content text.",
-                "https://example.com/test",
-                "test/section",
-                "invalid",  // not "prose" or "code" -- violates @Pattern
-                "2026-02-18T10:00:00Z",
-                null
-        );
-        PreChunkedRequest request = new PreChunkedRequest(
-                "https://example.com/test",
-                List.of(invalidTypeChunk)
-        );
-
-        assertThatThrownBy(() -> importer.importChunks(request))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
+    // import_rejects_invalid_content_type test removed: ContentType enum now
+    // enforces valid values at compile time. Invalid JSON values ("invalid") are
+    // rejected by Jackson deserialization before reaching the importer.
 }

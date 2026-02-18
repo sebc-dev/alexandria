@@ -76,7 +76,7 @@ public class PreChunkedImporter {
     private TextSegment toTextSegment(PreChunkedChunk chunk) {
         Metadata metadata = Metadata.from("source_url", chunk.sourceUrl())
                 .put("section_path", chunk.sectionPath())
-                .put("content_type", chunk.contentType())
+                .put("content_type", chunk.contentType().value())
                 .put("last_updated", chunk.lastUpdated());
         if (chunk.language() != null) {
             metadata.put("language", chunk.language());

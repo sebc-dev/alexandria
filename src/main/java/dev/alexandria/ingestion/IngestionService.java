@@ -42,10 +42,11 @@ public class IngestionService {
      * @return total number of chunks stored across all pages
      */
     public int ingest(List<CrawlResult> pages) {
+        String lastUpdated = Instant.now().toString();
         int totalChunks = 0;
         for (CrawlResult page : pages) {
             List<DocumentChunkData> chunks = chunker.chunk(
-                    page.markdown(), page.url(), Instant.now().toString()
+                    page.markdown(), page.url(), lastUpdated
             );
             storeChunks(chunks);
             totalChunks += chunks.size();
@@ -84,7 +85,7 @@ public class IngestionService {
     private Metadata buildMetadata(DocumentChunkData cd) {
         Metadata metadata = Metadata.from("source_url", cd.sourceUrl())
                 .put("section_path", cd.sectionPath())
-                .put("content_type", cd.contentType())
+                .put("content_type", cd.contentType().value())
                 .put("last_updated", cd.lastUpdated());
         if (cd.language() != null) {
             metadata.put("language", cd.language());

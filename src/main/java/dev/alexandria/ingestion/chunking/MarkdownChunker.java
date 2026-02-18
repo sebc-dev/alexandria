@@ -55,6 +55,7 @@ public class MarkdownChunker {
         }
 
         Node document = parser.parse(markdown);
+        String[] lines = markdown.split("\n", -1);
         List<DocumentChunkData> chunks = new ArrayList<>();
 
         // Track heading hierarchy: index 0=H1, 1=H2, 2=H3
@@ -70,7 +71,7 @@ public class MarkdownChunker {
             if (child instanceof Heading heading && heading.getLevel() <= 3) {
                 // Flush the previous section
                 emitChunks(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
-                        headingPath, sourceUrl, lastUpdated, markdown);
+                        headingPath, sourceUrl, lastUpdated, lines);
                 currentHeading = null;
                 currentContentNodes.clear();
                 currentCodeBlocks.clear();
@@ -94,7 +95,7 @@ public class MarkdownChunker {
 
         // Flush the final section
         emitChunks(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
-                headingPath, sourceUrl, lastUpdated, markdown);
+                headingPath, sourceUrl, lastUpdated, lines);
 
         return chunks;
     }
@@ -106,7 +107,7 @@ public class MarkdownChunker {
                             String[] headingPath,
                             String sourceUrl,
                             String lastUpdated,
-                            String originalMarkdown) {
+                            String[] lines) {
         if (sectionHeading == null && contentNodes.isEmpty() && codeBlocks.isEmpty()) {
             return;
         }
@@ -114,10 +115,10 @@ public class MarkdownChunker {
         String sectionPath = buildSectionPath(headingPath);
 
         // Build the prose text: heading + content (but only if there is content)
-        String proseText = extractProseText(sectionHeading, contentNodes, originalMarkdown);
+        String proseText = extractProseText(sectionHeading, contentNodes, lines);
         if (!proseText.isBlank()) {
             chunks.add(new DocumentChunkData(
-                    proseText, sourceUrl, sectionPath, "prose", lastUpdated, null
+                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
             ));
         }
 
@@ -129,20 +130,19 @@ public class MarkdownChunker {
             }
             String language = detectLanguage(codeBlock);
             chunks.add(new DocumentChunkData(
-                    code, sourceUrl, sectionPath, "code", lastUpdated, language
+                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language
             ));
         }
     }
 
     private String extractProseText(Heading sectionHeading, List<Node> contentNodes,
-                                    String originalMarkdown) {
+                                    String[] lines) {
         // If there are no content nodes (only code blocks in the section), do not emit
         // the heading as a standalone prose chunk
         if (contentNodes.isEmpty()) {
             return "";
         }
 
-        String[] lines = originalMarkdown.split("\n", -1);
         StringBuilder sb = new StringBuilder();
 
         // Include the heading itself in the prose output

@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static dev.alexandria.ingestion.chunking.ContentType.CODE;
+import static dev.alexandria.ingestion.chunking.ContentType.PROSE;
 
 class MarkdownChunkerTest {
 
@@ -36,15 +38,15 @@ class MarkdownChunkerTest {
 
         assertEquals(3, chunks.size());
 
-        assertEquals("prose", chunks.get(0).contentType());
+        assertEquals(ContentType.PROSE, chunks.get(0).contentType());
         assertEquals("introduction", chunks.get(0).sectionPath());
         assertTrue(chunks.get(0).text().contains("Some intro text."));
 
-        assertEquals("prose", chunks.get(1).contentType());
+        assertEquals(ContentType.PROSE, chunks.get(1).contentType());
         assertEquals("introduction/getting-started", chunks.get(1).sectionPath());
         assertTrue(chunks.get(1).text().contains("Getting started text."));
 
-        assertEquals("prose", chunks.get(2).contentType());
+        assertEquals(ContentType.PROSE, chunks.get(2).contentType());
         assertEquals("introduction/getting-started/configuration", chunks.get(2).sectionPath());
         assertTrue(chunks.get(2).text().contains("Config details here."));
     }
@@ -65,19 +67,19 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         // 1 prose + 1 code
-        long proseCount = chunks.stream().filter(c -> "prose".equals(c.contentType())).count();
-        long codeCount = chunks.stream().filter(c -> "code".equals(c.contentType())).count();
+        long proseCount = chunks.stream().filter(c -> ContentType.PROSE == c.contentType()).count();
+        long codeCount = chunks.stream().filter(c -> ContentType.CODE == c.contentType()).count();
         assertEquals(1, proseCount);
         assertEquals(1, codeCount);
 
         DocumentChunkData prose = chunks.stream()
-                .filter(c -> "prose".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.PROSE == c.contentType()).findFirst().orElseThrow();
         assertTrue(prose.text().contains("Install the package."));
         assertTrue(prose.text().contains("Then configure it."));
         assertNull(prose.language());
 
         DocumentChunkData code = chunks.stream()
-                .filter(c -> "code".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.CODE == c.contentType()).findFirst().orElseThrow();
         assertTrue(code.text().contains("import com.example.Foo;"));
         assertEquals("java", code.language());
         assertEquals("setup", code.sectionPath());
@@ -121,14 +123,14 @@ class MarkdownChunkerTest {
 
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-        long proseCount = chunks.stream().filter(c -> "prose".equals(c.contentType())).count();
-        long codeCount = chunks.stream().filter(c -> "code".equals(c.contentType())).count();
+        long proseCount = chunks.stream().filter(c -> ContentType.PROSE == c.contentType()).count();
+        long codeCount = chunks.stream().filter(c -> ContentType.CODE == c.contentType()).count();
         assertEquals(1, proseCount);
         assertEquals(1, codeCount);
 
         // The heading inside the code block must NOT create a separate chunk
         DocumentChunkData code = chunks.stream()
-                .filter(c -> "code".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.CODE == c.contentType()).findFirst().orElseThrow();
         assertTrue(code.text().contains("## This Is Not A Real Heading"));
     }
 
@@ -150,13 +152,13 @@ class MarkdownChunkerTest {
 
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-        long proseCount = chunks.stream().filter(c -> "prose".equals(c.contentType())).count();
-        long codeCount = chunks.stream().filter(c -> "code".equals(c.contentType())).count();
+        long proseCount = chunks.stream().filter(c -> ContentType.PROSE == c.contentType()).count();
+        long codeCount = chunks.stream().filter(c -> ContentType.CODE == c.contentType()).count();
         assertEquals(1, proseCount);
         assertEquals(2, codeCount);
 
         List<DocumentChunkData> codeChunks = chunks.stream()
-                .filter(c -> "code".equals(c.contentType())).toList();
+                .filter(c -> ContentType.CODE == c.contentType()).toList();
         assertEquals("java", codeChunks.get(0).language());
         assertEquals("python", codeChunks.get(1).language());
 
@@ -178,7 +180,7 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         DocumentChunkData code = chunks.stream()
-                .filter(c -> "code".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.CODE == c.contentType()).findFirst().orElseThrow();
         assertEquals("java", code.language());
     }
 
@@ -196,7 +198,7 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         assertEquals(1, chunks.size());
-        assertEquals("code", chunks.get(0).contentType());
+        assertEquals(ContentType.CODE, chunks.get(0).contentType());
         assertEquals("bash", chunks.get(0).language());
     }
 
@@ -251,7 +253,7 @@ class MarkdownChunkerTest {
             assertNotNull(chunk.contentType());
             assertEquals(LAST_UPDATED, chunk.lastUpdated());
 
-            if ("code".equals(chunk.contentType())) {
+            if (ContentType.CODE == chunk.contentType()) {
                 assertNotNull(chunk.language());
             } else {
                 assertNull(chunk.language());
@@ -273,7 +275,7 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         assertEquals(1, chunks.size());
-        assertEquals("prose", chunks.get(0).contentType());
+        assertEquals(ContentType.PROSE, chunks.get(0).contentType());
         // Table content preserved (not split by pipe characters)
         assertTrue(chunks.get(0).text().contains("foo"));
         assertTrue(chunks.get(0).text().contains("bar"));
@@ -330,7 +332,7 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         DocumentChunkData code = chunks.stream()
-                .filter(c -> "code".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.CODE == c.contentType()).findFirst().orElseThrow();
         assertEquals("java", code.language());
     }
 
@@ -348,7 +350,7 @@ class MarkdownChunkerTest {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
         DocumentChunkData prose = chunks.stream()
-                .filter(c -> "prose".equals(c.contentType())).findFirst().orElseThrow();
+                .filter(c -> ContentType.PROSE == c.contentType()).findFirst().orElseThrow();
         assertFalse(prose.text().contains("print(\"hello\")"));
         assertTrue(prose.text().contains("Before code."));
         assertTrue(prose.text().contains("After code."));
