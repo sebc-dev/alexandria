@@ -158,9 +158,12 @@ public class MarkdownChunker {
     }
 
     private void appendNodeText(Node node, String[] lines, StringBuilder sb) {
-        List<SourceSpan> sourceSpans = collectSourceSpans(node);
-        if (!sourceSpans.isEmpty()) {
+        var sourceSpans = node.getSourceSpans();
+        if (sourceSpans != null && !sourceSpans.isEmpty()) {
             for (SourceSpan span : sourceSpans) {
+                if (span == null) {
+                    continue;
+                }
                 int lineIndex = span.getLineIndex();
                 if (lineIndex >= 0 && lineIndex < lines.length) {
                     if (!sb.isEmpty()) {
@@ -170,7 +173,7 @@ public class MarkdownChunker {
                 }
             }
         } else {
-            // Fallback to TextContentRenderer
+            // Fallback to TextContentRenderer for nodes without source spans
             String rendered = textRenderer.render(node).trim();
             if (!rendered.isEmpty()) {
                 if (!sb.isEmpty()) {
@@ -178,33 +181,6 @@ public class MarkdownChunker {
                 }
                 sb.append(rendered);
             }
-        }
-    }
-
-    /**
-     * Collects source spans from a node and all its descendants.
-     * This handles extension nodes (like TableBlock) which may store source spans
-     * on child nodes rather than the parent.
-     */
-    private List<SourceSpan> collectSourceSpans(Node node) {
-        List<SourceSpan> spans = new ArrayList<>();
-        collectSourceSpansRecursive(node, spans);
-        return spans;
-    }
-
-    private void collectSourceSpansRecursive(Node node, List<SourceSpan> spans) {
-        var nodeSpans = node.getSourceSpans();
-        if (nodeSpans != null) {
-            for (SourceSpan span : nodeSpans) {
-                if (span != null) {
-                    spans.add(span);
-                }
-            }
-        }
-        Node child = node.getFirstChild();
-        while (child != null) {
-            collectSourceSpansRecursive(child, spans);
-            child = child.getNext();
         }
     }
 
