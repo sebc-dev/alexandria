@@ -15,17 +15,17 @@ public final class LanguageDetector {
 
     private static final Map<String, List<String>> LANGUAGE_PATTERNS = Map.ofEntries(
             Map.entry("java", List.of("public class ", "private ", "import java.",
-                    "@Override", "System.out.", "public static void main")),
+                    "@override", "system.out.", "public static void main")),
             Map.entry("python", List.of("def ", "import ", "from ", "self.",
                     "if __name__", "print(", "elif ")),
             Map.entry("javascript", List.of("const ", "let ", "function ", "=>",
                     "console.log", "require(", "module.exports")),
             Map.entry("typescript", List.of("interface ", ": string", ": number",
                     ": boolean", "export ", "import {", "type ")),
-            Map.entry("yaml", List.of("apiVersion:", "kind:", "metadata:", "spec:", "---")),
+            Map.entry("yaml", List.of("apiversion:", "kind:", "metadata:", "spec:", "---")),
             Map.entry("xml", List.of("<?xml", "<beans", "xmlns:", "<project", "<dependency")),
-            Map.entry("sql", List.of("SELECT ", "INSERT INTO", "CREATE TABLE",
-                    "ALTER TABLE", "WHERE ", "JOIN ", "FROM ")),
+            Map.entry("sql", List.of("select ", "insert into", "create table",
+                    "alter table", "where ", "join ", "from ")),
             Map.entry("bash", List.of("#!/bin/bash", "echo ", "export ", "if [", "fi", "done")),
             Map.entry("go", List.of("func ", "package ", "import (", "fmt.", "err != nil")),
             Map.entry("rust", List.of("fn ", "let mut ", "impl ", "pub fn", "use std::", "match "))
@@ -46,11 +46,12 @@ public final class LanguageDetector {
             return "unknown";
         }
 
+        String normalized = code.toLowerCase();
         Map<String, Integer> scores = new HashMap<>();
         for (var entry : LANGUAGE_PATTERNS.entrySet()) {
             int score = 0;
             for (String pattern : entry.getValue()) {
-                if (code.contains(pattern)) {
+                if (normalized.contains(pattern)) {
                     score++;
                 }
             }

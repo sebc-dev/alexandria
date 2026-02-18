@@ -1,5 +1,8 @@
 package dev.alexandria.ingestion.chunking;
 
+import dev.langchain4j.data.document.Metadata;
+import dev.langchain4j.data.segment.TextSegment;
+
 import java.util.Objects;
 
 /**
@@ -29,5 +32,27 @@ public record DocumentChunkData(
         Objects.requireNonNull(sectionPath, "sectionPath must not be null");
         Objects.requireNonNull(contentType, "contentType must not be null");
         Objects.requireNonNull(lastUpdated, "lastUpdated must not be null");
+    }
+
+    /**
+     * Converts chunk metadata to a langchain4j {@link Metadata} instance
+     * with the 5 standard snake_case keys used by the EmbeddingStore.
+     */
+    public Metadata toMetadata() {
+        Metadata metadata = Metadata.from("source_url", sourceUrl)
+                .put("section_path", sectionPath)
+                .put("content_type", contentType.value())
+                .put("last_updated", lastUpdated);
+        if (language != null) {
+            metadata.put("language", language);
+        }
+        return metadata;
+    }
+
+    /**
+     * Converts this chunk to a langchain4j {@link TextSegment} ready for embedding.
+     */
+    public TextSegment toTextSegment() {
+        return TextSegment.from(text, toMetadata());
     }
 }

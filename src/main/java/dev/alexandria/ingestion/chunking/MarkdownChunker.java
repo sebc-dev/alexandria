@@ -27,10 +27,21 @@ import java.util.stream.Collectors;
 @Component
 public class MarkdownChunker {
 
+    static final int DEFAULT_MAX_CHUNK_SIZE = 2000;
+
     private final Parser parser;
     private final TextContentRenderer textRenderer;
+    private final int maxChunkSize;
 
     public MarkdownChunker() {
+        this(DEFAULT_MAX_CHUNK_SIZE);
+    }
+
+    public MarkdownChunker(int maxChunkSize) {
+        if (maxChunkSize < 100) {
+            throw new IllegalArgumentException("maxChunkSize must be at least 100");
+        }
+        this.maxChunkSize = maxChunkSize;
         var extensions = List.of(TablesExtension.create());
         this.parser = Parser.builder()
                 .extensions(extensions)
@@ -117,9 +128,16 @@ public class MarkdownChunker {
         // Build the prose text: heading + content (but only if there is content)
         String proseText = extractProseText(sectionHeading, contentNodes, lines);
         if (!proseText.isBlank()) {
-            chunks.add(new DocumentChunkData(
-                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
-            ));
+            if (proseText.length() <= maxChunkSize) {
+                chunks.add(new DocumentChunkData(
+                        proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
+                ));
+            } else {
+                splitOversizedText(proseText, maxChunkSize).forEach(part ->
+                        chunks.add(new DocumentChunkData(
+                                part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
+                        )));
+            }
         }
 
         // Emit code chunks
@@ -207,5 +225,74 @@ public class MarkdownChunker {
             return info.split("\\s+")[0].toLowerCase();
         }
         return LanguageDetector.detect(codeBlock.getLiteral());
+    }
+
+    /**
+     * Splits oversized text into parts that each fit within maxSize.
+     * Splits at paragraph boundaries (blank lines) first, then at sentence boundaries.
+     */
+    static List<String> splitOversizedText(String text, int maxSize) {
+        // Split at paragraph boundaries (blank lines)
+        String[] paragraphs = text.split("\n\n");
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        for (String para : paragraphs) {
+            String trimmed = para.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            if (current.isEmpty()) {
+                if (trimmed.length() <= maxSize) {
+                    current.append(trimmed);
+                } else {
+                    // Single paragraph too large — split by sentences
+                    result.addAll(splitBySentences(trimmed, maxSize));
+                }
+            } else if (current.length() + 2 + trimmed.length() <= maxSize) {
+                current.append("\n\n").append(trimmed);
+            } else {
+                result.add(current.toString());
+                current.setLength(0);
+                if (trimmed.length() <= maxSize) {
+                    current.append(trimmed);
+                } else {
+                    result.addAll(splitBySentences(trimmed, maxSize));
+                }
+            }
+        }
+
+        if (!current.isEmpty()) {
+            result.add(current.toString());
+        }
+
+        return result;
+    }
+
+    private static List<String> splitBySentences(String text, int maxSize) {
+        // Split on sentence-ending punctuation followed by space
+        String[] sentences = text.split("(?<=[.!?])\\s+");
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        for (String sentence : sentences) {
+            if (current.isEmpty()) {
+                current.append(sentence);
+            } else if (current.length() + 1 + sentence.length() <= maxSize) {
+                current.append(" ").append(sentence);
+            } else {
+                result.add(current.toString());
+                current.setLength(0);
+                current.append(sentence);
+            }
+        }
+
+        if (!current.isEmpty()) {
+            // If a single sentence exceeds maxSize, we still emit it as-is
+            result.add(current.toString());
+        }
+
+        return result;
     }
 }

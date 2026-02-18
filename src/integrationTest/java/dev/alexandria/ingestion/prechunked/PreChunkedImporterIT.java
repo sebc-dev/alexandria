@@ -143,7 +143,32 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
         assertThat(validChunkStored).as("Valid chunk should NOT be stored when batch is invalid").isFalse();
     }
 
-    // import_rejects_invalid_content_type test removed: ContentType enum now
-    // enforces valid values at compile time. Invalid JSON values ("invalid") are
-    // rejected by Jackson deserialization before reaching the importer.
+    @Test
+    void import_rejects_blank_source_url() {
+        PreChunkedChunk chunk = new PreChunkedChunk(
+                "Some content about API design.",
+                "https://example.com/api",
+                "api/design",
+                ContentType.PROSE,
+                "2026-02-18T10:00:00Z",
+                null
+        );
+        PreChunkedRequest request = new PreChunkedRequest("", List.of(chunk));
+
+        assertThatThrownBy(() -> importer.importChunks(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("sourceUrl");
+    }
+
+    @Test
+    void import_rejects_empty_chunks_list() {
+        PreChunkedRequest request = new PreChunkedRequest(
+                "https://example.com/empty",
+                List.of()
+        );
+
+        assertThatThrownBy(() -> importer.importChunks(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("chunks");
+    }
 }

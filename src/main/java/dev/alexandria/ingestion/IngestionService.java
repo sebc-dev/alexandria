@@ -3,7 +3,6 @@ package dev.alexandria.ingestion;
 import dev.alexandria.crawl.CrawlResult;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import dev.alexandria.ingestion.chunking.MarkdownChunker;
-import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -19,6 +18,13 @@ import java.util.List;
  * <p>Takes crawled pages from Phase 3's CrawlService, chunks each page's Markdown
  * via MarkdownChunker, embeds the chunks, and stores them in the EmbeddingStore
  * where they become searchable by Phase 2's SearchService.
+ *
+ * <p><strong>Transaction semantics:</strong> this service uses best-effort processing.
+ * Each page is chunked, embedded, and stored independently. If a page fails mid-batch,
+ * previously stored pages are <em>not</em> rolled back. This is intentional: embedding
+ * calls are external API operations that cannot participate in database transactions,
+ * and losing N-1 successfully ingested pages because of one failure is undesirable.
+ * Callers should handle per-page errors and retry failed pages individually.
  */
 @Service
 public class IngestionService {
@@ -68,28 +74,21 @@ public class IngestionService {
         return chunks.size();
     }
 
+    private static final int EMBED_BATCH_SIZE = 256;
+
     private void storeChunks(List<DocumentChunkData> chunks) {
         if (chunks.isEmpty()) {
             return;
         }
 
         List<TextSegment> segments = chunks.stream()
-                .map(cd -> TextSegment.from(cd.text(), buildMetadata(cd)))
+                .map(DocumentChunkData::toTextSegment)
                 .toList();
 
-        List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
-
-        embeddingStore.addAll(embeddings, segments);
-    }
-
-    private Metadata buildMetadata(DocumentChunkData cd) {
-        Metadata metadata = Metadata.from("source_url", cd.sourceUrl())
-                .put("section_path", cd.sectionPath())
-                .put("content_type", cd.contentType().value())
-                .put("last_updated", cd.lastUpdated());
-        if (cd.language() != null) {
-            metadata.put("language", cd.language());
+        for (int i = 0; i < segments.size(); i += EMBED_BATCH_SIZE) {
+            List<TextSegment> batch = segments.subList(i, Math.min(i + EMBED_BATCH_SIZE, segments.size()));
+            List<Embedding> embeddings = embeddingModel.embedAll(batch).content();
+            embeddingStore.addAll(embeddings, batch);
         }
-        return metadata;
     }
 }

@@ -2,78 +2,104 @@ package dev.alexandria.ingestion.chunking;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LanguageDetectorTest {
 
     @Test
     void detectsJavaFromPublicClassAndStaticVoidMain() {
-        assertEquals("java", LanguageDetector.detect("public class Foo { public static void main(String[] args) {} }"));
+        assertThat(LanguageDetector.detect("public class Foo { public static void main(String[] args) {} }"))
+                .isEqualTo("java");
     }
 
     @Test
     void detectsJavaFromPublicClassAndImport() {
-        assertEquals("java", LanguageDetector.detect("public class Foo { }\nimport java.util.List;"));
+        assertThat(LanguageDetector.detect("public class Foo { }\nimport java.util.List;"))
+                .isEqualTo("java");
     }
 
     @Test
     void detectsPythonFromDefAndSelf() {
-        assertEquals("python", LanguageDetector.detect("def foo():\n    self.bar = 1\n    pass"));
+        assertThat(LanguageDetector.detect("def foo():\n    self.bar = 1\n    pass"))
+                .isEqualTo("python");
     }
 
     @Test
     void detectsPythonFromDefAndPrint() {
-        assertEquals("python", LanguageDetector.detect("def foo():\n    print(\"hello\")"));
+        assertThat(LanguageDetector.detect("def foo():\n    print(\"hello\")"))
+                .isEqualTo("python");
     }
 
     @Test
     void detectsJavascriptFromConstAndConsoleLog() {
-        assertEquals("javascript", LanguageDetector.detect("const x = 1; console.log(x)"));
+        assertThat(LanguageDetector.detect("const x = 1; console.log(x)"))
+                .isEqualTo("javascript");
     }
 
     @Test
     void detectsSqlFromSelectFromWhere() {
-        assertEquals("sql", LanguageDetector.detect("SELECT * FROM users WHERE id = 1"));
+        assertThat(LanguageDetector.detect("SELECT * FROM users WHERE id = 1"))
+                .isEqualTo("sql");
+    }
+
+    @Test
+    void detectsSqlCaseInsensitive() {
+        assertThat(LanguageDetector.detect("select * from users where id = 1"))
+                .isEqualTo("sql");
     }
 
     @Test
     void returnsUnknownWhenNoPatternsMatchAboveThreshold() {
-        assertEquals("unknown", LanguageDetector.detect("some random text with no indicators"));
+        assertThat(LanguageDetector.detect("some random text with no indicators"))
+                .isEqualTo("unknown");
     }
 
     @Test
     void detectsGoFromFuncAndFmt() {
-        assertEquals("go", LanguageDetector.detect("func main() { fmt.Println(\"hello\") }"));
+        assertThat(LanguageDetector.detect("func main() { fmt.Println(\"hello\") }"))
+                .isEqualTo("go");
     }
 
     @Test
     void detectsBashFromEchoAndExport() {
-        assertEquals("bash", LanguageDetector.detect("echo \"hello\"\nexport PATH=/usr/local/bin:$PATH"));
+        assertThat(LanguageDetector.detect("echo \"hello\"\nexport PATH=/usr/local/bin:$PATH"))
+                .isEqualTo("bash");
     }
 
     @Test
     void detectsRustFromFnAndLetMut() {
-        assertEquals("rust", LanguageDetector.detect("fn main() {\n    let mut x = 5;\n}"));
+        assertThat(LanguageDetector.detect("fn main() {\n    let mut x = 5;\n}"))
+                .isEqualTo("rust");
     }
 
     @Test
     void detectsYamlFromApiVersionAndKind() {
-        assertEquals("yaml", LanguageDetector.detect("apiVersion: v1\nkind: Service\nmetadata:\n  name: my-service"));
+        assertThat(LanguageDetector.detect("apiVersion: v1\nkind: Service\nmetadata:\n  name: my-service"))
+                .isEqualTo("yaml");
     }
 
     @Test
     void detectsXmlFromXmlDeclarationAndXmlns() {
-        assertEquals("xml", LanguageDetector.detect("<?xml version=\"1.0\"?>\n<beans xmlns:context=\"http://example.com\">"));
+        assertThat(LanguageDetector.detect("<?xml version=\"1.0\"?>\n<beans xmlns:context=\"http://example.com\">"))
+                .isEqualTo("xml");
     }
 
     @Test
     void returnsUnknownForSinglePatternMatch() {
         // Only one pattern match ("const ") is not enough -- need >= 2
-        assertEquals("unknown", LanguageDetector.detect("const x = 42"));
+        assertThat(LanguageDetector.detect("const x = 42"))
+                .isEqualTo("unknown");
     }
 
     @Test
     void returnsUnknownForEmptyInput() {
-        assertEquals("unknown", LanguageDetector.detect(""));
+        assertThat(LanguageDetector.detect(""))
+                .isEqualTo("unknown");
+    }
+
+    @Test
+    void returnsUnknownForNullInput() {
+        assertThat(LanguageDetector.detect(null))
+                .isEqualTo("unknown");
     }
 }
