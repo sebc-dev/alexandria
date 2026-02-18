@@ -13,6 +13,7 @@ pitest-junit5 = "1.2.3"
 spotbugs-plugin = "6.4.8"
 sonarqube = "7.1.0.6387"
 testcontainers = "1.21.1"
+commonmark = "0.27.1"
 crawler-commons = "1.6"
 
 [libraries]
@@ -32,6 +33,8 @@ postgresql = { module = "org.postgresql:postgresql" }
 archunit = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit5 = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
+commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 crawler-commons = { module = "com.github.crawler-commons:crawler-commons", version.ref = "crawler-commons" }
 
 [plugins]
