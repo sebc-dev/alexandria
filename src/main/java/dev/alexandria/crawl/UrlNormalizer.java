@@ -87,33 +87,6 @@ public final class UrlNormalizer {
     }
 
     /**
-     * Extract the base URL (scheme://host[:port]) from a full URL.
-     * Non-default ports are preserved; default ports (80 for HTTP, 443 for HTTPS) are omitted.
-     *
-     * @param url the URL to extract the base from
-     * @return the base URL, or the input unchanged if malformed
-     */
-    public static String normalizeToBase(String url) {
-        try {
-            URI uri = new URI(url);
-            if (uri.getScheme() == null || uri.getHost() == null) {
-                log.warn("URL missing scheme or host, returning unchanged: {}", url);
-                return url;
-            }
-            String scheme = uri.getScheme().toLowerCase();
-            String host = uri.getHost().toLowerCase();
-            int port = uri.getPort();
-            if (port == -1 || isDefaultPort(scheme, port)) {
-                return scheme + "://" + host;
-            }
-            return scheme + "://" + host + ":" + port;
-        } catch (URISyntaxException e) {
-            log.warn("Malformed URL, returning unchanged: {}", url);
-            return url;
-        }
-    }
-
-    /**
      * Check if a candidate URL has the same scheme+host+port as the root URL.
      * Used to filter out external links during crawling.
      *
@@ -125,14 +98,18 @@ public final class UrlNormalizer {
         try {
             URI root = new URI(rootUrl);
             URI candidate = new URI(candidateUrl);
+
             if (root.getScheme() == null || candidate.getScheme() == null
                     || root.getHost() == null || candidate.getHost() == null) {
                 return false;
             }
+
+            return root.getScheme().equalsIgnoreCase(candidate.getScheme())
+                    && root.getHost().equalsIgnoreCase(candidate.getHost())
+                    && effectivePort(root) == effectivePort(candidate);
         } catch (URISyntaxException e) {
             return false;
         }
-        return normalizeToBase(rootUrl).equals(normalizeToBase(candidateUrl));
     }
 
     private static String filterQueryParams(String query) {
@@ -144,7 +121,6 @@ public final class UrlNormalizer {
                     String key = param.contains("=") ? param.substring(0, param.indexOf('=')) : param;
                     return !TRACKING_PARAMS.contains(key.toLowerCase());
                 })
-                .sorted()
                 .collect(Collectors.joining("&"));
         return filtered.isEmpty() ? null : filtered;
     }
@@ -152,5 +128,13 @@ public final class UrlNormalizer {
     private static boolean isDefaultPort(String scheme, int port) {
         return ("http".equals(scheme) && port == 80)
                 || ("https".equals(scheme) && port == 443);
+    }
+
+    private static int effectivePort(URI uri) {
+        int port = uri.getPort();
+        if (port != -1) {
+            return port;
+        }
+        return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
     }
 }

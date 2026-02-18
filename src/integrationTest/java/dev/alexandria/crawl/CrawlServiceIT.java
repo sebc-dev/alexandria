@@ -2,6 +2,7 @@ package dev.alexandria.crawl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 
@@ -9,14 +10,32 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import dev.alexandria.BaseIntegrationTest;
 
 class CrawlServiceIT extends BaseIntegrationTest {
 
+    static GenericContainer<?> crawl4ai = new GenericContainer<>(
+            DockerImageName.parse("unclecode/crawl4ai:0.8.0"))
+            .withExposedPorts(11235)
+            .withCreateContainerCmdModifier(cmd ->
+                    cmd.getHostConfig().withShmSize(1024L * 1024L * 1024L))
+            .waitingFor(Wait.forHttp("/health")
+                    .forPort(11235)
+                    .forStatusCode(200)
+                    .withStartupTimeout(Duration.ofSeconds(120)));
+
+    static {
+        crawl4ai.start();
+    }
+
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("alexandria.crawl4ai.base-url", SharedCrawl4AiContainer::baseUrl);
+        registry.add("alexandria.crawl4ai.base-url", () ->
+                "http://" + crawl4ai.getHost() + ":" + crawl4ai.getMappedPort(11235));
     }
 
     @Autowired
@@ -24,32 +43,25 @@ class CrawlServiceIT extends BaseIntegrationTest {
 
     @Test
     void crawlSite_crawls_at_least_one_page() {
-        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 5);
+        List<CrawlResult> results = crawlService.crawlSite("https://example.com", 5);
 
-        assertThat(result.successPages()).isNotEmpty();
-        assertThat(result.successPages().getFirst().success()).isTrue();
-        assertThat(result.successPages().getFirst().markdown()).isNotBlank();
+        assertThat(results).isNotEmpty();
+        assertThat(results.getFirst().success()).isTrue();
+        assertThat(results.getFirst().markdown()).isNotBlank();
     }
 
     @Test
     void crawlSite_respects_maxPages_limit() {
-        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 1);
+        List<CrawlResult> results = crawlService.crawlSite("https://example.com", 1);
 
-        assertThat(result.successPages()).hasSizeLessThanOrEqualTo(1);
+        assertThat(results).hasSizeLessThanOrEqualTo(1);
     }
 
     @Test
     void crawlSite_normalizes_urls_for_dedup() {
-        CrawlSiteResult result = crawlService.crawlSite("https://example.com/", 5);
+        List<CrawlResult> results = crawlService.crawlSite("https://example.com/", 5);
 
-        List<String> urls = result.successPages().stream().map(CrawlResult::url).toList();
+        List<String> urls = results.stream().map(CrawlResult::url).toList();
         assertThat(new HashSet<>(urls)).hasSameSizeAs(urls);
-    }
-
-    @Test
-    void crawlSite_returns_failed_urls_list() {
-        CrawlSiteResult result = crawlService.crawlSite("https://example.com", 5);
-
-        assertThat(result.failedUrls()).isNotNull();
     }
 }
