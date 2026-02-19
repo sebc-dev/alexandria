@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
 - [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
-- [ ] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup
+- [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
 - [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
 - [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
@@ -117,7 +117,7 @@ Plans:
   3. Dead code, unused imports, and stale TODOs removed across the codebase
   4. Existing tests consolidated: no duplicate test setups, shared fixtures extracted where appropriate
   5. All quality gates pass (`./quality.sh all`) with no regressions
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 04.5-01-PLAN.md -- SpotBugs fixes (23 findings), unused Gradle deps removal, test fixture builders
@@ -206,7 +206,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
-| 4.5. Code Quality & Test Consolidation | 1/5 | In Progress | - |
+| 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
 | 5. MCP Server | 0/TBD | Not started | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
