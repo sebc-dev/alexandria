@@ -121,7 +121,7 @@ Plans:
 
 Plans:
 - [x] 04.5-01-PLAN.md -- SpotBugs fixes (23 findings), unused Gradle deps removal, test fixture builders
-- [ ] 04.5-02-PLAN.md -- Kill PIT mutations (20 surviving) and refactor MarkdownChunker long methods
+- [x] 04.5-02-PLAN.md -- Kill PIT mutations (20 surviving) and refactor MarkdownChunker long methods
 - [ ] 04.5-03-PLAN.md -- Add unit tests for crawl package (CrawlService, Crawl4AiClient, PageDiscoveryService, SitemapParser) + refactor CrawlService
 - [ ] 04.5-04-PLAN.md -- Add unit tests for IngestionService and PreChunkedImporter
 - [ ] 04.5-05-PLAN.md -- Javadoc on 18 classes, test name harmonization (46 renames), IT consolidation, dead code/import cleanup
