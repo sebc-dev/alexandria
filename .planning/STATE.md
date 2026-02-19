@@ -37,6 +37,7 @@ Progress: [██████░░░░] 55%
 - Trend: stable
 
 *Updated after each plan completion*
+| Phase 04.5 P03 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 04.5]: 6 surviving PIT mutations classified as equivalent (downstream guards make them unkillable)
 - [04.5-04]: InOrder verification for PreChunkedImporter embed-before-delete safety ordering
 - [04.5-04]: No test for failed CrawlResult filtering -- IngestionService does not check success flag (caller responsibility)
+- [Phase 04.5-03]: RestClient mock chain uses answer-based URI routing for multi-URL SitemapParser tests
+- [Phase 04.5-03]: CrawlService.crawlSite() refactored from ~50 to ~22 lines (seedQueue, dequeueAndNormalize, processPage, enqueueDiscoveredLinks)
 
 ### Pending Todos
 
