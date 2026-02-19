@@ -12,11 +12,11 @@ Alexandria delivers a self-hosted RAG system that crawls, indexes, and exposes t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
-- [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
+- [x] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
+- [x] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
 - [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
-- [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
+- [x] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
 - [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
 - [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
@@ -38,8 +38,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
-- [ ] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
+- [x] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
+- [x] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
 
 ### Phase 1: Foundation & Infrastructure
 **Goal**: A running Docker Compose stack with PostgreSQL+pgvector, Spring Boot application, and in-process ONNX embedding generation -- the base layer everything else builds on
@@ -54,8 +54,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
-- [ ] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
+- [x] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
+- [x] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
 
 ### Phase 2: Core Search
 **Goal**: Users can perform hybrid semantic+keyword search over indexed documentation and get relevant, cited results -- verifiable with manually inserted test data before any crawling exists
@@ -100,11 +100,11 @@ Plans:
   4. Code examples are extracted as separate chunks tagged with language and content_type="code"
   5. User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) bypassing automatic chunking
   6. End-to-end pipeline works: crawl a real documentation site and produce searchable results via hybrid search
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [x] 04-01-PLAN.md -- MarkdownChunker (AST-based heading splitter + code extractor), LanguageDetector, DocumentChunkData record, TDD with comprehensive unit tests
+- [x] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter with JSON validation and replacement, integration tests proving ingest-search roundtrip
 
 ### Phase 5: MCP Server
 **Goal**: Claude Code can connect to Alexandria via MCP stdio transport and search indexed documentation -- the integration layer that makes everything usable
@@ -180,11 +180,11 @@ Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. CI & Quality Gate | 0/2 | Planned | - |
-| 1. Foundation & Infrastructure | 0/2 | Planned | - |
+| 0. CI & Quality Gate | 2/2 | ✓ Complete | 2026-02-14 |
+| 1. Foundation & Infrastructure | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
-| 4. Ingestion Pipeline | 0/TBD | Not started | - |
+| 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 5. MCP Server | 0/TBD | Not started | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |

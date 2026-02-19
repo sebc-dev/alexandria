@@ -76,10 +76,10 @@ summarize_coverage() {
     fi
 
     local line_missed line_covered branch_missed branch_covered
-    line_missed=$(grep -oP '<counter type="LINE" missed="[0-9]+"' "$report" | tail -1 | grep -oP '[0-9]+$') || line_missed=0
-    line_covered=$(grep -oP '<counter type="LINE" missed="[0-9]+" covered="[0-9]+"' "$report" | tail -1 | grep -oP '[0-9]+$') || line_covered=0
-    branch_missed=$(grep -oP '<counter type="BRANCH" missed="[0-9]+"' "$report" | tail -1 | grep -oP '[0-9]+$') || branch_missed=0
-    branch_covered=$(grep -oP '<counter type="BRANCH" missed="[0-9]+" covered="[0-9]+"' "$report" | tail -1 | grep -oP '[0-9]+$') || branch_covered=0
+    line_missed=$(grep -oP '<counter type="LINE" missed="\K[0-9]+' "$report" | tail -1) || line_missed=0
+    line_covered=$(grep -oP '<counter type="LINE" [^/]*covered="\K[0-9]+' "$report" | tail -1) || line_covered=0
+    branch_missed=$(grep -oP '<counter type="BRANCH" missed="\K[0-9]+' "$report" | tail -1) || branch_missed=0
+    branch_covered=$(grep -oP '<counter type="BRANCH" [^/]*covered="\K[0-9]+' "$report" | tail -1) || branch_covered=0
 
     local line_total=$((line_missed + line_covered))
     local branch_total=$((branch_missed + branch_covered))
@@ -108,8 +108,8 @@ summarize_mutations() {
     if [[ -n "$mutations_xml" ]]; then
         local total killed survived
         total=$(grep -c '<mutation ' "$mutations_xml" 2>/dev/null) || total=0
-        killed=$(grep -c 'status="KILLED"' "$mutations_xml" 2>/dev/null) || killed=0
-        survived=$(grep -c 'status="SURVIVED"' "$mutations_xml" 2>/dev/null) || survived=0
+        killed=$(grep -c "status=['\"]KILLED['\"]" "$mutations_xml" 2>/dev/null) || killed=0
+        survived=$(grep -c "status=['\"]SURVIVED['\"]" "$mutations_xml" 2>/dev/null) || survived=0
 
         local score=0
         if [[ $total -gt 0 ]]; then

@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 3 - Web Crawling (complete)
+**Current focus:** Phase 4 - Ingestion Pipeline (complete)
 
 ## Current Position
 
-Phase: 3 of 9 (Web Crawling)
-Plan: 2 of 2 complete in Phase 03 (03-01, 03-02 complete)
-Status: Phase 03 complete
-Last activity: 2026-02-15 -- Completed phase 03 verification
+Phase: 4 of 9 (Ingestion Pipeline)
+Plan: 2 of 2 complete in Phase 04 (04-02 complete)
+Status: Phase 04 complete
+Last activity: 2026-02-18 -- Completed 04-02 Ingestion pipeline orchestration
 
-Progress: [███░░░░░░░] 30%
+Progress: [█████░░░░░] 45%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 4.4min
-- Total execution time: 0.58 hours
+- Total plans completed: 10
+- Average duration: 4.5min
+- Total execution time: 0.75 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [███░░░░░░░] 30%
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
 | 03-web-crawling | 2 | 9min | 4.5min |
+| 04-ingestion-pipeline | 2 | 10min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 4min, 4min, 5min, 5min
+- Last 5 plans: 4min, 5min, 5min, 6min, 4min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -75,6 +76,14 @@ Recent decisions affecting current work:
 - [03-02]: UrlNormalizer as static utility (no Spring bean) since it has no dependencies
 - [03-02]: CrawlService follows links only in LINK_CRAWL mode; trusts sitemap URL list when available
 - [03-02]: Sequential page crawling (no concurrency) to keep Crawl4AI sidecar stable
+- [04-01]: commonmark-java 0.27.1 over flexmark-java (actively maintained, cleaner API)
+- [04-01]: IncludeSourceSpans.BLOCKS for preserving original Markdown formatting in prose chunks
+- [04-01]: Heading text excluded from prose chunk when section has only code blocks
+- [04-01]: TablesExtension added to both Parser and TextContentRenderer for full GFM table support
+- [04-02]: spring-boot-starter-validation added explicitly (Jakarta Bean Validation not transitive from starter-web)
+- [04-02]: Batch embedding via embedAll() for efficient multi-chunk processing
+- [04-02]: @Transactional on importChunks for delete+insert atomicity in replacement import
+- [04-02]: Metadata-based deletion via removeAll(metadataKey filter) for replacement semantics
 
 ### Pending Todos
 
@@ -86,13 +95,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Research]: Flexmark-java chunking API needs validation during Phase 4 planning (hands-on prototyping recommended)
+- [Resolved]: Flexmark-java replaced by commonmark-java 0.27.1 (actively maintained, cleaner AST API, validated in Phase 4)
 - [Resolved]: LangChain4j 1.11.0-beta19 hybrid search API verified: SearchMode is nested enum, DatasourceBuilder has searchMode/textSearchConfig/rrfK methods, EmbeddingSearchRequest has query() builder method
 - [Research]: Spring AI MCP @Tool annotation with stdio transport may differ from webmvc -- test early in Phase 5
 
 ## Session Continuity
 
-Last session: 2026-02-15
-Stopped at: Completed phase 03 verification -- web crawling verified
+Last session: 2026-02-18
+Stopped at: Completed 04-02-PLAN.md -- Ingestion pipeline orchestration (Phase 04 complete)
 Resume file: None
-Next: Phase 02 (parallel eligible) -- Phase 03 complete
+Next: Phase 05 (MCP Server)
