@@ -13,6 +13,18 @@ import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * A single indexed chunk of documentation stored in pgvector.
+ *
+ * <p>Each chunk holds the text content, JSONB metadata (source URL, section path,
+ * content type, language), and a reference to the originating {@link dev.alexandria.source.Source}.
+ * The embedding vector is managed by LangChain4j's {@code PgVectorEmbeddingStore} and
+ * is not mapped as a JPA field.
+ *
+ * <p>Maps to the {@code document_chunks} table managed by Flyway migrations.
+ *
+ * @see DocumentChunkRepository
+ */
 @Entity
 @Table(name = "document_chunks")
 public class DocumentChunk {
@@ -39,6 +51,13 @@ public class DocumentChunk {
         // JPA requires no-arg constructor
     }
 
+    /**
+     * Creates a new document chunk.
+     *
+     * @param text     the chunk text content
+     * @param metadata JSONB metadata string (source_url, section_path, content_type, language)
+     * @param sourceId the UUID of the originating {@link dev.alexandria.source.Source}, or {@code null}
+     */
     public DocumentChunk(String text, String metadata, UUID sourceId) {
         this.text = text;
         this.metadata = metadata;

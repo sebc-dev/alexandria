@@ -2,9 +2,13 @@ package dev.alexandria.crawl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Per-page result within a {@link Crawl4AiResponse}, containing Markdown and discovered links.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Crawl4AiPageResult(
         String url,
@@ -14,6 +18,13 @@ public record Crawl4AiPageResult(
         Map<String, List<Crawl4AiLink>> links,
         String error_message
 ) {
+    public Crawl4AiPageResult {
+        links = links == null ? Map.of() : links.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        Map.Entry::getKey,
+                        e -> List.copyOf(e.getValue())));
+    }
+
 
     /**
      * Extract hrefs from internal links for URL discovery.

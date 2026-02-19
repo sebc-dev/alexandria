@@ -3,6 +3,7 @@ package dev.alexandria.crawl;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,30 +47,19 @@ public class SitemapParser {
                 .build();
 
         for (String sitemapUrl : candidates) {
-            try {
-                byte[] content = httpClient.get()
-                        .uri(sitemapUrl)
-                        .retrieve()
-                        .body(byte[].class);
-                if (content == null || content.length == 0) {
-                    continue;
-                }
+            Optional<AbstractSiteMap> parsed = fetchAndParse(httpClient, sitemapUrl);
+            if (parsed.isEmpty()) {
+                continue;
+            }
 
-                crawlercommons.sitemaps.SiteMapParser parser =
-                        new crawlercommons.sitemaps.SiteMapParser(false);
-                AbstractSiteMap result = parser.parseSiteMap(content, URI.create(sitemapUrl).toURL());
-
-                if (result instanceof SiteMapIndex index) {
-                    return index.getSitemaps().stream()
-                            .map(AbstractSiteMap::getUrl)
-                            .map(URL::toString)
-                            .flatMap(url -> parseSingleSitemap(httpClient, url).stream())
-                            .toList();
-                } else if (result instanceof SiteMap siteMap) {
-                    return extractUrls(siteMap);
-                }
-            } catch (Exception e) {
-                log.debug("Sitemap not available at {}: {}", sitemapUrl, e.getMessage());
+            if (parsed.get() instanceof SiteMapIndex index) {
+                return index.getSitemaps().stream()
+                        .map(AbstractSiteMap::getUrl)
+                        .map(URL::toString)
+                        .flatMap(url -> parseSingleSitemap(httpClient, url).stream())
+                        .toList();
+            } else if (parsed.get() instanceof SiteMap siteMap) {
+                return extractUrls(siteMap);
             }
         }
         return List.of();
@@ -98,27 +88,31 @@ public class SitemapParser {
         }
     }
 
-    private List<String> parseSingleSitemap(RestClient httpClient, String sitemapUrl) {
+    private Optional<AbstractSiteMap> fetchAndParse(RestClient httpClient, String sitemapUrl) {
         try {
             byte[] content = httpClient.get()
                     .uri(sitemapUrl)
                     .retrieve()
                     .body(byte[].class);
             if (content == null || content.length == 0) {
-                return List.of();
+                return Optional.empty();
             }
 
             crawlercommons.sitemaps.SiteMapParser parser =
                     new crawlercommons.sitemaps.SiteMapParser(false);
-            AbstractSiteMap result = parser.parseSiteMap(content, URI.create(sitemapUrl).toURL());
-
-            if (result instanceof SiteMap siteMap) {
-                return extractUrls(siteMap);
-            }
+            return Optional.of(parser.parseSiteMap(content, URI.create(sitemapUrl).toURL()));
         } catch (Exception e) {
-            log.debug("Could not parse sub-sitemap {}: {}", sitemapUrl, e.getMessage());
+            log.debug("Sitemap not available at {}: {}", sitemapUrl, e.getMessage());
+            return Optional.empty();
         }
-        return List.of();
+    }
+
+    private List<String> parseSingleSitemap(RestClient httpClient, String sitemapUrl) {
+        return fetchAndParse(httpClient, sitemapUrl)
+                .filter(SiteMap.class::isInstance)
+                .map(SiteMap.class::cast)
+                .map(this::extractUrls)
+                .orElse(List.of());
     }
 
     private List<String> extractUrls(SiteMap siteMap) {

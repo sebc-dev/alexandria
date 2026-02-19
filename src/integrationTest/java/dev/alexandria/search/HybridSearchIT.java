@@ -73,7 +73,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void semantic_search_finds_relevant_chunks_by_meaning() {
+    void semanticSearchFindsRelevantChunksByMeaning() {
         // Query shares meaning with chunks A and B (routing) but uses different words
         List<SearchResult> results = searchService.search(new SearchRequest("how to set up URL routing"));
 
@@ -95,7 +95,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void keyword_search_finds_chunks_with_exact_terms() {
+    void keywordSearchFindsChunksWithExactTerms() {
         // "RouterModule" is an exact term only in chunk B
         List<SearchResult> results = searchService.search(new SearchRequest("RouterModule"));
 
@@ -114,7 +114,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void hybrid_search_combines_vector_and_keyword_results() {
+    void hybridSearchCombinesVectorAndKeywordResults() {
         // Has both semantic meaning (routing configuration) and exact keyword (RouterModule)
         List<SearchResult> results = searchService.search(
                 new SearchRequest("RouterModule routing configuration")
@@ -131,7 +131,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void search_results_include_citation_metadata() {
+    void searchResultsIncludeCitationMetadata() {
         // Should match chunk C (PostgreSQL JSONB)
         List<SearchResult> results = searchService.search(new SearchRequest("PostgreSQL JSONB"));
 
@@ -144,7 +144,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void search_respects_max_results_parameter() {
+    void searchRespectsMaxResultsParameter() {
         // With maxResults=2, should return at most 2 results
         List<SearchResult> limitedResults = searchService.search(
                 new SearchRequest("programming documentation guide", 2)
@@ -160,7 +160,7 @@ class HybridSearchIT extends BaseIntegrationTest {
     }
 
     @Test
-    void search_with_no_matching_content_returns_empty_or_low_score_results() {
+    void searchWithNoMatchingContentReturnsEmptyOrLowScoreResults() {
         // Completely unrelated to all seeded data
         List<SearchResult> results = searchService.search(
                 new SearchRequest("quantum entanglement particle physics")

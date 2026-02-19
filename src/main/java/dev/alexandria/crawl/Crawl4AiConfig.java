@@ -10,9 +10,24 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
+/**
+ * Configures the {@link RestClient} used to communicate with the Crawl4AI Python sidecar.
+ *
+ * <p>Timeouts are externalized via {@code alexandria.crawl4ai.*} properties.
+ * The client defaults to JSON content type and is qualified as {@code "crawl4AiRestClient"}.
+ */
 @Configuration
 public class Crawl4AiConfig {
 
+    /**
+     * Creates a pre-configured {@link RestClient} targeting the Crawl4AI sidecar.
+     *
+     * @param builder          Spring-provided builder with common defaults
+     * @param baseUrl          sidecar base URL (e.g. {@code http://localhost:11235})
+     * @param connectTimeoutMs TCP connection timeout in milliseconds
+     * @param readTimeoutMs    response read timeout in milliseconds
+     * @return a named REST client bean for injection into {@link Crawl4AiClient}
+     */
     @Bean
     public RestClient crawl4AiRestClient(
             RestClient.Builder builder,

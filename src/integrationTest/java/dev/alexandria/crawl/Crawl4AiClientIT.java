@@ -40,7 +40,7 @@ class Crawl4AiClientIT extends BaseIntegrationTest {
     private Crawl4AiClient crawl4AiClient;
 
     @Test
-    void crawl_returns_markdown_for_valid_url() {
+    void crawlReturnsMarkdownForValidUrl() {
         CrawlResult result = crawl4AiClient.crawl("https://example.com");
 
         assertThat(result.success()).isTrue();
@@ -49,14 +49,14 @@ class Crawl4AiClientIT extends BaseIntegrationTest {
     }
 
     @Test
-    void crawl_returns_internal_links_field() {
+    void crawlReturnsInternalLinksField() {
         CrawlResult result = crawl4AiClient.crawl("https://example.com");
 
         assertThat(result.internalLinks()).isNotNull();
     }
 
     @Test
-    void crawl_returns_failure_for_unreachable_url() {
+    void crawlReturnsFailureForUnreachableUrl() {
         CrawlResult result = crawl4AiClient.crawl("http://localhost:1");
 
         assertThat(result.success()).isFalse();

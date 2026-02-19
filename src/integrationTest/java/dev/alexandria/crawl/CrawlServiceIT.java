@@ -42,7 +42,7 @@ class CrawlServiceIT extends BaseIntegrationTest {
     private CrawlService crawlService;
 
     @Test
-    void crawlSite_crawls_at_least_one_page() {
+    void crawlSiteCrawlsAtLeastOnePage() {
         List<CrawlResult> results = crawlService.crawlSite("https://example.com", 5);
 
         assertThat(results).isNotEmpty();
@@ -51,14 +51,14 @@ class CrawlServiceIT extends BaseIntegrationTest {
     }
 
     @Test
-    void crawlSite_respects_maxPages_limit() {
+    void crawlSiteRespectsMaxPagesLimit() {
         List<CrawlResult> results = crawlService.crawlSite("https://example.com", 1);
 
         assertThat(results).hasSizeLessThanOrEqualTo(1);
     }
 
     @Test
-    void crawlSite_normalizes_urls_for_dedup() {
+    void crawlSiteNormalizesUrlsForDedup() {
         List<CrawlResult> results = crawlService.crawlSite("https://example.com/", 5);
 
         List<String> urls = results.stream().map(CrawlResult::url).toList();

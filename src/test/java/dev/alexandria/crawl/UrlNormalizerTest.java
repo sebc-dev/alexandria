@@ -7,49 +7,49 @@ import org.junit.jupiter.api.Test;
 class UrlNormalizerTest {
 
     @Test
-    void normalize_removes_fragment() {
+    void normalizeRemovesFragment() {
         String result = UrlNormalizer.normalize("https://docs.example.com/guide#section");
         assertThat(result).isEqualTo("https://docs.example.com/guide");
     }
 
     @Test
-    void normalize_removes_trailing_slash() {
+    void normalizeRemovesTrailingSlash() {
         String result = UrlNormalizer.normalize("https://docs.example.com/guide/");
         assertThat(result).isEqualTo("https://docs.example.com/guide");
     }
 
     @Test
-    void normalize_keeps_root_trailing_slash() {
+    void normalizeKeepsRootTrailingSlash() {
         String result = UrlNormalizer.normalize("https://docs.example.com/");
         assertThat(result).isEqualTo("https://docs.example.com/");
     }
 
     @Test
-    void normalize_lowercases_host() {
+    void normalizeLowercasesHost() {
         String result = UrlNormalizer.normalize("https://Docs.Example.COM/Guide");
         assertThat(result).isEqualTo("https://docs.example.com/Guide");
     }
 
     @Test
-    void normalize_removes_tracking_params() {
+    void normalizeRemovesTrackingParams() {
         String result = UrlNormalizer.normalize("https://docs.example.com/guide?utm_source=x&ref=y");
         assertThat(result).isEqualTo("https://docs.example.com/guide");
     }
 
     @Test
-    void normalize_keeps_meaningful_params() {
+    void normalizeKeepsMeaningfulParams() {
         String result = UrlNormalizer.normalize("https://docs.example.com/api?version=3");
         assertThat(result).isEqualTo("https://docs.example.com/api?version=3");
     }
 
     @Test
-    void normalize_handles_malformed_url() {
+    void normalizeHandlesMalformedUrl() {
         String result = UrlNormalizer.normalize("not-a-url");
         assertThat(result).isEqualTo("not-a-url");
     }
 
     @Test
-    void isSameSite_matches_same_host() {
+    void isSameSiteMatchesSameHost() {
         boolean result = UrlNormalizer.isSameSite(
                 "https://docs.spring.io/guide",
                 "https://docs.spring.io/other");
@@ -57,7 +57,7 @@ class UrlNormalizerTest {
     }
 
     @Test
-    void isSameSite_rejects_different_host() {
+    void isSameSiteRejectsDifferentHost() {
         boolean result = UrlNormalizer.isSameSite(
                 "https://docs.spring.io/guide",
                 "https://github.com/spring");
@@ -65,7 +65,7 @@ class UrlNormalizerTest {
     }
 
     @Test
-    void isSameSite_rejects_different_scheme() {
+    void isSameSiteRejectsDifferentScheme() {
         boolean result = UrlNormalizer.isSameSite(
                 "https://docs.spring.io",
                 "http://docs.spring.io");

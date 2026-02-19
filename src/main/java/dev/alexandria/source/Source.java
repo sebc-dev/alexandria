@@ -14,6 +14,18 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Represents a documentation source to be crawled and indexed.
+ *
+ * <p>Each source tracks a root URL (e.g. {@code https://docs.spring.io}) along with
+ * crawl status, chunk count, and timestamps. The lifecycle follows the state machine
+ * defined by {@link SourceStatus}: PENDING → CRAWLING → INDEXED (or ERROR).
+ *
+ * <p>Maps to the {@code sources} table managed by Flyway migrations.
+ *
+ * @see SourceStatus
+ * @see SourceRepository
+ */
 @Entity
 @Table(name = "sources")
 public class Source {
@@ -47,6 +59,12 @@ public class Source {
         // JPA requires no-arg constructor
     }
 
+    /**
+     * Creates a new source in {@link SourceStatus#PENDING} state with zero chunks.
+     *
+     * @param url  the root URL of the documentation site (must be unique)
+     * @param name a human-readable label for this source
+     */
     public Source(String url, String name) {
         this.url = url;
         this.name = name;
