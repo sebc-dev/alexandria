@@ -40,53 +40,69 @@ public class CrawlService {
      */
     public List<CrawlResult> crawlSite(String rootUrl, int maxPages) {
         PageDiscoveryService.DiscoveryResult discovery = pageDiscoveryService.discoverUrls(rootUrl);
+        boolean followLinks = discovery.method() == PageDiscoveryService.DiscoveryMethod.LINK_CRAWL;
 
-        LinkedHashSet<String> queue = new LinkedHashSet<>();
+        LinkedHashSet<String> queue = seedQueue(rootUrl, discovery);
         Set<String> visited = new HashSet<>();
         List<CrawlResult> results = new ArrayList<>();
-        boolean useLinkDiscovery = discovery.method() == PageDiscoveryService.DiscoveryMethod.LINK_CRAWL;
-
-        if (!discovery.urls().isEmpty()) {
-            queue.addAll(discovery.urls());
-        } else {
-            queue.add(UrlNormalizer.normalize(rootUrl));
-        }
 
         log.info("Starting crawl of {} (discovery method: {}, seed URLs: {})",
                 rootUrl, discovery.method(), queue.size());
 
         while (!queue.isEmpty() && results.size() < maxPages) {
-            String url = queue.iterator().next();
-            queue.remove(url);
-
-            String normalized = UrlNormalizer.normalize(url);
+            String normalized = dequeueAndNormalize(queue);
             if (!visited.add(normalized)) {
                 continue;
             }
-
             log.info("Crawling [{}/{}]: {}", results.size() + 1, maxPages, normalized);
-
-            try {
-                CrawlResult result = crawl4AiClient.crawl(normalized);
-                if (result.success()) {
-                    results.add(result);
-                    // Only follow links if we are in link-crawl mode (no sitemap found)
-                    if (useLinkDiscovery) {
-                        result.internalLinks().stream()
-                                .map(UrlNormalizer::normalize)
-                                .filter(link -> UrlNormalizer.isSameSite(rootUrl, link))
-                                .filter(link -> !visited.contains(link))
-                                .forEach(queue::add);
-                    }
-                } else {
-                    log.warn("Failed to crawl {}: {}", normalized, result.errorMessage());
-                }
-            } catch (Exception e) {
-                log.error("Error crawling {}: {}", normalized, e.getMessage());
-            }
+            processPage(normalized, rootUrl, followLinks, results, queue, visited);
         }
 
         log.info("Crawl complete: {} pages crawled from {}", results.size(), rootUrl);
         return results;
+    }
+
+    private LinkedHashSet<String> seedQueue(String rootUrl,
+                                            PageDiscoveryService.DiscoveryResult discovery) {
+        LinkedHashSet<String> queue = new LinkedHashSet<>();
+        if (!discovery.urls().isEmpty()) {
+            queue.addAll(discovery.urls());
+        } else {
+            queue.add(UrlNormalizer.normalize(rootUrl));
+        }
+        return queue;
+    }
+
+    private String dequeueAndNormalize(LinkedHashSet<String> queue) {
+        String url = queue.iterator().next();
+        queue.remove(url);
+        return UrlNormalizer.normalize(url);
+    }
+
+    private void processPage(String url, String rootUrl, boolean followLinks,
+                             List<CrawlResult> results, LinkedHashSet<String> queue,
+                             Set<String> visited) {
+        try {
+            CrawlResult result = crawl4AiClient.crawl(url);
+            if (result.success()) {
+                results.add(result);
+                if (followLinks) {
+                    enqueueDiscoveredLinks(result, rootUrl, queue, visited);
+                }
+            } else {
+                log.warn("Failed to crawl {}: {}", url, result.errorMessage());
+            }
+        } catch (Exception e) {
+            log.error("Error crawling {}: {}", url, e.getMessage());
+        }
+    }
+
+    private void enqueueDiscoveredLinks(CrawlResult result, String rootUrl,
+                                        LinkedHashSet<String> queue, Set<String> visited) {
+        result.internalLinks().stream()
+                .map(UrlNormalizer::normalize)
+                .filter(link -> UrlNormalizer.isSameSite(rootUrl, link))
+                .filter(link -> !visited.contains(link))
+                .forEach(queue::add);
     }
 }
