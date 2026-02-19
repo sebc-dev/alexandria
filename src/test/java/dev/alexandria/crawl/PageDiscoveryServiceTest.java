@@ -25,7 +25,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_sitemapAvailable_returnsSitemapResult() {
+    void discoverUrlsSitemapAvailableReturnsSitemapResult() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl))
                 .thenReturn(List.of("https://docs.example.com/page1", "https://docs.example.com/page2"));
@@ -39,7 +39,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_noSitemap_returnsLinkCrawlResult() {
+    void discoverUrlsNoSitemapReturnsLinkCrawlResult() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl)).thenReturn(List.of());
 
@@ -50,7 +50,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_sitemapFirst_triesSitemapBeforeFallback() {
+    void discoverUrlsSitemapFirstTriesSitemapBeforeFallback() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl))
                 .thenReturn(List.of("https://docs.example.com/from-sitemap"));
@@ -62,7 +62,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_filtersExternalUrls() {
+    void discoverUrlsFiltersExternalUrls() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl))
                 .thenReturn(List.of("https://docs.example.com/page1", "https://external.com/page"));
@@ -74,7 +74,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_normalizesAndDeduplicatesUrls() {
+    void discoverUrlsNormalizesAndDeduplicatesUrls() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl))
                 .thenReturn(List.of(
@@ -87,7 +87,7 @@ class PageDiscoveryServiceTest {
     }
 
     @Test
-    void discoverUrls_allUrlsExternal_returnsLinkCrawl() {
+    void discoverUrlsAllUrlsExternalReturnsLinkCrawl() {
         String rootUrl = "https://docs.example.com";
         when(sitemapParser.discoverFromSitemap(rootUrl))
                 .thenReturn(List.of("https://external.com/page1", "https://other.com/page2"));

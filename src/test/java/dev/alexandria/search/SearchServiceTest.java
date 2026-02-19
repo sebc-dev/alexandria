@@ -39,7 +39,7 @@ class SearchServiceTest {
     ArgumentCaptor<EmbeddingSearchRequest> searchRequestCaptor;
 
     @Test
-    void search_returns_result_with_correct_fields_and_passes_both_query_and_embedding() {
+    void searchReturnsResultWithCorrectFieldsAndPassesBothQueryAndEmbedding() {
         Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
 
@@ -68,7 +68,7 @@ class SearchServiceTest {
     }
 
     @Test
-    void search_passes_maxResults_to_embedding_store() {
+    void searchPassesMaxResultsToEmbeddingStore() {
         Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
 
@@ -82,7 +82,7 @@ class SearchServiceTest {
     }
 
     @Test
-    void search_returns_empty_list_when_no_matches() {
+    void searchReturnsEmptyListWhenNoMatches() {
         Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
 
@@ -95,7 +95,7 @@ class SearchServiceTest {
     }
 
     @Test
-    void search_handles_null_metadata_gracefully() {
+    void searchHandlesNullMetadataGracefully() {
         Embedding dummyEmbedding = Embedding.from(new float[]{0.1f, 0.2f, 0.3f});
         when(embeddingModel.embed("test query")).thenReturn(Response.from(dummyEmbedding));
 

@@ -43,7 +43,7 @@ class JpaSchemaDriftIT extends BaseIntegrationTest {
     private EmbeddingStore<TextSegment> embeddingStore;
 
     @Test
-    void source_entity_roundtrips_against_flyway_schema() {
+    void sourceEntityRoundtripsAgainstFlywaySchema() {
         Source source = new Source("https://docs.example.com", "Example Docs");
         source.setStatus(SourceStatus.CRAWLING);
         source.setChunkCount(42);
@@ -60,7 +60,7 @@ class JpaSchemaDriftIT extends BaseIntegrationTest {
     }
 
     @Test
-    void document_chunk_readable_via_jpa_after_langchain4j_insert() {
+    void documentChunkReadableViaJpaAfterLangchain4jInsert() {
         // Insert via LangChain4j (the real write path — includes embedding)
         String text = "JPA schema drift test document";
         Embedding embedding = embeddingModel.embed(text).content();
@@ -76,7 +76,7 @@ class JpaSchemaDriftIT extends BaseIntegrationTest {
     }
 
     @Test
-    void ingestion_state_entity_roundtrips_against_flyway_schema() {
+    void ingestionStateEntityRoundtripsAgainstFlywaySchema() {
         Source source = new Source("https://state-test.example.com", "State Test");
         Source savedSource = sourceRepository.saveAndFlush(source);
 

@@ -78,7 +78,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_validSitemap_returnsUrls() {
+    void discoverFromSitemapValidSitemapReturnsUrls() {
         String sitemapXml = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -96,7 +96,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_sitemapIndex_returnsUrlsFromNestedSitemaps() {
+    void discoverFromSitemapSitemapIndexReturnsUrlsFromNestedSitemaps() {
         String sitemapIndex = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -118,7 +118,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_noSitemapFound_returnsEmptyList() {
+    void discoverFromSitemapNoSitemapFoundReturnsEmptyList() {
         stubHttpGetException("https://docs.example.com/sitemap.xml");
         stubHttpGetException("https://docs.example.com/sitemap_index.xml");
 
@@ -128,7 +128,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_firstCandidateFails_triesSecond() {
+    void discoverFromSitemapFirstCandidateFailsTriesSecond() {
         String sitemapXml = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -144,7 +144,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_malformedXml_returnsEmptyList() {
+    void discoverFromSitemapMalformedXmlReturnsEmptyList() {
         byte[] malformedContent = "<not valid xml at all".getBytes(StandardCharsets.UTF_8);
         stubHttpGet("https://docs.example.com/sitemap.xml", malformedContent);
         stubHttpGetException("https://docs.example.com/sitemap_index.xml");
@@ -155,7 +155,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_emptyContent_returnsEmptyList() {
+    void discoverFromSitemapEmptyContentReturnsEmptyList() {
         stubHttpGet("https://docs.example.com/sitemap.xml", new byte[0]);
         stubHttpGetException("https://docs.example.com/sitemap_index.xml");
 
@@ -165,7 +165,7 @@ class SitemapParserTest {
     }
 
     @Test
-    void discoverFromSitemap_nullContent_returnsEmptyList() {
+    void discoverFromSitemapNullContentReturnsEmptyList() {
         stubHttpGet("https://docs.example.com/sitemap.xml", null);
         stubHttpGetException("https://docs.example.com/sitemap_index.xml");
 
@@ -175,21 +175,21 @@ class SitemapParserTest {
     }
 
     @Test
-    void normalizeToBase_extractsSchemeAndHost() {
+    void normalizeToBaseExtractsSchemeAndHost() {
         String result = sitemapParser.normalizeToBase("https://docs.spring.io/boot/reference/");
 
         assertThat(result).isEqualTo("https://docs.spring.io");
     }
 
     @Test
-    void normalizeToBase_preservesNonDefaultPort() {
+    void normalizeToBasePreservesNonDefaultPort() {
         String result = sitemapParser.normalizeToBase("http://localhost:8080/docs");
 
         assertThat(result).isEqualTo("http://localhost:8080");
     }
 
     @Test
-    void normalizeToBase_omitsDefaultHttpsPort() {
+    void normalizeToBaseOmitsDefaultHttpsPort() {
         String result = sitemapParser.normalizeToBase("https://example.com:443/path");
 
         assertThat(result).isEqualTo("https://example.com");

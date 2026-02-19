@@ -17,7 +17,7 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
     EmbeddingModel embeddingModel;
 
     @Test
-    void embedding_model_generates_384_dimension_vector() {
+    void embeddingModelGenerates384DimensionVector() {
         Response<Embedding> response = embeddingModel.embed("How to configure Spring Boot");
         Embedding embedding = response.content();
 
@@ -26,7 +26,7 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
     }
 
     @Test
-    void embed_store_retrieve_roundtrip() {
+    void embedStoreRetrieveRoundtrip() {
         String text = "Spring Boot auto-configuration simplifies application setup";
         Embedding embedding = embeddingModel.embed(text).content();
         TextSegment segment = TextSegment.from(text);
@@ -50,7 +50,7 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
     }
 
     @Test
-    void spring_context_loads_with_embedding_beans() {
+    void springContextLoadsWithEmbeddingBeans() {
         assertThat(embeddingModel).isNotNull();
         assertThat(embeddingStore).isNotNull();
     }

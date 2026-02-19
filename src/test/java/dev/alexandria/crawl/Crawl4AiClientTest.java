@@ -46,7 +46,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_successfulResponse_returnsCrawlResultWithMarkdown() {
+    void crawlSuccessfulResponseReturnsCrawlResultWithMarkdown() {
         stubRestClientChain();
         var markdown = new Crawl4AiMarkdown("# Raw", "# Fit content", null, null);
         var pageResult = new Crawl4AiPageResult(
@@ -68,7 +68,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_prefersFitMarkdownOverRaw() {
+    void crawlPrefersFitMarkdownOverRaw() {
         stubRestClientChain();
         var markdown = new Crawl4AiMarkdown("# Raw markdown", "# Fit markdown", null, null);
         var pageResult = new Crawl4AiPageResult(
@@ -82,7 +82,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_fitMarkdownBlank_fallsBackToRawMarkdown() {
+    void crawlFitMarkdownBlankFallsBackToRawMarkdown() {
         stubRestClientChain();
         var markdown = new Crawl4AiMarkdown("# Raw markdown", "   ", null, null);
         var pageResult = new Crawl4AiPageResult(
@@ -96,7 +96,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_fitMarkdownNull_fallsBackToRawMarkdown() {
+    void crawlFitMarkdownNullFallsBackToRawMarkdown() {
         stubRestClientChain();
         var markdown = new Crawl4AiMarkdown("# Raw", null, null, null);
         var pageResult = new Crawl4AiPageResult(
@@ -110,7 +110,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_markdownObjectNull_returnsNullMarkdown() {
+    void crawlMarkdownObjectNullReturnsNullMarkdown() {
         stubRestClientChain();
         var pageResult = new Crawl4AiPageResult(
                 "https://docs.example.com", true, "200", null, Map.of(), null);
@@ -124,7 +124,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_responseNotSuccess_returnsFailed() {
+    void crawlResponseNotSuccessReturnsFailed() {
         stubRestClientChain();
         var pageResult = new Crawl4AiPageResult(
                 "https://docs.example.com", false, "500", null, Map.of(), "Internal Server Error");
@@ -138,7 +138,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_emptyResults_returnsFailed() {
+    void crawlEmptyResultsReturnsFailed() {
         stubRestClientChain();
         when(responseSpec.body(Crawl4AiResponse.class))
                 .thenReturn(new Crawl4AiResponse(true, List.of()));
@@ -150,7 +150,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_nullResponse_returnsFailed() {
+    void crawlNullResponseReturnsFailed() {
         stubRestClientChain();
         when(responseSpec.body(Crawl4AiResponse.class)).thenReturn(null);
 
@@ -160,7 +160,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_responseLevelNotSuccess_returnsFailed() {
+    void crawlResponseLevelNotSuccessReturnsFailed() {
         stubRestClientChain();
         when(responseSpec.body(Crawl4AiResponse.class))
                 .thenReturn(new Crawl4AiResponse(false, List.of()));
@@ -171,7 +171,7 @@ class Crawl4AiClientTest {
     }
 
     @Test
-    void crawl_restClientException_returnsFailed() {
+    void crawlRestClientExceptionReturnsFailed() {
         when(restClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri("/crawl")).thenReturn(requestBodySpec);
         when(requestBodySpec.body(any(Crawl4AiRequest.class))).thenReturn(requestBodySpec);

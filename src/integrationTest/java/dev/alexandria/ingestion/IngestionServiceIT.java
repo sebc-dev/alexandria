@@ -21,7 +21,7 @@ class IngestionServiceIT extends BaseIntegrationTest {
     SearchService searchService;
 
     @Test
-    void ingest_crawl_result_produces_searchable_chunks() {
+    void ingestCrawlResultProducesSearchableChunks() {
         String markdown = """
                 ## Spring Configuration
                 Spring Boot auto-configures beans.
@@ -44,7 +44,7 @@ class IngestionServiceIT extends BaseIntegrationTest {
     }
 
     @Test
-    void ingested_chunks_carry_correct_metadata() {
+    void ingestedChunksCarryCorrectMetadata() {
         String markdown = "## Getting Started\nSome introductory text about getting started with the framework.";
 
         ingestionService.ingestPage(markdown, "https://example.com/guide", "2026-02-18T10:00:00Z");
@@ -58,7 +58,7 @@ class IngestionServiceIT extends BaseIntegrationTest {
     }
 
     @Test
-    void ingest_multiple_pages() {
+    void ingestMultiplePages() {
         String markdown1 = "## Database Setup\nConfigure PostgreSQL for production use with connection pooling.";
         String markdown2 = "## Authentication\nSecure your API endpoints with JWT authentication tokens.";
 
@@ -82,7 +82,7 @@ class IngestionServiceIT extends BaseIntegrationTest {
     }
 
     @Test
-    void ingest_page_with_only_code_blocks() {
+    void ingestPageWithOnlyCodeBlocks() {
         String markdown = """
                 ## Snippet
                 ```bash

@@ -31,7 +31,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_happyPath_returnsSinglePageResult() {
+    void crawlSiteHappyPathReturnsSinglePageResult() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/guide"),
@@ -48,7 +48,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_linkCrawlMode_followsInternalLinks() {
+    void crawlSiteLinkCrawlModeFollowsInternalLinks() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
@@ -69,7 +69,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_sitemapMode_doesNotFollowLinks() {
+    void crawlSiteSitemapModeDoesNotFollowLinks() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/page1"),
@@ -86,7 +86,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_maxPagesLimit_stopsCrawlingAtLimit() {
+    void crawlSiteMaxPagesLimitStopsCrawlingAtLimit() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/p1",
@@ -106,7 +106,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_failedCrawlResult_skippedAndContinues() {
+    void crawlSiteFailedCrawlResultSkippedAndContinues() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/fail",
@@ -125,7 +125,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_exceptionDuringCrawl_skippedAndContinues() {
+    void crawlSiteExceptionDuringCrawlSkippedAndContinues() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/error",
@@ -144,7 +144,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_duplicateUrls_onlyCrawledOnce() {
+    void crawlSiteDuplicateUrlsOnlyCrawledOnce() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
@@ -165,7 +165,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_urlNormalization_fragmentsStripped() {
+    void crawlSiteUrlNormalizationFragmentsStripped() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
@@ -188,7 +188,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_emptyDiscoveryUrls_usesNormalizedRootUrl() {
+    void crawlSiteEmptyDiscoveryUrlsUsesNormalizedRootUrl() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
@@ -204,7 +204,7 @@ class CrawlServiceTest {
     }
 
     @Test
-    void crawlSite_linkCrawlMode_filtersExternalLinks() {
+    void crawlSiteLinkCrawlModeFiltersExternalLinks() {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),

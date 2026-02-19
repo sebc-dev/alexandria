@@ -34,7 +34,7 @@ class PreChunkedImporterRollbackIT extends BaseIntegrationTest {
     EmbeddingModel embeddingModel;
 
     @Test
-    void existing_chunks_preserved_when_embedAll_fails() {
+    void existingChunksPreservedWhenEmbedAllFails() {
         String sourceUrl = "https://example.com/rollback-test";
 
         // 1. Import initial chunks successfully (real embedding model behavior)

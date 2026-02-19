@@ -22,7 +22,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
     SearchService searchService;
 
     @Test
-    void import_valid_chunks_makes_them_searchable() {
+    void importValidChunksMakesThemSearchable() {
         PreChunkedChunk proseChunk = new PreChunkedChunk(
                 "Spring Boot simplifies application development with auto-configuration.",
                 "https://docs.spring.io/boot",
@@ -56,7 +56,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
     }
 
     @Test
-    void import_replaces_existing_chunks_for_same_source_url() {
+    void importReplacesExistingChunksForSameSourceUrl() {
         String sourceUrl = "https://example.com/docs";
 
         // Import original chunks
@@ -98,7 +98,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
     }
 
     @Test
-    void import_rejects_invalid_chunks_entirely() {
+    void importRejectsInvalidChunksEntirely() {
         PreChunkedChunk validChunk = new PreChunkedChunk(
                 "Valid content about microservices architecture patterns.",
                 "https://example.com/valid",
@@ -133,7 +133,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
     }
 
     @Test
-    void import_rejects_blank_source_url() {
+    void importRejectsBlankSourceUrl() {
         PreChunkedChunk chunk = new PreChunkedChunk(
                 "Some content about API design.",
                 "https://example.com/api",
@@ -150,7 +150,7 @@ class PreChunkedImporterIT extends BaseIntegrationTest {
     }
 
     @Test
-    void import_rejects_empty_chunks_list() {
+    void importRejectsEmptyChunksList() {
         PreChunkedRequest request = new PreChunkedRequest(
                 "https://example.com/empty",
                 List.of()
