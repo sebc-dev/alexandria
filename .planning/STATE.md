@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 4.5 - Code Quality & Test Consolidation (not started)
+**Current focus:** Phase 4.5 - Code Quality & Test Consolidation (in progress)
 
 ## Current Position
 
 Phase: 4.5 of 8 (Code Quality & Test Consolidation)
-Plan: 0 of TBD in Phase 04.5
-Status: Not started
-Last activity: 2026-02-19 -- Phase 4.5 inserted for code quality consolidation
+Plan: 1 of 5 in Phase 04.5
+Status: In progress
+Last activity: 2026-02-19 -- Completed 04.5-01 (SpotBugs baseline & test fixtures)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 4.4min
-- Total execution time: 0.58 hours
+- Total plans completed: 9
+- Average duration: 4.5min
+- Total execution time: 0.66 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [███░░░░░░░] 30%
 | 00-ci-quality-gate | 2 | 11min | 5.5min |
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
 | 03-web-crawling | 2 | 9min | 4.5min |
+| 04.5-code-quality-consolidation | 1 | 5min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 4min, 4min, 5min, 5min
+- Last 5 plans: 4min, 4min, 5min, 5min, 5min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [03-02]: UrlNormalizer as static utility (no Spring bean) since it has no dependencies
 - [03-02]: CrawlService follows links only in LINK_CRAWL mode; trusts sitemap URL list when available
 - [03-02]: Sequential page crawling (no concurrency) to keep Crawl4AI sidecar stable
+- [04.5-01]: Records with List/Map fields use compact constructors with null-safe List.copyOf()/Map.copyOf() for defensive copies
+- [04.5-01]: SpotBugs exclusion filter: Spring bean constructors (EI_EXPOSE_REP2), JPA entities (CT_CONSTRUCTOR_THROW, EI_EXPOSE_REP), MarkdownChunker (CT_CONSTRUCTOR_THROW)
+- [04.5-01]: Test fixture builders (SourceBuilder, DocumentChunkBuilder) for JPA entities only; records constructed inline
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Phase 4.5 context gathered
-Resume file: .planning/phases/04.5-code-quality-consolidation/04.5-CONTEXT.md
-Next: Plan Phase 4.5 (Code Quality & Test Consolidation)
+Stopped at: Completed 04.5-01-PLAN.md
+Resume file: .planning/phases/04.5-code-quality-consolidation/04.5-01-SUMMARY.md
+Next: Execute 04.5-02-PLAN.md
