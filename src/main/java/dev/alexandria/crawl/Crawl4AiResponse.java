@@ -8,4 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public record Crawl4AiResponse(
         boolean success,
         List<Crawl4AiPageResult> results
-) {}
+) {
+    public Crawl4AiResponse {
+        results = results == null ? List.of() : List.copyOf(results);
+    }
+}

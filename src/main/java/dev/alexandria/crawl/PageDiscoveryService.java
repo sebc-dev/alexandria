@@ -39,5 +39,9 @@ public class PageDiscoveryService {
 
     public enum DiscoveryMethod { SITEMAP, LINK_CRAWL }
 
-    public record DiscoveryResult(List<String> urls, DiscoveryMethod method) {}
+    public record DiscoveryResult(List<String> urls, DiscoveryMethod method) {
+        public DiscoveryResult {
+            urls = urls == null ? List.of() : List.copyOf(urls);
+        }
+    }
 }

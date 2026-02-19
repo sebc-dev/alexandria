@@ -8,4 +8,8 @@ public record CrawlResult(
         List<String> internalLinks,
         boolean success,
         String errorMessage
-) {}
+) {
+    public CrawlResult {
+        internalLinks = internalLinks == null ? List.of() : List.copyOf(internalLinks);
+    }
+}

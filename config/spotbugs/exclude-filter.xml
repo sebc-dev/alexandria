@@ -6,5 +6,43 @@
         <Method name="main" />
     </Match>
 
-    <!-- Future exclusions can be added below -->
+    <!-- Spring bean constructor injection: singletons sharing references is by design -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <Class name="dev.alexandria.search.SearchService"/>
+            <Class name="dev.alexandria.ingestion.IngestionService"/>
+            <Class name="dev.alexandria.ingestion.prechunked.PreChunkedImporter"/>
+            <Class name="dev.alexandria.crawl.Crawl4AiClient"/>
+        </Or>
+        <Method name="&lt;init&gt;"/>
+    </Match>
+
+    <!-- JPA entities and Spring components: non-final classes with @PrePersist or constructor validation are by design -->
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+        <Or>
+            <Class name="dev.alexandria.source.Source"/>
+            <Class name="dev.alexandria.document.DocumentChunk"/>
+            <Class name="dev.alexandria.ingestion.IngestionState"/>
+            <Class name="dev.alexandria.ingestion.chunking.MarkdownChunker"/>
+        </Or>
+    </Match>
+
+    <!-- JPA entity getters returning Instant: Instant is immutable, SpotBugs reports incorrectly -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Or>
+            <Class name="dev.alexandria.source.Source"/>
+            <Class name="dev.alexandria.document.DocumentChunk"/>
+            <Class name="dev.alexandria.ingestion.IngestionState"/>
+        </Or>
+    </Match>
+
+    <!-- Record accessors returning deeply-copied unmodifiable collections (SpotBugs cannot trace Collectors.toUnmodifiableMap) -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="dev.alexandria.crawl.Crawl4AiPageResult"/>
+        <Method name="links"/>
+    </Match>
 </FindBugsFilter>

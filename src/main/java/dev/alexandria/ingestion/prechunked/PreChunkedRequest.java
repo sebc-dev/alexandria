@@ -16,4 +16,8 @@ import java.util.List;
 public record PreChunkedRequest(
         @NotBlank @JsonProperty("source_url") String sourceUrl,
         @NotEmpty @Valid List<PreChunkedChunk> chunks
-) {}
+) {
+    public PreChunkedRequest {
+        chunks = chunks == null ? List.of() : List.copyOf(chunks);
+    }
+}
