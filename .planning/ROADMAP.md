@@ -136,11 +136,11 @@ Plans:
   3. Tool descriptions are clear and front-loaded so Claude Code's LLM can reliably select the right tool
   4. Tool errors return structured, actionable messages (not Java stack traces or raw exceptions)
   5. Server exposes maximum 6 tools as specified: `search_docs`, `list_sources`, `add_source`, `remove_source`, `crawl_status`, `recrawl_source`
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
+- [ ] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
 
 ### Phase 6: Source Management
 **Goal**: Users can manage documentation sources through MCP tools -- add, remove, list, and inspect the health of their indexed documentation
@@ -207,7 +207,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
-| 5. MCP Server | 0/TBD | Not started | - |
+| 5. MCP Server | 0/2 | Planned | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |
