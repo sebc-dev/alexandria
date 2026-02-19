@@ -5,6 +5,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * JSON request body for the Crawl4AI {@code /crawl} endpoint, including browser and crawler configuration.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Crawl4AiRequest(
         List<String> urls,

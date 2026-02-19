@@ -2,6 +2,9 @@ package dev.alexandria.crawl;
 
 import java.util.List;
 
+/**
+ * Result of crawling a single URL: Markdown content, discovered links, and success status.
+ */
 public record CrawlResult(
         String url,
         String markdown,

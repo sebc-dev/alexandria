@@ -10,6 +10,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+/**
+ * REST client for the Crawl4AI Python sidecar that converts web pages to Markdown.
+ *
+ * <p>Uses headless Chromium via Crawl4AI with a {@code PruningContentFilter} for
+ * boilerplate removal. Prefers {@code fit_markdown} (filtered) over {@code raw_markdown}.
+ * Returns a {@link CrawlResult} with success/failure status for graceful pipeline handling.
+ *
+ * @see CrawlResult
+ * @see Crawl4AiConfig
+ */
 @Service
 public class Crawl4AiClient {
 

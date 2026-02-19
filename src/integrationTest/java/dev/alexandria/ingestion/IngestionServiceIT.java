@@ -5,9 +5,6 @@ import dev.alexandria.crawl.CrawlResult;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
-import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.store.embedding.EmbeddingStore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,14 +19,6 @@ class IngestionServiceIT extends BaseIntegrationTest {
 
     @Autowired
     SearchService searchService;
-
-    @Autowired
-    EmbeddingStore<TextSegment> embeddingStore;
-
-    @BeforeEach
-    void cleanStore() {
-        embeddingStore.removeAll();
-    }
 
     @Test
     void ingest_crawl_result_produces_searchable_chunks() {

@@ -6,8 +6,6 @@ import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
-import dev.langchain4j.store.embedding.EmbeddingStore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,14 +15,6 @@ class EmbeddingStoreIT extends BaseIntegrationTest {
 
     @Autowired
     EmbeddingModel embeddingModel;
-
-    @Autowired
-    EmbeddingStore<TextSegment> embeddingStore;
-
-    @BeforeEach
-    void cleanStore() {
-        embeddingStore.removeAll();
-    }
 
     @Test
     void embedding_model_generates_384_dimension_vector() {

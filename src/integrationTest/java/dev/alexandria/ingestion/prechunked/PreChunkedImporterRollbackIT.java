@@ -5,10 +5,7 @@ import dev.alexandria.ingestion.chunking.ContentType;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
-import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.store.embedding.EmbeddingStore;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -33,16 +30,8 @@ class PreChunkedImporterRollbackIT extends BaseIntegrationTest {
     @Autowired
     SearchService searchService;
 
-    @Autowired
-    EmbeddingStore<TextSegment> embeddingStore;
-
     @MockitoSpyBean
     EmbeddingModel embeddingModel;
-
-    @BeforeEach
-    void cleanStore() {
-        embeddingStore.removeAll();
-    }
 
     @Test
     void existing_chunks_preserved_when_embedAll_fails() {

@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Per-page result within a {@link Crawl4AiResponse}, containing Markdown and discovered links.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Crawl4AiPageResult(
         String url,
