@@ -80,20 +80,11 @@ public class MarkdownChunker {
             Node next = child.getNext();
 
             if (child instanceof Heading heading && heading.getLevel() <= 3) {
-                // Flush the previous section
-                emitChunks(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
+                emitSection(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
                         headingPath, sourceUrl, lastUpdated, lines);
-                currentHeading = null;
                 currentContentNodes.clear();
                 currentCodeBlocks.clear();
-
-                // Update heading hierarchy
-                int level = heading.getLevel();
-                headingPath[level - 1] = extractHeadingText(heading);
-                for (int i = level; i < 3; i++) {
-                    headingPath[i] = null;
-                }
-
+                updateHeadingPath(headingPath, heading);
                 currentHeading = heading;
             } else if (child instanceof FencedCodeBlock codeBlock) {
                 currentCodeBlocks.add(codeBlock);
@@ -104,43 +95,77 @@ public class MarkdownChunker {
             child = next;
         }
 
-        // Flush the final section
-        emitChunks(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
+        emitSection(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
                 headingPath, sourceUrl, lastUpdated, lines);
 
         return chunks;
     }
 
-    private void emitChunks(List<DocumentChunkData> chunks,
-                            Heading sectionHeading,
-                            List<Node> contentNodes,
-                            List<FencedCodeBlock> codeBlocks,
-                            String[] headingPath,
-                            String sourceUrl,
-                            String lastUpdated,
-                            String[] lines) {
+    /**
+     * Updates the heading hierarchy when a new H1/H2/H3 heading is encountered.
+     * Clears all sub-levels beneath the current heading level.
+     */
+    private void updateHeadingPath(String[] headingPath, Heading heading) {
+        int level = heading.getLevel();
+        headingPath[level - 1] = extractHeadingText(heading);
+        for (int i = level; i < 3; i++) {
+            headingPath[i] = null;
+        }
+    }
+
+    /**
+     * Emits prose and code chunks for a completed section, if the section has any content.
+     */
+    private void emitSection(List<DocumentChunkData> chunks,
+                             Heading sectionHeading,
+                             List<Node> contentNodes,
+                             List<FencedCodeBlock> codeBlocks,
+                             String[] headingPath,
+                             String sourceUrl,
+                             String lastUpdated,
+                             String[] lines) {
         if (sectionHeading == null && contentNodes.isEmpty() && codeBlocks.isEmpty()) {
             return;
         }
 
         String sectionPath = buildSectionPath(headingPath);
+        emitProseChunk(chunks, sectionHeading, contentNodes, sectionPath, sourceUrl, lastUpdated, lines);
+        emitCodeChunks(chunks, codeBlocks, sectionPath, sourceUrl, lastUpdated);
+    }
 
-        // Build the prose text: heading + content (but only if there is content)
+    /**
+     * Builds prose text from the section heading and content nodes, then adds it as one or more
+     * chunks. Oversized prose is split at paragraph or sentence boundaries.
+     */
+    private void emitProseChunk(List<DocumentChunkData> chunks,
+                                Heading sectionHeading,
+                                List<Node> contentNodes,
+                                String sectionPath,
+                                String sourceUrl,
+                                String lastUpdated,
+                                String[] lines) {
         String proseText = extractProseText(sectionHeading, contentNodes, lines);
-        if (!proseText.isBlank()) {
-            if (proseText.length() <= maxChunkSize) {
-                chunks.add(new DocumentChunkData(
-                        proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
-                ));
-            } else {
-                splitOversizedText(proseText, maxChunkSize).forEach(part ->
-                        chunks.add(new DocumentChunkData(
-                                part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null
-                        )));
-            }
+        if (proseText.isBlank()) {
+            return;
         }
+        if (proseText.length() <= maxChunkSize) {
+            chunks.add(new DocumentChunkData(
+                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null));
+        } else {
+            splitOversizedText(proseText, maxChunkSize).forEach(part ->
+                    chunks.add(new DocumentChunkData(
+                            part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null)));
+        }
+    }
 
-        // Emit code chunks
+    /**
+     * Emits each fenced code block as a separate chunk with its detected language.
+     */
+    private void emitCodeChunks(List<DocumentChunkData> chunks,
+                                List<FencedCodeBlock> codeBlocks,
+                                String sectionPath,
+                                String sourceUrl,
+                                String lastUpdated) {
         for (FencedCodeBlock codeBlock : codeBlocks) {
             String code = codeBlock.getLiteral();
             if (code.endsWith("\n")) {
@@ -148,8 +173,7 @@ public class MarkdownChunker {
             }
             String language = detectLanguage(codeBlock);
             chunks.add(new DocumentChunkData(
-                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language
-            ));
+                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language));
         }
     }
 
