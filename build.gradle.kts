@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.langchain4j.core)
     implementation(libs.langchain4j.embeddings.bge)
     implementation(libs.langchain4j.pgvector)
+    implementation(libs.langchain4j.onnx.scoring)
     implementation(libs.spring.ai.mcp.server.webmvc)
 
     // Markdown Parsing

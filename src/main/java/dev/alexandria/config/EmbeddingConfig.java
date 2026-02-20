@@ -3,9 +3,12 @@ package dev.alexandria.config;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.bgesmallenv15q.BgeSmallEnV15QuantizedEmbeddingModel;
+import dev.langchain4j.model.scoring.ScoringModel;
+import dev.langchain4j.model.scoring.onnx.OnnxScoringModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore.SearchMode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +35,21 @@ public class EmbeddingConfig {
     @Bean
     public EmbeddingModel embeddingModel() {
         return new BgeSmallEnV15QuantizedEmbeddingModel();
+    }
+
+    /**
+     * Provides the in-process ONNX cross-encoder scoring model (ms-marco-MiniLM-L-6-v2)
+     * for reranking search results.
+     *
+     * @param modelPath     path to the ONNX model file
+     * @param tokenizerPath path to the tokenizer JSON file
+     * @return a ready-to-use scoring model for cross-encoder reranking
+     */
+    @Bean
+    public ScoringModel scoringModel(
+            @Value("${alexandria.reranker.model-path}") String modelPath,
+            @Value("${alexandria.reranker.tokenizer-path}") String tokenizerPath) {
+        return new OnnxScoringModel(modelPath, tokenizerPath);
     }
 
     /**
