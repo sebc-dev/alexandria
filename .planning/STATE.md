@@ -138,4 +138,4 @@ None yet.
 Last session: 2026-02-20
 Stopped at: Completed 07-05-PLAN.md (Phase 07 complete)
 Resume file: .planning/phases/07-crawl-operations/07-05-SUMMARY.md
-Next: Phase 08 (Polish & Hardening)
+Next: Phase 08 (Advanced Search & Quality)
