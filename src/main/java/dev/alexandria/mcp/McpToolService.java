@@ -35,7 +35,7 @@ import java.util.UUID;
  * returned as descriptive error strings, never thrown.
  *
  * <p>Functional tools: {@code search_docs}, {@code list_sources}, {@code add_source},
- * {@code remove_source}, {@code crawl_status}, {@code recrawl_source}.
+ * {@code remove_source}, {@code crawl_status}, {@code recrawl_source}, {@code index_statistics}.
  *
  * @see TokenBudgetTruncator
  * @see McpToolConfig
@@ -122,11 +122,11 @@ public class McpToolService {
 
             StringBuilder sb = new StringBuilder();
             for (Source source : sources) {
-                sb.append(String.format("- %s (%s): %s | %d chunks | last crawled: %s%n",
+                sb.append(String.format("- %s (%s): %s | chunks: %s | last crawled: %s%n",
                         source.getName(),
                         source.getUrl(),
                         source.getStatus(),
-                        source.getChunkCount(),
+                        formatChunkCount(source.getId()),
                         source.getLastCrawledAt() != null ? source.getLastCrawledAt().toString() : "never"));
             }
             return sb.toString();
@@ -179,6 +179,7 @@ public class McpToolService {
 
     /**
      * Removes a documentation source and its indexed data by ID.
+     * Cancels any active crawl, counts chunks before deletion, and returns feedback with chunk count.
      */
     @Tool(name = "remove_source",
           description = "Remove a documentation source and its indexed data by source ID.")
@@ -186,8 +187,31 @@ public class McpToolService {
             @ToolParam(description = "UUID of the source to remove") String sourceId) {
         try {
             UUID uuid = parseUuid(sourceId);
+            Optional<Source> found = sourceRepository.findById(uuid);
+            if (found.isEmpty()) {
+                return "Error: Source %s not found.".formatted(sourceId);
+            }
+            Source source = found.get();
+
+            // Cancel active crawl if running
+            if (source.getStatus() == SourceStatus.CRAWLING
+                    || source.getStatus() == SourceStatus.UPDATING) {
+                progressTracker.cancelCrawl(uuid);
+                try {
+                    Thread.sleep(500);  // Brief wait for crawl loop to observe cancellation
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();  // Restore interrupt flag, continue to deletion
+                }
+            }
+
+            // Count chunks before deletion for feedback
+            long chunkCount = documentChunkRepository.countBySourceId(uuid);
+
+            // Delete source (ON DELETE CASCADE handles chunks + ingestion_state)
             sourceRepository.deleteById(uuid);
-            return "Source %s removed.".formatted(sourceId);
+            progressTracker.removeCrawl(uuid);
+
+            return "Source '%s' removed (%,d chunks deleted).".formatted(source.getName(), chunkCount);
         } catch (IllegalArgumentException e) {
             return "Error: Invalid source ID format. Provide a valid UUID.";
         } catch (Exception e) {
@@ -238,7 +262,8 @@ public class McpToolService {
             @ToolParam(description = "Override block patterns for this crawl run (comma-separated globs)", required = false) String blockPatterns,
             @ToolParam(description = "Override max depth for this crawl run", required = false) Integer maxDepth,
             @ToolParam(description = "Override max pages for this crawl run", required = false) Integer maxPages,
-            @ToolParam(description = "Update the version label for this source", required = false) String version) {
+            @ToolParam(description = "Update the version label for this source", required = false) String version,
+            @ToolParam(description = "Update the display name for this source", required = false) String name) {
         try {
             UUID uuid = parseUuid(sourceId);
             Optional<Source> found = sourceRepository.findById(uuid);
@@ -263,6 +288,13 @@ public class McpToolService {
                 source.setVersion(version);
                 sourceRepository.save(source);
                 documentChunkRepository.updateVersionMetadata(source.getUrl(), version);
+            }
+
+            // Update source name metadata if name changed
+            if (name != null && !name.equals(source.getName())) {
+                source.setName(name);
+                sourceRepository.save(source);
+                documentChunkRepository.updateSourceNameMetadata(source.getUrl(), name);
             }
 
             CrawlScope scope = buildRecrawlScope(source, allowPatterns, blockPatterns, maxDepth, maxPages);
@@ -301,6 +333,64 @@ public class McpToolService {
                 });
             }
         });
+    }
+
+    /**
+     * Returns global index statistics: total chunks, sources, storage size, embedding dimensions,
+     * and last activity timestamp.
+     */
+    @Tool(name = "index_statistics",
+          description = "View global index statistics: total chunks, sources, storage size, "
+                      + "embedding dimensions, and last activity timestamp.")
+    public String indexStatistics() {
+        try {
+            long totalChunks = documentChunkRepository.countAllChunks();
+            long totalSources = sourceRepository.count();
+            long storageSizeBytes = documentChunkRepository.getStorageSizeBytes();
+            Instant lastActivity = sourceRepository.findMaxLastCrawledAt();
+
+            return """
+                    Index Statistics:
+                    - Total chunks: %,d
+                    - Total sources: %d
+                    - Embedding dimensions: 384 (bge-small-en-v1.5-q)
+                    - Storage size: %s
+                    - Last activity: %s""".formatted(
+                    totalChunks, totalSources,
+                    formatBytes(storageSizeBytes),
+                    lastActivity != null ? lastActivity.toString() : "never");
+        } catch (Exception e) {
+            return "Error retrieving index statistics: " + e.getMessage();
+        }
+    }
+
+    private String formatChunkCount(UUID sourceId) {
+        List<Object[]> grouped = documentChunkRepository.countBySourceIdGroupedByContentType(sourceId);
+        if (grouped.isEmpty()) {
+            return "0";
+        }
+        long total = 0;
+        List<String> parts = new ArrayList<>();
+        for (Object[] row : grouped) {
+            String contentType = (String) row[0];
+            long count = ((Number) row[1]).longValue();
+            total += count;
+            parts.add(count + " " + contentType);
+        }
+        if (parts.size() == 1) {
+            return String.valueOf(total);
+        }
+        return total + " (" + String.join(", ", parts) + ")";
+    }
+
+    private static String formatBytes(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        double kb = bytes / 1024.0;
+        if (kb < 1024) return "%.1f KB".formatted(kb);
+        double mb = kb / 1024.0;
+        if (mb < 1024) return "%.1f MB".formatted(mb);
+        double gb = mb / 1024.0;
+        return "%.1f GB".formatted(gb);
     }
 
     private CrawlScope buildRecrawlScope(Source source, String allowPatterns, String blockPatterns,
@@ -342,11 +432,11 @@ public class McpToolService {
     }
 
     private String formatCompletedSummary(Source source) {
-        return String.format("Source: %s (%s)%nStatus: %s%nChunks: %d%nLast crawled: %s",
+        return String.format("Source: %s (%s)%nStatus: %s%nChunks: %s%nLast crawled: %s",
                 source.getName(),
                 source.getUrl(),
                 source.getStatus(),
-                source.getChunkCount(),
+                formatChunkCount(source.getId()),
                 source.getLastCrawledAt() != null ? source.getLastCrawledAt().toString() : "never");
     }
 

@@ -164,6 +164,11 @@ class McpToolServiceTest {
                 .chunkCount(0)
                 .build();
         given(sourceRepository.findAll()).willReturn(List.of(source1, source2));
+        List<Object[]> proseChunks = List.<Object[]>of(new Object[]{"prose", 150L});
+        List<Object[]> noChunks = Collections.emptyList();
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(proseChunks)
+                .willReturn(noChunks);
 
         String output = mcpToolService.listSources();
 
@@ -280,11 +285,18 @@ class McpToolServiceTest {
     @Test
     void removeSourceDeletesById() {
         UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(documentChunkRepository.countBySourceId(uuid)).willReturn(42L);
 
         String output = mcpToolService.removeSource(uuid.toString());
 
         verify(sourceRepository).deleteById(uuid);
         assertThat(output).contains("removed");
+        assertThat(output).contains("42 chunks deleted");
     }
 
     @Test
@@ -334,6 +346,9 @@ class McpToolServiceTest {
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(progressTracker.getProgress(uuid)).willReturn(Optional.empty());
+        List<Object[]> proseChunks = List.<Object[]>of(new Object[]{"prose", 42L});
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(proseChunks);
 
         String output = mcpToolService.crawlStatus(uuid.toString());
 
@@ -422,7 +437,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
 
         assertThat(output).contains("incremental");
         assertThat(output).contains("Spring Docs");
@@ -445,7 +460,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), true, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), true, null, null, null, null, null, null);
 
         assertThat(output).contains("full");
         verify(ingestionService).clearIngestionState(uuid);
@@ -467,7 +482,7 @@ class McpToolServiceTest {
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
         String output = mcpToolService.recrawlSource(
-                uuid.toString(), null, "/api/**", "/old/**", 5, 100, null);
+                uuid.toString(), null, "/api/**", "/old/**", 5, 100, null, null);
 
         assertThat(output).contains("incremental");
         assertThat(output).contains("Spring Docs");
@@ -485,7 +500,7 @@ class McpToolServiceTest {
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("already being crawled");
@@ -500,7 +515,7 @@ class McpToolServiceTest {
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("already being crawled");
@@ -511,7 +526,7 @@ class McpToolServiceTest {
         UUID uuid = UUID.randomUUID();
         given(sourceRepository.findById(uuid)).willReturn(Optional.empty());
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("not found");
@@ -519,7 +534,7 @@ class McpToolServiceTest {
 
     @Test
     void recrawlSourceWithInvalidIdReturnsError() {
-        String output = mcpToolService.recrawlSource("not-a-uuid", null, null, null, null, null, null);
+        String output = mcpToolService.recrawlSource("not-a-uuid", null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("Invalid source ID");
@@ -621,7 +636,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19");
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19", null);
 
         assertThat(source.getVersion()).isEqualTo("React 19");
         verify(documentChunkRepository).updateVersionMetadata("https://react.dev", "React 19");
@@ -640,7 +655,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19");
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19", null);
 
         verify(documentChunkRepository, never()).updateVersionMetadata(anyString(), anyString());
     }
@@ -658,7 +673,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
 
         verify(documentChunkRepository, never()).updateVersionMetadata(anyString(), anyString());
     }

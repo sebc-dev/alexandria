@@ -108,4 +108,20 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, UU
             GROUP BY metadata->>'content_type'
             """, nativeQuery = true)
     List<Object[]> countBySourceIdGroupedByContentType(@Param("sourceId") UUID sourceId);
+
+    /**
+     * Counts total chunks across all sources.
+     *
+     * @return total chunk count
+     */
+    @Query(value = "SELECT COUNT(*) FROM document_chunks", nativeQuery = true)
+    long countAllChunks();
+
+    /**
+     * Returns the total relation size (data + indexes + TOAST) of the document_chunks table in bytes.
+     *
+     * @return storage size in bytes
+     */
+    @Query(value = "SELECT pg_total_relation_size('document_chunks')", nativeQuery = true)
+    long getStorageSizeBytes();
 }
