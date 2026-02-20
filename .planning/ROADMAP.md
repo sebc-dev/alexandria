@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
 - [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
 - [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
-- [ ] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
+- [x] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
 - [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
 - [ ] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type
@@ -140,7 +140,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
-- [ ] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
+- [x] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
 
 ### Phase 6: Source Management
 **Goal**: Users can manage documentation sources through MCP tools -- add, remove, list, and inspect the health of their indexed documentation
@@ -207,7 +207,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
-| 5. MCP Server | 1/2 | In progress | - |
+| 5. MCP Server | 2/2 | Complete | 2026-02-20 |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |

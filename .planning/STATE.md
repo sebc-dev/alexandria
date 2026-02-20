@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 5 - MCP Server (in progress)
+**Current focus:** Phase 5 - MCP Server (complete)
 
 ## Current Position
 
 Phase: 5 of 8 (MCP Server)
-Plan: 1 of N in Phase 05
-Status: Plan 05-01 complete
-Last activity: 2026-02-20 -- Completed 05-01 (MCP adapter package with 6 tools)
+Plan: 2 of 2 in Phase 05
+Status: Phase 05 complete
+Last activity: 2026-02-20 -- Completed 05-02 (MCP unit tests + .mcp.json)
 
-Progress: [██████░░░░] 60%
+Progress: [██████░░░░] 62%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 4.8min
-- Total execution time: 1.05 hours
+- Total plans completed: 14
+- Average duration: 4.6min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [██████░░░░] 60%
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
 | 03-web-crawling | 2 | 9min | 4.5min |
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
-| 05-mcp-server | 1 | 3min | 3.0min |
+| 05-mcp-server | 2 | 6min | 3.0min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 12min, 3min, 11min, 3min
+- Last 5 plans: 12min, 3min, 11min, 3min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -42,6 +42,7 @@ Progress: [██████░░░░] 60%
 | Phase 04.5 P04 | 3min | 2 tasks | 6 files |
 | Phase 04.5 P05 | 11min | 2 tasks | 38 files |
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
+| Phase 05 P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,7 @@ Recent decisions affecting current work:
 - [05-01]: Token estimation uses chars/4 industry standard, configurable via alexandria.mcp.token-budget property (default 5000)
 - [05-01]: Source management tools are functional stubs (add_source/remove_source interact with DB, others query status) with future-update messages for crawl orchestration
 - [05-01]: First search result always included even if exceeding token budget (truncated at char level) to guarantee non-empty responses
+- [05-02]: Pre-existing SpotBugs VA_FORMAT_STRING_USES_NEWLINE in TokenBudgetTruncator is intentional -- MCP stdio output uses Unix \n, not platform-dependent %n
 
 ### Pending Todos
 
@@ -113,6 +115,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 05-01-PLAN.md
-Resume file: .planning/phases/05-mcp-server/05-01-SUMMARY.md
-Next: Continue Phase 5 (MCP Server) -- unit tests for MCP tools
+Stopped at: Completed 05-02-PLAN.md (Phase 05 complete)
+Resume file: .planning/phases/05-mcp-server/05-02-SUMMARY.md
+Next: Phase 6 planning (Source Management) or next available phase
