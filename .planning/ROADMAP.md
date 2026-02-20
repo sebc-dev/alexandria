@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
 - [x] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
-- [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
+- [x] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring (completed 2026-02-20)
 - [ ] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type
 
 ## Phase Details
@@ -169,7 +169,7 @@ Plans:
   4. User can check crawl progress (pages crawled, pages remaining, errors) via `crawl_status` MCP tool
   5. User can trigger a manual recrawl of an existing source via `recrawl_source` MCP tool
   6. System can ingest llms.txt and llms-full.txt files as documentation sources and use them for page discovery
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 07-01-PLAN.md -- TDD pure crawl utilities: CrawlScope, UrlScopeFilter, ContentHasher
@@ -212,7 +212,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
 | 5. MCP Server | 2/2 | Complete    | 2026-02-20 |
 | 6. Source Management | 0/TBD | Not started | - |
-| 7. Crawl Operations | 5/5 | Complete | 2026-02-20 |
+| 7. Crawl Operations | 5/5 | Complete    | 2026-02-20 |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |
 
 
