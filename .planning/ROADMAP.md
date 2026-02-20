@@ -51,7 +51,7 @@
   5. OWASP Dependency-Check runs in the Gradle build and fails on CVSS >= 7.0; CycloneDX generates an SBOM artifact
 **Plans**: 3 plans
 - [x] 11-01-PLAN.md — Error Prone + Spotless configuration and big-bang format (completed 2026-02-20)
-- [ ] 11-02-PLAN.md — NullAway + JSpecify annotations for null safety
+- [x] 11-02-PLAN.md — NullAway + JSpecify annotations for null safety (completed 2026-02-20)
 - [ ] 11-03-PLAN.md — OWASP Dependency-Check, CycloneDX SBOM, and Trivy CI scanning
 
 ### Phase 12: Performance Quick Wins
