@@ -54,11 +54,6 @@ class SearchServiceTest {
         when(embeddingModel.embed(query)).thenReturn(Response.from(DUMMY_EMBEDDING));
     }
 
-    private void stubEmptyStoreResult() {
-        when(embeddingStore.search(any(EmbeddingSearchRequest.class)))
-                .thenReturn(new EmbeddingSearchResult<>(List.of()));
-    }
-
     private void stubRerankerReturnsEmpty() {
         when(rerankerService.rerank(any(), any(), anyInt(), any()))
                 .thenReturn(List.of());
@@ -115,7 +110,9 @@ class SearchServiceTest {
         EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
         Filter filter = captured.filter();
         assertThat(filter).isInstanceOf(IsEqualTo.class);
-        assertThat(filter).hasToString("metadataKey 'source_name' is equal to 'spring-boot'");
+        IsEqualTo isEqualTo = (IsEqualTo) filter;
+        assertThat(isEqualTo.key()).isEqualTo("source_name");
+        assertThat(isEqualTo.comparisonValue()).isEqualTo("spring-boot");
     }
 
     @Test
@@ -132,7 +129,9 @@ class SearchServiceTest {
         EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
         Filter filter = captured.filter();
         assertThat(filter).isInstanceOf(IsEqualTo.class);
-        assertThat(filter).hasToString("metadataKey 'version' is equal to '3.2.0'");
+        IsEqualTo isEqualTo = (IsEqualTo) filter;
+        assertThat(isEqualTo.key()).isEqualTo("version");
+        assertThat(isEqualTo.comparisonValue()).isEqualTo("3.2.0");
     }
 
     @Test
@@ -149,8 +148,9 @@ class SearchServiceTest {
         EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
         Filter filter = captured.filter();
         assertThat(filter).isInstanceOf(ContainsString.class);
-        // Section path is slugified before filtering
-        assertThat(filter).hasToString("metadataKey 'section_path' contains 'getting-started-quick-start'");
+        ContainsString containsString = (ContainsString) filter;
+        assertThat(containsString.key()).isEqualTo("section_path");
+        assertThat(containsString.comparisonValue()).isEqualTo("getting-started-quick-start");
     }
 
     @Test
@@ -167,7 +167,9 @@ class SearchServiceTest {
         EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
         Filter filter = captured.filter();
         assertThat(filter).isInstanceOf(IsEqualTo.class);
-        assertThat(filter).hasToString("metadataKey 'content_type' is equal to 'code'");
+        IsEqualTo isEqualTo = (IsEqualTo) filter;
+        assertThat(isEqualTo.key()).isEqualTo("content_type");
+        assertThat(isEqualTo.comparisonValue()).isEqualTo("code");
     }
 
     @Test
