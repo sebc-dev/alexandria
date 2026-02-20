@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 5 - MCP Server (complete)
+**Current focus:** Phase 7 - Crawl Operations (complete)
 
 ## Current Position
 
-Phase: 5 of 8 (MCP Server)
-Plan: 2 of 2 in Phase 05
-Status: Phase 05 complete
-Last activity: 2026-02-20 -- Completed 05-02 (MCP unit tests + .mcp.json)
+Phase: 7 of 8 (Crawl Operations)
+Plan: 5 of 5 in Phase 07 (COMPLETE)
+Status: Phase 07 complete
+Last activity: 2026-02-20 -- Completed 07-05 (MCP Tool Integration)
 
-Progress: [██████░░░░] 62%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 4.6min
-- Total execution time: 1.1 hours
+- Total plans completed: 18
+- Average duration: 4.8min
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [██████░░░░] 62%
 | 03-web-crawling | 2 | 9min | 4.5min |
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
 | 05-mcp-server | 2 | 6min | 3.0min |
+| 07-crawl-operations | 5 | 33min | 6.6min |
 
 **Recent Trend:**
-- Last 5 plans: 12min, 3min, 11min, 3min, 3min
-- Trend: stable
+- Last 5 plans: 5min, 5min, 7min, 10min, 6min
+- Trend: stabilizing (MCP integration faster than crawl orchestration)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -43,6 +44,11 @@ Progress: [██████░░░░] 62%
 | Phase 04.5 P05 | 11min | 2 tasks | 38 files |
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
+| Phase 07 P01 | 5min | 2 tasks | 6 files |
+| Phase 07 P02 | 5min | 1 task | 2 files |
+| Phase 07 P03 | 7min | 2 tasks | 11 files |
+| Phase 07 P04 | 10min | 2 tasks | 5 files |
+| Phase 07 P05 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -96,6 +102,21 @@ Recent decisions affecting current work:
 - [05-01]: Source management tools are functional stubs (add_source/remove_source interact with DB, others query status) with future-update messages for crawl orchestration
 - [05-01]: First search result always included even if exceeding token budget (truncated at char level) to guarantee non-empty responses
 - [05-02]: Pre-existing SpotBugs VA_FORMAT_STRING_USES_NEWLINE in TokenBudgetTruncator is intentional -- MCP stdio output uses Unix \n, not platform-dependent %n
+- [07-01]: PathMatcher glob on URL paths: java.nio.file.FileSystems.getDefault().getPathMatcher for pattern matching on URL path segments
+- [07-01]: Block patterns take priority over allow patterns in UrlScopeFilter (per user decision from plan)
+- [07-02]: LlmsTxtParser link index threshold 0.3 ratio: >= 30% markdown link lines classifies content as llms.txt link index
+- [07-02]: LlmsTxtResult as nested record in LlmsTxtParser (self-contained API, not separate file)
+- [07-03]: CrawlProgress.Status enum instead of SourceStatus to avoid crawl<->source package cycle (ArchUnit no_package_cycles)
+- [07-03]: CrawlScope.fromSource() factory instead of Source.toCrawlScope() to maintain unidirectional crawl->source dependency
+- [07-03]: Comma-separated TEXT columns for scope patterns (simplest JPA mapping, no Hibernate array type complexity)
+- [07-03]: Answer-based URI routing in PageDiscoveryService tests for RestClient mock chain
+- [07-04]: Incremental ingestion logic in CrawlService (not IngestionService) to avoid ArchUnit crawl<->ingestion package cycle
+- [07-04]: Removed ingest(List<CrawlResult>) from IngestionService to break ingestion->crawl dependency
+- [07-04]: deleteChunksForUrl() on IngestionService as URL-scoped chunk deletion abstraction
+- [07-04]: LinkedHashMap<URL, depth> for BFS depth tracking instead of LinkedHashSet
+- [07-05]: dispatchCrawl as package-private method for testability -- spy pattern suppresses virtual thread in unit tests
+- [07-05]: Scope overrides on recrawl are one-time: CrawlScope built from overrides, Source entity unchanged
+- [07-05]: results.size() used for chunkCount on Source after crawl (page count proxy; actual chunk counts tracked internally by CrawlService)
 
 ### Pending Todos
 
@@ -115,6 +136,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 05-02-PLAN.md (Phase 05 complete)
-Resume file: .planning/phases/05-mcp-server/05-02-SUMMARY.md
-Next: Phase 6 planning (Source Management) or next available phase
+Stopped at: Completed 07-05-PLAN.md (Phase 07 complete)
+Resume file: .planning/phases/07-crawl-operations/07-05-SUMMARY.md
+Next: Phase 08 (Advanced Search & Quality)

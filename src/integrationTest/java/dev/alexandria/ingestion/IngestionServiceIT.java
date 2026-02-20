@@ -1,13 +1,13 @@
 package dev.alexandria.ingestion;
 
 import dev.alexandria.BaseIntegrationTest;
-import dev.alexandria.crawl.CrawlResult;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +21,7 @@ class IngestionServiceIT extends BaseIntegrationTest {
     SearchService searchService;
 
     @Test
-    void ingestCrawlResultProducesSearchableChunks() {
+    void ingestPageProducesSearchableChunks() {
         String markdown = """
                 ## Spring Configuration
                 Spring Boot auto-configures beans.
@@ -30,11 +30,9 @@ class IngestionServiceIT extends BaseIntegrationTest {
                 public class AppConfig {}
                 ```""";
 
-        CrawlResult page = new CrawlResult(
-                "https://docs.spring.io/config", markdown, List.of(), true, null
+        int chunkCount = ingestionService.ingestPage(
+                markdown, "https://docs.spring.io/config", Instant.now().toString()
         );
-
-        int chunkCount = ingestionService.ingest(List.of(page));
         assertThat(chunkCount).isGreaterThanOrEqualTo(2); // at least 1 prose + 1 code
 
         List<SearchResult> results = searchService.search(new SearchRequest("Spring auto-configuration"));
@@ -62,15 +60,14 @@ class IngestionServiceIT extends BaseIntegrationTest {
         String markdown1 = "## Database Setup\nConfigure PostgreSQL for production use with connection pooling.";
         String markdown2 = "## Authentication\nSecure your API endpoints with JWT authentication tokens.";
 
-        CrawlResult page1 = new CrawlResult(
-                "https://docs.example.com/database", markdown1, List.of(), true, null
+        String timestamp = Instant.now().toString();
+        int chunkCount1 = ingestionService.ingestPage(
+                markdown1, "https://docs.example.com/database", timestamp
         );
-        CrawlResult page2 = new CrawlResult(
-                "https://docs.example.com/auth", markdown2, List.of(), true, null
+        int chunkCount2 = ingestionService.ingestPage(
+                markdown2, "https://docs.example.com/auth", timestamp
         );
-
-        int chunkCount = ingestionService.ingest(List.of(page1, page2));
-        assertThat(chunkCount).isGreaterThanOrEqualTo(2); // at least 1 chunk per page
+        assertThat(chunkCount1 + chunkCount2).isGreaterThanOrEqualTo(2); // at least 1 chunk per page
 
         List<SearchResult> dbResults = searchService.search(new SearchRequest("PostgreSQL connection pooling"));
         assertThat(dbResults).anyMatch(r ->

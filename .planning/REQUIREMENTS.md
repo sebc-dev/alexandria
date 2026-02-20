@@ -17,36 +17,36 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Crawling & Ingestion
 
-- [ ] **CRWL-01**: System crawls a documentation site recursively from a root URL via Crawl4AI sidecar
-- [ ] **CRWL-02**: System converts crawled HTML to Markdown preserving headings, code blocks with language tags, tables, and lists
-- [ ] **CRWL-03**: User can control crawl scope (URL pattern allowlist/blocklist, max depth, max pages)
-- [ ] **CRWL-04**: System handles JavaScript-rendered pages via Crawl4AI's Chromium headless browser
-- [ ] **CRWL-05**: System removes boilerplate content (navigation, footers, sidebars) from crawled pages
-- [ ] **CRWL-06**: System performs incremental/delta crawls — only re-processes pages whose content hash (SHA-256) has changed
-- [ ] **CRWL-07**: User can schedule periodic recrawls for a source (interval-based)
-- [ ] **CRWL-08**: System discovers pages via sitemap.xml when available, falls back to recursive crawl
-- [ ] **CRWL-09**: User can check crawl progress (pages crawled, pages remaining, errors) via MCP tool `crawl_status`
-- [ ] **CRWL-10**: User can trigger a recrawl of an existing source via MCP tool `recrawl_source`
-- [ ] **CRWL-11**: System can ingest llms.txt and llms-full.txt files as documentation sources and use them as page discovery mechanism (like sitemap.xml) for further crawling
+- [x] **CRWL-01**: System crawls a documentation site recursively from a root URL via Crawl4AI sidecar
+- [x] **CRWL-02**: System converts crawled HTML to Markdown preserving headings, code blocks with language tags, tables, and lists
+- [x] **CRWL-03**: User can control crawl scope (URL pattern allowlist/blocklist, max depth, max pages)
+- [x] **CRWL-04**: System handles JavaScript-rendered pages via Crawl4AI's Chromium headless browser
+- [x] **CRWL-05**: System removes boilerplate content (navigation, footers, sidebars) from crawled pages
+- [x] **CRWL-06**: System performs incremental/delta crawls — only re-processes pages whose content hash (SHA-256) has changed
+- [ ] **CRWL-07**: User can schedule periodic recrawls for a source (interval-based) *(deferred to manual recrawl_source)*
+- [x] **CRWL-08**: System discovers pages via sitemap.xml when available, falls back to recursive crawl
+- [x] **CRWL-09**: User can check crawl progress (pages crawled, pages remaining, errors) via MCP tool `crawl_status`
+- [x] **CRWL-10**: User can trigger a recrawl of an existing source via MCP tool `recrawl_source`
+- [x] **CRWL-11**: System can ingest llms.txt and llms-full.txt files as documentation sources and use them as page discovery mechanism (like sitemap.xml) for further crawling
 
 ### Chunking & Embedding
 
-- [ ] **CHUNK-01**: System chunks Markdown at heading boundaries (H1/H2/H3), never splitting mid-code-block or mid-table
-- [ ] **CHUNK-02**: System applies configurable chunk overlap (default 50-100 tokens)
-- [ ] **CHUNK-03**: Each chunk carries metadata: source URL, section path (breadcrumb), heading hierarchy, content type, last updated timestamp
-- [ ] **CHUNK-04**: System generates embeddings via ONNX in-process (bge-small-en-v1.5-q, 384 dimensions)
-- [ ] **CHUNK-05**: System extracts code examples as separate chunks tagged with language and content_type="code"
+- [x] **CHUNK-01**: System chunks Markdown at heading boundaries (H1/H2/H3), never splitting mid-code-block or mid-table
+- [x] **CHUNK-02**: System applies configurable chunk overlap (default 50-100 tokens)
+- [x] **CHUNK-03**: Each chunk carries metadata: source URL, section path (breadcrumb), heading hierarchy, content type, last updated timestamp
+- [x] **CHUNK-04**: System generates embeddings via ONNX in-process (bge-small-en-v1.5-q, 384 dimensions)
+- [x] **CHUNK-05**: System extracts code examples as separate chunks tagged with language and content_type="code"
 - [ ] **CHUNK-06**: User can tag each source with a version label (e.g., "React 19", "Spring Boot 3.5")
-- [ ] **CHUNK-07**: User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) instead of relying on built-in automatic chunking
+- [x] **CHUNK-07**: User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) instead of relying on built-in automatic chunking
 
 ### Search & Retrieval
 
-- [ ] **SRCH-01**: User can search indexed documentation via semantic vector search (cosine similarity, pgvector HNSW)
-- [ ] **SRCH-02**: User can search indexed documentation via keyword search (PostgreSQL tsvector/tsquery BM25)
-- [ ] **SRCH-03**: System combines vector and keyword results via Reciprocal Rank Fusion (RRF) for hybrid search
+- [x] **SRCH-01**: User can search indexed documentation via semantic vector search (cosine similarity, pgvector HNSW)
+- [x] **SRCH-02**: User can search indexed documentation via keyword search (PostgreSQL tsvector/tsquery BM25)
+- [x] **SRCH-03**: System combines vector and keyword results via Reciprocal Rank Fusion (RRF) for hybrid search
 - [ ] **SRCH-04**: User can filter search results by source name
-- [ ] **SRCH-05**: Every search result includes source URL and section path for citation
-- [ ] **SRCH-06**: User can configure number of results returned (default 10)
+- [x] **SRCH-05**: Every search result includes source URL and section path for citation
+- [x] **SRCH-06**: User can configure number of results returned (default 10)
 - [ ] **SRCH-07**: System re-ranks top candidates via cross-encoder model for improved precision
 - [ ] **SRCH-08**: User can filter search results by section path (e.g., "API Reference" only)
 - [ ] **SRCH-09**: User can filter search results by version tag
@@ -54,18 +54,18 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### MCP Server
 
-- [ ] **MCP-01**: Server communicates via stdio transport for Claude Code integration
-- [ ] **MCP-02**: Tools have clear, front-loaded descriptions optimized for LLM tool selection
-- [ ] **MCP-03**: Tool errors return structured, actionable messages (not stack traces)
-- [ ] **MCP-04**: Search results respect a configurable token budget (default 5000 tokens)
-- [ ] **MCP-05**: Server exposes maximum 6 tools: `search_docs`, `list_sources`, `add_source`, `remove_source`, `crawl_status`, `recrawl_source`
+- [x] **MCP-01**: Server communicates via stdio transport for Claude Code integration
+- [x] **MCP-02**: Tools have clear, front-loaded descriptions optimized for LLM tool selection
+- [x] **MCP-03**: Tool errors return structured, actionable messages (not stack traces)
+- [x] **MCP-04**: Search results respect a configurable token budget (default 5000 tokens)
+- [x] **MCP-05**: Server exposes maximum 6 tools: `search_docs`, `list_sources`, `add_source`, `remove_source`, `crawl_status`, `recrawl_source`
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: System runs via single `docker compose up` command (Java app + Crawl4AI + PostgreSQL+pgvector)
-- [ ] **INFRA-02**: System works with sensible defaults, zero mandatory configuration beyond Docker
-- [ ] **INFRA-03**: Project includes Claude Code integration guide (.mcp.json configuration)
-- [ ] **INFRA-04**: System fits within 14 GB RAM budget (on 24 GB machine)
+- [x] **INFRA-01**: System runs via single `docker compose up` command (Java app + Crawl4AI + PostgreSQL+pgvector)
+- [x] **INFRA-02**: System works with sensible defaults, zero mandatory configuration beyond Docker
+- [x] **INFRA-03**: Project includes Claude Code integration guide (.mcp.json configuration)
+- [x] **INFRA-04**: System fits within 14 GB RAM budget (on 24 GB machine)
 
 ## v2 Requirements
 
@@ -105,49 +105,52 @@ Deferred to future release. Tracked but not in current roadmap.
 | SRC-03 | Phase 6 | Pending |
 | SRC-04 | Phase 6 | Pending |
 | SRC-05 | Phase 6 | Pending |
-| CRWL-01 | Phase 3 | Pending |
-| CRWL-02 | Phase 3 | Pending |
-| CRWL-03 | Phase 7 | Pending |
-| CRWL-04 | Phase 3 | Pending |
-| CRWL-05 | Phase 3 | Pending |
-| CRWL-06 | Phase 7 | Pending |
-| CRWL-07 | Phase 7 | Pending |
-| CRWL-08 | Phase 3 | Pending |
-| CRWL-09 | Phase 7 | Pending |
-| CRWL-10 | Phase 7 | Pending |
-| CRWL-11 | Phase 7 | Pending |
-| CHUNK-01 | Phase 4 | Pending |
-| CHUNK-02 | Phase 4 | Pending |
-| CHUNK-03 | Phase 4 | Pending |
-| CHUNK-04 | Phase 1 | Pending |
-| CHUNK-05 | Phase 4 | Pending |
+| CRWL-01 | Phase 3 | ✓ Complete |
+| CRWL-02 | Phase 3 | ✓ Complete |
+| CRWL-03 | Phase 7 | ✓ Complete |
+| CRWL-04 | Phase 3 | ✓ Complete |
+| CRWL-05 | Phase 3 | ✓ Complete |
+| CRWL-06 | Phase 7 | ✓ Complete |
+| CRWL-07 | Phase 7 | Deferred (manual recrawl_source) |
+| CRWL-08 | Phase 3 | ✓ Complete |
+| CRWL-09 | Phase 7 | ✓ Complete |
+| CRWL-10 | Phase 7 | ✓ Complete |
+| CRWL-11 | Phase 7 | ✓ Complete |
+| CHUNK-01 | Phase 4 | ✓ Complete |
+| CHUNK-02 | Phase 4 | ✓ Complete |
+| CHUNK-03 | Phase 4 | ✓ Complete |
+| CHUNK-04 | Phase 1 | ✓ Complete |
+| CHUNK-05 | Phase 4 | ✓ Complete |
 | CHUNK-06 | Phase 8 | Pending |
-| CHUNK-07 | Phase 4 | Pending |
-| SRCH-01 | Phase 2 | Pending |
-| SRCH-02 | Phase 2 | Pending |
-| SRCH-03 | Phase 2 | Pending |
+| CHUNK-07 | Phase 4 | ✓ Complete |
+| SRCH-01 | Phase 2 | ✓ Complete |
+| SRCH-02 | Phase 2 | ✓ Complete |
+| SRCH-03 | Phase 2 | ✓ Complete |
 | SRCH-04 | Phase 8 | Pending |
-| SRCH-05 | Phase 2 | Pending |
-| SRCH-06 | Phase 2 | Pending |
+| SRCH-05 | Phase 2 | ✓ Complete |
+| SRCH-06 | Phase 2 | ✓ Complete |
 | SRCH-07 | Phase 8 | Pending |
 | SRCH-08 | Phase 8 | Pending |
 | SRCH-09 | Phase 8 | Pending |
 | SRCH-10 | Phase 8 | Pending |
-| MCP-01 | Phase 5 | Pending |
-| MCP-02 | Phase 5 | Pending |
-| MCP-03 | Phase 5 | Pending |
-| MCP-04 | Phase 5 | Pending |
-| MCP-05 | Phase 5 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 5 | Pending |
-| INFRA-04 | Phase 1 | Pending |
+| MCP-01 | Phase 5 | ✓ Complete |
+| MCP-02 | Phase 5 | ✓ Complete |
+| MCP-03 | Phase 5 | ✓ Complete |
+| MCP-04 | Phase 5 | ✓ Complete |
+| MCP-05 | Phase 5 | ✓ Complete |
+| INFRA-01 | Phase 1 | ✓ Complete |
+| INFRA-02 | Phase 1 | ✓ Complete |
+| INFRA-03 | Phase 5 | ✓ Complete |
+| INFRA-04 | Phase 1 | ✓ Complete |
 
 **Coverage:**
-- v1 requirements: 40 total
-- Mapped to phases: 40
+- v1 requirements: 42 total
+- Mapped to phases: 42
 - Unmapped: 0
+- Complete: 30/42 (71%)
+- Pending: 11 (SRC-01..05, CHUNK-06, SRCH-04, SRCH-07..10)
+- Deferred: 1 (CRWL-07)
 
 ---
 *Requirements defined: 2026-02-14*
-*Last updated: 2026-02-14 after roadmap creation*
+*Last updated: 2026-02-20 after phase 7 completion*

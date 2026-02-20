@@ -12,15 +12,15 @@ Alexandria delivers a self-hosted RAG system that crawls, indexes, and exposes t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests
-- [ ] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose
+- [x] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests (completed 2026-02-14)
+- [x] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose (completed 2026-02-14)
 - [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
 - [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
-- [ ] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction
+- [x] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction (completed 2026-02-18)
 - [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
 - [x] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
 - [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
-- [ ] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring
+- [x] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring (completed 2026-02-20)
 - [ ] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type
 
 ## Phase Details
@@ -36,11 +36,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Dead code detection (via detekt/UnusedDeclarations or equivalent) flags unused code as build warnings or errors
   5. Architecture tests (via ArchUnit) enforce package dependency rules and architectural constraints
   6. CI pipeline completes in under 5 minutes for an empty/skeleton project
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
-- [ ] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
+- [x] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
+- [x] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
 
 ### Phase 1: Foundation & Infrastructure
 **Goal**: A running Docker Compose stack with PostgreSQL+pgvector, Spring Boot application, and in-process ONNX embedding generation -- the base layer everything else builds on
@@ -52,11 +52,11 @@ Plans:
   3. Application can store an embedding with metadata in pgvector and retrieve it by ID
   4. Total memory usage of the running stack stays under 14 GB on a 24 GB machine
   5. Database schema is managed by Flyway migrations (no manual SQL execution required)
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
-- [ ] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
+- [x] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
+- [x] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
 
 ### Phase 2: Core Search
 **Goal**: Users can perform hybrid semantic+keyword search over indexed documentation and get relevant, cited results -- verifiable with manually inserted test data before any crawling exists
@@ -68,7 +68,7 @@ Plans:
   3. Hybrid search combines vector and keyword results via Reciprocal Rank Fusion and returns better results than either method alone
   4. Every search result includes a source URL and section path suitable for citation
   5. User can configure the number of results returned (defaulting to 10)
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md -- V2 Flyway migration (GIN index fix), hybrid EmbeddingStore config, SearchService + domain DTOs
@@ -84,7 +84,7 @@ Plans:
   3. JavaScript-rendered pages (e.g., React/Vue doc sites) produce the same quality Markdown as static HTML pages
   4. Boilerplate content (navigation bars, footers, sidebars) is stripped from crawled output
   5. System checks for sitemap.xml and uses it for page discovery when available, falling back to recursive link crawling
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md -- Crawl4AI REST client, Spring RestClient config, request/response DTOs, Docker Compose shm_size fix, integration test
@@ -101,11 +101,11 @@ Plans:
   4. Code examples are extracted as separate chunks tagged with language and content_type="code"
   5. User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) bypassing automatic chunking
   6. End-to-end pipeline works: crawl a real documentation site and produce searchable results via hybrid search
-**Plans**: TBD
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [x] 04-01-PLAN.md -- MarkdownChunker (CommonMark AST), DocumentChunkData record, LanguageDetector, TDD
+- [x] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter, integration tests proving ingest-search roundtrip
 
 ### Phase 4.5: Code Quality & Test Consolidation *(INSERTED)*
 **Goal**: Consolidate and strengthen the test suite built over Phases 0-4, increase test coverage where it adds value, refactor overly long methods, and perform targeted codebase cleanup -- ensuring a solid, maintainable foundation before building the MCP integration layer
@@ -122,9 +122,9 @@ Plans:
 Plans:
 - [x] 04.5-01-PLAN.md -- SpotBugs fixes (23 findings), unused Gradle deps removal, test fixture builders
 - [x] 04.5-02-PLAN.md -- Kill PIT mutations (20 surviving) and refactor MarkdownChunker long methods
-- [ ] 04.5-03-PLAN.md -- Add unit tests for crawl package (CrawlService, Crawl4AiClient, PageDiscoveryService, SitemapParser) + refactor CrawlService
-- [ ] 04.5-04-PLAN.md -- Add unit tests for IngestionService and PreChunkedImporter
-- [ ] 04.5-05-PLAN.md -- Javadoc on 18 classes, test name harmonization (46 renames), IT consolidation, dead code/import cleanup
+- [x] 04.5-03-PLAN.md -- Add unit tests for crawl package (CrawlService, Crawl4AiClient, PageDiscoveryService, SitemapParser) + refactor CrawlService
+- [x] 04.5-04-PLAN.md -- Add unit tests for IngestionService and PreChunkedImporter
+- [x] 04.5-05-PLAN.md -- Javadoc on 18 classes, test name harmonization (46 renames), IT consolidation, dead code/import cleanup
 
 ### Phase 5: MCP Server
 **Goal**: Claude Code can connect to Alexandria via MCP stdio transport and search indexed documentation -- the integration layer that makes everything usable
@@ -169,11 +169,14 @@ Plans:
   4. User can check crawl progress (pages crawled, pages remaining, errors) via `crawl_status` MCP tool
   5. User can trigger a manual recrawl of an existing source via `recrawl_source` MCP tool
   6. System can ingest llms.txt and llms-full.txt files as documentation sources and use them for page discovery
-**Plans**: TBD
+**Plans:** 5/5 plans complete
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [x] 07-01-PLAN.md -- TDD pure crawl utilities: CrawlScope, UrlScopeFilter, ContentHasher
+- [x] 07-02-PLAN.md -- TDD LlmsTxtParser for llms.txt/llms-full.txt URL extraction
+- [x] 07-03-PLAN.md -- Schema migration, Source scope fields, IngestionStateRepository, CrawlProgressTracker, PageDiscoveryService llms.txt cascade
+- [x] 07-04-PLAN.md -- CrawlService evolution (scope, depth, incremental, progress, llms-full.txt hybrid)
+- [x] 07-05-PLAN.md -- MCP tool wiring (add_source, crawl_status, recrawl_source real implementations)
 
 ### Phase 8: Advanced Search & Quality
 **Goal**: Search results are more precise through cross-encoder reranking and richer filtering options -- the quality multiplier layer
@@ -201,15 +204,15 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. CI & Quality Gate | 0/2 | Planned | - |
-| 1. Foundation & Infrastructure | 0/2 | Planned | - |
+| 0. CI & Quality Gate | 2/2 | ✓ Complete | 2026-02-14 |
+| 1. Foundation & Infrastructure | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
-| 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
-| 5. MCP Server | 2/2 | Complete    | 2026-02-20 |
+| 4.5. Code Quality & Test Consolidation | 5/5 | ✓ Complete | 2026-02-19 |
+| 5. MCP Server | 2/2 | ✓ Complete | 2026-02-20 |
 | 6. Source Management | 0/TBD | Not started | - |
-| 7. Crawl Operations | 0/TBD | Not started | - |
+| 7. Crawl Operations | 5/5 | ✓ Complete | 2026-02-20 |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |
 
 

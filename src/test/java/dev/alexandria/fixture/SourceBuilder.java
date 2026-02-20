@@ -20,6 +20,11 @@ public final class SourceBuilder {
     private SourceStatus status = SourceStatus.PENDING;
     private Instant lastCrawledAt;
     private int chunkCount = 0;
+    private String allowPatterns;
+    private String blockPatterns;
+    private Integer maxDepth;
+    private Integer maxPages;
+    private String llmsTxtUrl;
 
     public SourceBuilder url(String url) {
         this.url = url;
@@ -46,6 +51,31 @@ public final class SourceBuilder {
         return this;
     }
 
+    public SourceBuilder allowPatterns(String allowPatterns) {
+        this.allowPatterns = allowPatterns;
+        return this;
+    }
+
+    public SourceBuilder blockPatterns(String blockPatterns) {
+        this.blockPatterns = blockPatterns;
+        return this;
+    }
+
+    public SourceBuilder maxDepth(Integer maxDepth) {
+        this.maxDepth = maxDepth;
+        return this;
+    }
+
+    public SourceBuilder maxPages(Integer maxPages) {
+        this.maxPages = maxPages;
+        return this;
+    }
+
+    public SourceBuilder llmsTxtUrl(String llmsTxtUrl) {
+        this.llmsTxtUrl = llmsTxtUrl;
+        return this;
+    }
+
     public Source build() {
         Source source = new Source(url, name);
         source.setStatus(status);
@@ -53,6 +83,21 @@ public final class SourceBuilder {
             source.setLastCrawledAt(lastCrawledAt);
         }
         source.setChunkCount(chunkCount);
+        if (allowPatterns != null) {
+            source.setAllowPatterns(allowPatterns);
+        }
+        if (blockPatterns != null) {
+            source.setBlockPatterns(blockPatterns);
+        }
+        if (maxDepth != null) {
+            source.setMaxDepth(maxDepth);
+        }
+        if (maxPages != null) {
+            source.setMaxPages(maxPages);
+        }
+        if (llmsTxtUrl != null) {
+            source.setLlmsTxtUrl(llmsTxtUrl);
+        }
         return source;
     }
 }
