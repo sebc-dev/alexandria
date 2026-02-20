@@ -19,8 +19,8 @@ import javax.sql.DataSource;
  *
  * <p>Uses the ONNX-based bge-small-en-v1.5 quantized model (384 dimensions) running
  * in-process, avoiding any external embedding API. The {@link PgVectorEmbeddingStore}
- * is configured in {@link SearchMode#HYBRID} mode with RRF fusion (k=60) and shares the
- * application's HikariCP {@link DataSource} to avoid duplicate connection pools.
+ * is configured in {@link SearchMode#HYBRID} mode with configurable RRF fusion constant
+ * and shares the application's HikariCP {@link DataSource} to avoid duplicate connection pools.
  *
  * @see dev.alexandria.search.SearchService
  */
@@ -60,10 +60,13 @@ public class EmbeddingConfig {
      * GIN index configuration in the V1 migration.
      *
      * @param dataSource the shared HikariCP data source (no duplicate pool)
+     * @param rrfK       the RRF fusion constant (default 60, from original RRF paper)
      * @return a hybrid-search-capable embedding store backed by pgvector
      */
     @Bean
-    public EmbeddingStore<TextSegment> embeddingStore(DataSource dataSource) {
+    public EmbeddingStore<TextSegment> embeddingStore(
+            DataSource dataSource,
+            @Value("${alexandria.search.rrf-k:60}") int rrfK) {
         return PgVectorEmbeddingStore.datasourceBuilder()
                 .datasource(dataSource)
                 .table("document_chunks")
@@ -72,7 +75,7 @@ public class EmbeddingConfig {
                 .useIndex(false)    // HNSW index managed by Flyway V1
                 .searchMode(SearchMode.HYBRID)
                 .textSearchConfig("english")  // Must match GIN index config in V1 migration
-                .rrfK(60)  // RRF constant (standard default from original RRF paper)
+                .rrfK(rrfK)  // RRF constant (configurable via alexandria.search.rrf-k)
                 .build();
     }
 }
