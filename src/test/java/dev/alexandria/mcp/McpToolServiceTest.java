@@ -36,6 +36,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@SuppressWarnings("NullAway.Init")
 @ExtendWith(MockitoExtension.class)
 class McpToolServiceTest {
 

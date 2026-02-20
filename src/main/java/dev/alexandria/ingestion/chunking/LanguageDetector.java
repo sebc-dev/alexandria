@@ -3,6 +3,7 @@ package dev.alexandria.ingestion.chunking;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Keyword-based heuristic for detecting the programming language of a code snippet.
@@ -73,7 +74,7 @@ public final class LanguageDetector {
    * @param code the source code to analyze
    * @return the detected language name, or {@code "unknown"} if no language scores high enough
    */
-  public static String detect(String code) {
+  public static String detect(@Nullable String code) {
     if (code == null || code.isEmpty()) {
       return "unknown";
     }

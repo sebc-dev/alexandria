@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+@SuppressWarnings("NullAway.Init")
 @ExtendWith(MockitoExtension.class)
 class SitemapParserTest {
 
@@ -70,7 +72,7 @@ class SitemapParserTest {
     sitemapParser = new SitemapParser(restClientBuilder);
   }
 
-  private void stubHttpGet(String url, byte[] content) {
+  private void stubHttpGet(String url, byte @Nullable [] content) {
     urlResponses.put(url, content);
   }
 

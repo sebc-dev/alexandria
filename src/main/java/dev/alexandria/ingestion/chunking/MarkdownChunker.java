@@ -13,6 +13,7 @@ import org.commonmark.node.SourceSpan;
 import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.TextContentRenderer;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -57,7 +58,8 @@ public class MarkdownChunker {
    * @param lastUpdated ISO-8601 timestamp of the source page
    * @return ordered list of chunks with metadata
    */
-  public List<DocumentChunkData> chunk(String markdown, String sourceUrl, String lastUpdated) {
+  public List<DocumentChunkData> chunk(
+      @Nullable String markdown, String sourceUrl, String lastUpdated) {
     if (markdown == null || markdown.isBlank()) {
       return List.of();
     }
@@ -67,8 +69,8 @@ public class MarkdownChunker {
     List<DocumentChunkData> chunks = new ArrayList<>();
 
     // Track heading hierarchy: index 0=H1, 1=H2, 2=H3
-    String[] headingPath = new String[3];
-    Heading currentHeading = null;
+    @Nullable String[] headingPath = new @Nullable String[3];
+    @Nullable Heading currentHeading = null;
     List<Node> currentContentNodes = new ArrayList<>();
     List<FencedCodeBlock> currentCodeBlocks = new ArrayList<>();
 
@@ -116,7 +118,7 @@ public class MarkdownChunker {
    * Updates the heading hierarchy when a new H1/H2/H3 heading is encountered. Clears all sub-levels
    * beneath the current heading level.
    */
-  private void updateHeadingPath(String[] headingPath, Heading heading) {
+  private void updateHeadingPath(@Nullable String[] headingPath, Heading heading) {
     int level = heading.getLevel();
     headingPath[level - 1] = extractHeadingText(heading);
     for (int i = level; i < 3; i++) {
@@ -127,10 +129,10 @@ public class MarkdownChunker {
   /** Emits prose and code chunks for a completed section, if the section has any content. */
   private void emitSection(
       List<DocumentChunkData> chunks,
-      Heading sectionHeading,
+      @Nullable Heading sectionHeading,
       List<Node> contentNodes,
       List<FencedCodeBlock> codeBlocks,
-      String[] headingPath,
+      @Nullable String[] headingPath,
       String sourceUrl,
       String lastUpdated,
       String[] lines) {
@@ -150,7 +152,7 @@ public class MarkdownChunker {
    */
   private void emitProseChunk(
       List<DocumentChunkData> chunks,
-      Heading sectionHeading,
+      @Nullable Heading sectionHeading,
       List<Node> contentNodes,
       String sectionPath,
       String sourceUrl,
@@ -200,7 +202,8 @@ public class MarkdownChunker {
     }
   }
 
-  private String extractProseText(Heading sectionHeading, List<Node> contentNodes, String[] lines) {
+  private String extractProseText(
+      @Nullable Heading sectionHeading, List<Node> contentNodes, String[] lines) {
     // If there are no content nodes (only code blocks in the section), do not emit
     // the heading as a standalone prose chunk
     if (contentNodes.isEmpty()) {
@@ -252,7 +255,7 @@ public class MarkdownChunker {
     return textRenderer.render(heading).trim();
   }
 
-  private String buildSectionPath(String[] headingPath) {
+  private String buildSectionPath(@Nullable String[] headingPath) {
     return Arrays.stream(headingPath)
         .filter(Objects::nonNull)
         .map(this::slugify)

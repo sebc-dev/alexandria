@@ -2,6 +2,7 @@ package dev.alexandria.ingestion.chunking;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.jspecify.annotations.Nullable;
 
 /** Content type of a document chunk: either prose text or a code block. */
 public enum ContentType {
@@ -36,7 +37,7 @@ public enum ContentType {
    * @param value the filter value (e.g. "prose", "CODE", "mixed", or null)
    * @return the matching ContentType, or null if value is null or "mixed"
    */
-  public static ContentType parseSearchFilter(String value) {
+  public static @Nullable ContentType parseSearchFilter(@Nullable String value) {
     if (value == null || "mixed".equalsIgnoreCase(value)) {
       return null;
     }

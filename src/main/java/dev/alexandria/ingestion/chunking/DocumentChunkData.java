@@ -3,6 +3,7 @@ package dev.alexandria.ingestion.chunking;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.segment.TextSegment;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Holds the text and metadata for a single chunk produced by the Markdown chunking engine.
@@ -25,9 +26,9 @@ public record DocumentChunkData(
     String sectionPath,
     ContentType contentType,
     String lastUpdated,
-    String language,
-    String version,
-    String sourceName) {
+    @Nullable String language,
+    @Nullable String version,
+    @Nullable String sourceName) {
   public DocumentChunkData {
     Objects.requireNonNull(text, "text must not be null");
     Objects.requireNonNull(sourceUrl, "sourceUrl must not be null");

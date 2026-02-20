@@ -17,8 +17,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
@@ -80,29 +82,30 @@ public class McpToolService {
               + "Returns relevant excerpts with source URLs, section paths, and reranking scores for citation. "
               + "Supports metadata filters for narrowing results.")
   public String searchDocs(
-      @ToolParam(description = "Search query text") String query,
-      @ToolParam(description = "Maximum number of results (1-50, default 10)") Integer maxResults,
-      @ToolParam(description = "Filter by source name", required = false) String source,
+      @ToolParam(description = "Search query text") @Nullable String query,
+      @ToolParam(description = "Maximum number of results (1-50, default 10)")
+          @Nullable Integer maxResults,
+      @ToolParam(description = "Filter by source name", required = false) @Nullable String source,
       @ToolParam(
               description = "Filter by section path prefix, e.g. 'API Reference'",
               required = false)
-          String sectionPath,
+          @Nullable String sectionPath,
       @ToolParam(description = "Filter by version tag, e.g. 'React 19'", required = false)
-          String version,
+          @Nullable String version,
       @ToolParam(
               description = "Filter by content type: PROSE, CODE, or MIXED (all)",
               required = false)
-          String contentType,
+          @Nullable String contentType,
       @ToolParam(
               description =
                   "Minimum reranking confidence score (0.0-1.0). Results below this threshold are excluded.",
               required = false)
-          Double minScore,
+          @Nullable Double minScore,
       @ToolParam(
               description =
                   "RRF k parameter for reciprocal rank fusion (default 60). Higher values reduce the impact of rank differences.",
               required = false)
-          Integer rrfK) {
+          @Nullable Integer rrfK) {
     try {
       if (query == null || query.isBlank()) {
         return "Error: Query must not be empty. Provide a search query string.";
@@ -167,30 +170,30 @@ public class McpToolService {
           "Add a documentation source URL for crawling and indexing. "
               + "Optionally specify scope controls: allow/block URL patterns (glob), max depth, max pages.")
   public String addSource(
-      @ToolParam(description = "URL of the documentation site to index") String url,
+      @ToolParam(description = "URL of the documentation site to index") @Nullable String url,
       @ToolParam(description = "Human-readable name for this source") String name,
       @ToolParam(
               description =
                   "Comma-separated glob patterns for allowed URL paths (e.g., '/docs/**,/api/**'). Empty = allow all.",
               required = false)
-          String allowPatterns,
+          @Nullable String allowPatterns,
       @ToolParam(
               description =
                   "Comma-separated glob patterns for blocked URL paths (e.g., '/archive/**,/old/**'). Empty = block none.",
               required = false)
-          String blockPatterns,
+          @Nullable String blockPatterns,
       @ToolParam(
               description = "Maximum crawl depth from root URL. Null = unlimited.",
               required = false)
-          Integer maxDepth,
+          @Nullable Integer maxDepth,
       @ToolParam(description = "Maximum number of pages to crawl (default: 500).", required = false)
-          Integer maxPages,
+          @Nullable Integer maxPages,
       @ToolParam(description = "Manual llms.txt URL if auto-detection fails.", required = false)
-          String llmsTxtUrl,
+          @Nullable String llmsTxtUrl,
       @ToolParam(
               description = "Version label for this source (e.g., 'React 19', '3.5')",
               required = false)
-          String version) {
+          @Nullable String version) {
     try {
       if (url == null || url.isBlank()) {
         return "Error: URL must not be empty. Provide a documentation site URL.";
@@ -302,23 +305,23 @@ public class McpToolService {
       @ToolParam(
               description = "Force full recrawl (re-process all pages, not just changed ones)",
               required = false)
-          Boolean full,
+          @Nullable Boolean full,
       @ToolParam(
               description = "Override allow patterns for this crawl run (comma-separated globs)",
               required = false)
-          String allowPatterns,
+          @Nullable String allowPatterns,
       @ToolParam(
               description = "Override block patterns for this crawl run (comma-separated globs)",
               required = false)
-          String blockPatterns,
+          @Nullable String blockPatterns,
       @ToolParam(description = "Override max depth for this crawl run", required = false)
-          Integer maxDepth,
+          @Nullable Integer maxDepth,
       @ToolParam(description = "Override max pages for this crawl run", required = false)
-          Integer maxPages,
+          @Nullable Integer maxPages,
       @ToolParam(description = "Update the version label for this source", required = false)
-          String version,
+          @Nullable String version,
       @ToolParam(description = "Update the display name for this source", required = false)
-          String name) {
+          @Nullable String name) {
     try {
       UUID uuid = parseUuid(sourceId);
       Optional<Source> found = sourceRepository.findById(uuid);
@@ -339,18 +342,20 @@ public class McpToolService {
         ingestionService.clearIngestionState(uuid);
       }
 
+      String sourceUrl = Objects.requireNonNull(source.getUrl());
+
       // Update version before crawl so new chunks get the updated version
       if (version != null && !version.equals(source.getVersion())) {
         source.setVersion(version);
         sourceRepository.save(source);
-        documentChunkRepository.updateVersionMetadata(source.getUrl(), version);
+        documentChunkRepository.updateVersionMetadata(sourceUrl, version);
       }
 
       // Update source name metadata if name changed
       if (name != null && !name.equals(source.getName())) {
         source.setName(name);
         sourceRepository.save(source);
-        documentChunkRepository.updateSourceNameMetadata(source.getUrl(), name);
+        documentChunkRepository.updateSourceNameMetadata(sourceUrl, name);
       }
 
       CrawlScope scope =
@@ -359,7 +364,7 @@ public class McpToolService {
       source.setStatus(SourceStatus.UPDATING);
       sourceRepository.save(source);
 
-      dispatchCrawl(uuid, source.getUrl(), scope, isFullRecrawl);
+      dispatchCrawl(uuid, sourceUrl, scope, isFullRecrawl);
 
       return "Recrawl started for '%s' (%s mode). Check progress with crawl_status."
           .formatted(source.getName(), isFullRecrawl ? "full" : "incremental");
@@ -371,7 +376,7 @@ public class McpToolService {
   }
 
   /** Dispatches an async crawl via virtual thread. Extracted for testability. */
-  void dispatchCrawl(UUID sourceId, String url, CrawlScope scope, boolean isFullRecrawl) {
+  void dispatchCrawl(@Nullable UUID sourceId, String url, CrawlScope scope, boolean isFullRecrawl) {
     Thread.startVirtualThread(
         () -> {
           try {
@@ -427,7 +432,10 @@ public class McpToolService {
     }
   }
 
-  private String formatChunkCount(UUID sourceId) {
+  private String formatChunkCount(@Nullable UUID sourceId) {
+    if (sourceId == null) {
+      return "0";
+    }
     List<Object[]> grouped = documentChunkRepository.countBySourceIdGroupedByContentType(sourceId);
     if (grouped.isEmpty()) {
       return "0";
@@ -458,10 +466,10 @@ public class McpToolService {
 
   private CrawlScope buildRecrawlScope(
       Source source,
-      String allowPatterns,
-      String blockPatterns,
-      Integer maxDepth,
-      Integer maxPages) {
+      @Nullable String allowPatterns,
+      @Nullable String blockPatterns,
+      @Nullable Integer maxDepth,
+      @Nullable Integer maxPages) {
     CrawlScope defaultScope = CrawlScope.fromSource(source);
     return new CrawlScope(
         allowPatterns != null ? parseCommaSeparated(allowPatterns) : defaultScope.allowPatterns(),
@@ -512,7 +520,7 @@ public class McpToolService {
         source.getLastCrawledAt() != null ? source.getLastCrawledAt().toString() : "never");
   }
 
-  private int clampMaxResults(Integer maxResults) {
+  private int clampMaxResults(@Nullable Integer maxResults) {
     if (maxResults == null || maxResults < 1) {
       return 10;
     }
@@ -524,7 +532,11 @@ public class McpToolService {
   }
 
   private String buildEmptyResultMessage(
-      String query, String source, String sectionPath, String version, String contentType) {
+      String query,
+      @Nullable String source,
+      @Nullable String sectionPath,
+      @Nullable String version,
+      @Nullable String contentType) {
     boolean hasFilters =
         source != null || sectionPath != null || version != null || contentType != null;
 
@@ -553,7 +565,7 @@ public class McpToolService {
         .formatted(query, String.join(", ", activeFilters), availableVersions, availableSources);
   }
 
-  private static List<String> parseCommaSeparated(String value) {
+  private static List<String> parseCommaSeparated(@Nullable String value) {
     if (value == null || value.isBlank()) {
       return List.of();
     }

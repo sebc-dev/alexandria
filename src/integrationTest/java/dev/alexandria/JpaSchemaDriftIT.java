@@ -13,6 +13,7 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,10 +76,13 @@ class JpaSchemaDriftIT extends BaseIntegrationTest {
 
     IngestionState state =
         new IngestionState(
-            savedSource.getId(), "https://state-test.example.com/page1", "sha256:abc123");
+            Objects.requireNonNull(savedSource.getId()),
+            "https://state-test.example.com/page1",
+            "sha256:abc123");
 
     IngestionState saved = ingestionStateRepository.saveAndFlush(state);
-    IngestionState found = ingestionStateRepository.findById(saved.getId()).orElseThrow();
+    IngestionState found =
+        ingestionStateRepository.findById(Objects.requireNonNull(saved.getId())).orElseThrow();
 
     assertThat(found.getSourceId()).isEqualTo(savedSource.getId());
     assertThat(found.getPageUrl()).isEqualTo("https://state-test.example.com/page1");

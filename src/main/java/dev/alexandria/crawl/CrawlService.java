@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -72,13 +73,13 @@ public class CrawlService {
    * @param scope crawl scope with allow/block patterns, max depth, and page limits
    * @return list of crawl results for each successfully crawled page
    */
-  public List<CrawlResult> crawlSite(UUID sourceId, String rootUrl, CrawlScope scope) {
+  public List<CrawlResult> crawlSite(@Nullable UUID sourceId, String rootUrl, CrawlScope scope) {
     PageDiscoveryService.DiscoveryResult discovery = pageDiscoveryService.discoverUrls(rootUrl);
     boolean followLinks = discovery.method() == PageDiscoveryService.DiscoveryMethod.LINK_CRAWL;
 
     // Load Source once to cache version and name for metadata denormalization
-    String sourceVersion = null;
-    String sourceName = null;
+    @Nullable String sourceVersion = null;
+    @Nullable String sourceName = null;
     if (sourceId != null) {
       Optional<Source> sourceOpt = sourceRepository.findById(sourceId);
       if (sourceOpt.isPresent()) {
@@ -209,7 +210,7 @@ public class CrawlService {
   }
 
   private void processPage(
-      UUID sourceId,
+      @Nullable UUID sourceId,
       String url,
       String rootUrl,
       int depth,
@@ -219,8 +220,8 @@ public class CrawlService {
       LinkedHashMap<String, Integer> queue,
       Set<String> visited,
       Set<String> crawledUrls,
-      String version,
-      String sourceName) {
+      @Nullable String version,
+      @Nullable String sourceName) {
     try {
       CrawlResult result = crawl4AiClient.crawl(url);
       if (result.success()) {
@@ -228,7 +229,7 @@ public class CrawlService {
         crawledUrls.add(url);
 
         // Incremental ingestion with hash-based change detection
-        if (sourceId != null) {
+        if (sourceId != null && result.markdown() != null) {
           IngestionService.IngestResult ingestResult =
               ingestIncremental(sourceId, url, result.markdown(), version, sourceName);
           if (ingestResult.skipped()) {
@@ -260,13 +261,17 @@ public class CrawlService {
    * delete old chunks and re-ingest if changed or new.
    */
   private IngestionService.IngestResult ingestIncremental(
-      UUID sourceId, String normalizedUrl, String markdown, String version, String sourceName) {
+      UUID sourceId,
+      String normalizedUrl,
+      String markdown,
+      @Nullable String version,
+      @Nullable String sourceName) {
     String newHash = ContentHasher.sha256(markdown);
 
     Optional<IngestionState> existingState =
         ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, normalizedUrl);
 
-    if (existingState.isPresent() && existingState.get().getContentHash().equals(newHash)) {
+    if (existingState.isPresent() && newHash.equals(existingState.get().getContentHash())) {
       log.debug("Content unchanged for {}, skipping ingestion", normalizedUrl);
       return new IngestionService.IngestResult(0, true, false);
     }
@@ -298,7 +303,7 @@ public class CrawlService {
   }
 
   private void enqueueDiscoveredLinks(
-      UUID sourceId,
+      @Nullable UUID sourceId,
       CrawlResult result,
       String rootUrl,
       int parentDepth,

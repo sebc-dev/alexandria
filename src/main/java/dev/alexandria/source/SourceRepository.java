@@ -2,6 +2,7 @@ package dev.alexandria.source;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,5 +15,5 @@ public interface SourceRepository extends JpaRepository<Source, UUID> {
    * @return the most recent crawl timestamp, or null if no source has been crawled
    */
   @Query("SELECT MAX(s.lastCrawledAt) FROM Source s")
-  Instant findMaxLastCrawledAt();
+  @Nullable Instant findMaxLastCrawledAt();
 }

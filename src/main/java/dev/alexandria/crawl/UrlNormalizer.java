@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +111,7 @@ public final class UrlNormalizer {
     }
   }
 
-  private static String filterQueryParams(String query) {
+  private static @Nullable String filterQueryParams(@Nullable String query) {
     if (query == null || query.isEmpty()) {
       return null;
     }

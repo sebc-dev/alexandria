@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 class CrawlScopeTest {
 
   @Test
+  @SuppressWarnings("NullAway")
   void nullPatternsDefaultToEmptyLists() {
     var scope = new CrawlScope(null, null, null, 100);
 

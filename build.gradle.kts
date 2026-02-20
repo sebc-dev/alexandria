@@ -194,6 +194,7 @@ tasks.withType<JavaCompile>().configureEach {
         excludedPaths.set(".*/build/generated/.*")
         option("NullAway:AnnotatedPackages", "dev.alexandria")
         option("NullAway:JSpecifyMode", "true")
+        error("NullAway")
     }
 }
 

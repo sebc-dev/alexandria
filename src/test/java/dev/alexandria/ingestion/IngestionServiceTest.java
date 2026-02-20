@@ -28,6 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@SuppressWarnings("NullAway.Init")
 @ExtendWith(MockitoExtension.class)
 class IngestionServiceTest {
 

@@ -6,6 +6,7 @@ import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Inner JSON record for a single pre-chunked chunk with all 5 metadata fields.
@@ -28,7 +29,7 @@ public record PreChunkedChunk(
         @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*")
         @JsonProperty("last_updated")
         String lastUpdated,
-    String language) {
+    @Nullable String language) {
   /** Converts to the internal chunk representation used across the ingestion pipeline. */
   public DocumentChunkData toDocumentChunkData() {
     return new DocumentChunkData(

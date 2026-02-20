@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a documentation source to be crawled and indexed.
@@ -33,46 +34,46 @@ public class Source {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+  private @Nullable UUID id;
 
   @Column(nullable = false, unique = true)
-  private String url;
+  private @Nullable String url;
 
-  private String name;
+  private @Nullable String name;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private SourceStatus status = SourceStatus.PENDING;
 
   @Column(name = "last_crawled_at")
-  private Instant lastCrawledAt;
+  private @Nullable Instant lastCrawledAt;
 
   @Column(name = "chunk_count", nullable = false)
   private int chunkCount;
 
   @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt;
+  private @Nullable Instant createdAt;
 
   @Column(name = "updated_at", nullable = false)
-  private Instant updatedAt;
+  private @Nullable Instant updatedAt;
 
   @Column(name = "allow_patterns")
-  private String allowPatterns;
+  private @Nullable String allowPatterns;
 
   @Column(name = "block_patterns")
-  private String blockPatterns;
+  private @Nullable String blockPatterns;
 
   @Column(name = "max_depth")
-  private Integer maxDepth;
+  private @Nullable Integer maxDepth;
 
   @Column(name = "max_pages")
-  private Integer maxPages;
+  private @Nullable Integer maxPages;
 
   @Column(name = "llms_txt_url")
-  private String llmsTxtUrl;
+  private @Nullable String llmsTxtUrl;
 
   @Column(name = "version")
-  private String version;
+  private @Nullable String version;
 
   protected Source() {
     // JPA requires no-arg constructor
@@ -102,19 +103,19 @@ public class Source {
     this.updatedAt = Instant.now();
   }
 
-  public UUID getId() {
+  public @Nullable UUID getId() {
     return id;
   }
 
-  public String getUrl() {
+  public @Nullable String getUrl() {
     return url;
   }
 
-  public String getName() {
+  public @Nullable String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(@Nullable String name) {
     this.name = name;
   }
 
@@ -126,11 +127,11 @@ public class Source {
     this.status = status;
   }
 
-  public Instant getLastCrawledAt() {
+  public @Nullable Instant getLastCrawledAt() {
     return lastCrawledAt;
   }
 
-  public void setLastCrawledAt(Instant lastCrawledAt) {
+  public void setLastCrawledAt(@Nullable Instant lastCrawledAt) {
     this.lastCrawledAt = lastCrawledAt;
   }
 
@@ -142,59 +143,59 @@ public class Source {
     this.chunkCount = chunkCount;
   }
 
-  public Instant getCreatedAt() {
+  public @Nullable Instant getCreatedAt() {
     return createdAt;
   }
 
-  public Instant getUpdatedAt() {
+  public @Nullable Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public String getAllowPatterns() {
+  public @Nullable String getAllowPatterns() {
     return allowPatterns;
   }
 
-  public void setAllowPatterns(String allowPatterns) {
+  public void setAllowPatterns(@Nullable String allowPatterns) {
     this.allowPatterns = allowPatterns;
   }
 
-  public String getBlockPatterns() {
+  public @Nullable String getBlockPatterns() {
     return blockPatterns;
   }
 
-  public void setBlockPatterns(String blockPatterns) {
+  public void setBlockPatterns(@Nullable String blockPatterns) {
     this.blockPatterns = blockPatterns;
   }
 
-  public Integer getMaxDepth() {
+  public @Nullable Integer getMaxDepth() {
     return maxDepth;
   }
 
-  public void setMaxDepth(Integer maxDepth) {
+  public void setMaxDepth(@Nullable Integer maxDepth) {
     this.maxDepth = maxDepth;
   }
 
-  public Integer getMaxPages() {
+  public @Nullable Integer getMaxPages() {
     return maxPages;
   }
 
-  public void setMaxPages(Integer maxPages) {
+  public void setMaxPages(@Nullable Integer maxPages) {
     this.maxPages = maxPages;
   }
 
-  public String getLlmsTxtUrl() {
+  public @Nullable String getLlmsTxtUrl() {
     return llmsTxtUrl;
   }
 
-  public void setLlmsTxtUrl(String llmsTxtUrl) {
+  public void setLlmsTxtUrl(@Nullable String llmsTxtUrl) {
     this.llmsTxtUrl = llmsTxtUrl;
   }
 
-  public String getVersion() {
+  public @Nullable String getVersion() {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(@Nullable String version) {
     this.version = version;
   }
 
@@ -216,7 +217,7 @@ public class Source {
     return parseCommaSeparated(blockPatterns);
   }
 
-  private static List<String> parseCommaSeparated(String value) {
+  private static List<String> parseCommaSeparated(@Nullable String value) {
     if (value == null || value.isBlank()) {
       return List.of();
     }

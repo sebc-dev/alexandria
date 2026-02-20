@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+@SuppressWarnings("NullAway.Init")
 @ExtendWith(MockitoExtension.class)
 class Crawl4AiClientTest {
 

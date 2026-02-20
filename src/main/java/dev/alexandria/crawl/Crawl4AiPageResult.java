@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 
 /** Per-page result within a {@link Crawl4AiResponse}, containing Markdown and discovered links. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Crawl4AiPageResult(
     String url,
     boolean success,
-    String status_code,
-    Crawl4AiMarkdown markdown,
-    Map<String, List<Crawl4AiLink>> links,
-    String error_message) {
+    @Nullable String status_code,
+    @Nullable Crawl4AiMarkdown markdown,
+    @Nullable Map<String, List<Crawl4AiLink>> links,
+    @Nullable String error_message) {
   public Crawl4AiPageResult {
     links =
         links == null

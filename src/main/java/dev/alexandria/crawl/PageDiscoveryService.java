@@ -3,6 +3,7 @@ package dev.alexandria.crawl;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class PageDiscoveryService {
     return new DiscoveryResult(List.of(), DiscoveryMethod.LINK_CRAWL, null);
   }
 
-  private DiscoveryResult tryLlmsFullTxt(String baseUrl) {
+  private @Nullable DiscoveryResult tryLlmsFullTxt(String baseUrl) {
     String llmsFullUrl = baseUrl + "/llms-full.txt";
     String content = fetchText(llmsFullUrl);
     if (content == null) {
@@ -91,7 +92,7 @@ public class PageDiscoveryService {
     return null;
   }
 
-  private DiscoveryResult tryLlmsTxt(String baseUrl) {
+  private @Nullable DiscoveryResult tryLlmsTxt(String baseUrl) {
     String llmsTxtUrl = baseUrl + "/llms.txt";
     String content = fetchText(llmsTxtUrl);
     if (content == null) {
@@ -108,7 +109,7 @@ public class PageDiscoveryService {
   }
 
   /** Fetch text content from a URL, returning null on any error (404, connection error, etc.). */
-  private String fetchText(String url) {
+  private @Nullable String fetchText(String url) {
     try {
       return restClient.get().uri(url).retrieve().body(String.class);
     } catch (Exception e) {
@@ -158,7 +159,8 @@ public class PageDiscoveryService {
    * @param llmsFullContent raw llms-full.txt content for direct ingestion (null unless method is
    *     LLMS_FULL_TXT)
    */
-  public record DiscoveryResult(List<String> urls, DiscoveryMethod method, String llmsFullContent) {
+  public record DiscoveryResult(
+      List<String> urls, DiscoveryMethod method, @Nullable String llmsFullContent) {
     public DiscoveryResult {
       urls = urls == null ? List.of() : List.copyOf(urls);
     }

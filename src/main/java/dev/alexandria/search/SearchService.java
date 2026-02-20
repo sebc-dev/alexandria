@@ -13,6 +13,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.filter.Filter;
 import java.util.ArrayList;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -88,7 +89,7 @@ public class SearchService {
    * @param request the search request with optional filter fields
    * @return combined Filter, or null if no filters are specified
    */
-  Filter buildFilter(SearchRequest request) {
+  @Nullable Filter buildFilter(SearchRequest request) {
     List<Filter> filters = new ArrayList<>();
 
     if (request.source() != null) {

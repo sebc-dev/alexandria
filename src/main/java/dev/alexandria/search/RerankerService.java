@@ -6,7 +6,9 @@ import dev.langchain4j.model.scoring.ScoringModel;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,7 +42,10 @@ public class RerankerService {
    * @return search results sorted by reranking score descending, limited to maxResults
    */
   public List<SearchResult> rerank(
-      String query, List<EmbeddingMatch<TextSegment>> candidates, int maxResults, Double minScore) {
+      String query,
+      List<EmbeddingMatch<TextSegment>> candidates,
+      int maxResults,
+      @Nullable Double minScore) {
     if (candidates.isEmpty()) {
       return List.of();
     }
@@ -62,8 +67,8 @@ public class RerankerService {
     return new SearchResult(
         segment.text(),
         match.score(),
-        segment.metadata().getString("source_url"),
-        segment.metadata().getString("section_path"),
+        Objects.requireNonNullElse(segment.metadata().getString("source_url"), ""),
+        Objects.requireNonNullElse(segment.metadata().getString("section_path"), ""),
         rerankScore);
   }
 }

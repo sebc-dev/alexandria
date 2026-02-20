@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A single indexed chunk of documentation stored in pgvector.
@@ -31,20 +32,20 @@ public class DocumentChunk {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "embedding_id")
-  private UUID id;
+  private @Nullable UUID id;
 
   @Column(nullable = false, columnDefinition = "TEXT")
-  private String text;
+  private @Nullable String text;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "JSONB")
-  private String metadata;
+  private @Nullable String metadata;
 
   @Column(name = "source_id")
-  private UUID sourceId;
+  private @Nullable UUID sourceId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt;
+  private @Nullable Instant createdAt;
 
   protected DocumentChunk() {
     // JPA requires no-arg constructor
@@ -58,7 +59,7 @@ public class DocumentChunk {
    * @param sourceId the UUID of the originating {@link dev.alexandria.source.Source}, or {@code
    *     null}
    */
-  public DocumentChunk(String text, String metadata, UUID sourceId) {
+  public DocumentChunk(String text, @Nullable String metadata, @Nullable UUID sourceId) {
     this.text = text;
     this.metadata = metadata;
     this.sourceId = sourceId;
@@ -69,23 +70,23 @@ public class DocumentChunk {
     this.createdAt = Instant.now();
   }
 
-  public UUID getId() {
+  public @Nullable UUID getId() {
     return id;
   }
 
-  public String getText() {
+  public @Nullable String getText() {
     return text;
   }
 
-  public String getMetadata() {
+  public @Nullable String getMetadata() {
     return metadata;
   }
 
-  public UUID getSourceId() {
+  public @Nullable UUID getSourceId() {
     return sourceId;
   }
 
-  public Instant getCreatedAt() {
+  public @Nullable Instant getCreatedAt() {
     return createdAt;
   }
 }

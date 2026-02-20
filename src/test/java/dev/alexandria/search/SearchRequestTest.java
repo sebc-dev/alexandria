@@ -20,6 +20,7 @@ class SearchRequestTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void nullQueryThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new SearchRequest(null))
         .isInstanceOf(IllegalArgumentException.class)

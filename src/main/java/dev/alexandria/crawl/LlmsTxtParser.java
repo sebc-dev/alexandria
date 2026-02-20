@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Parses llms.txt and llms-full.txt files to extract URLs and content.
@@ -51,7 +52,7 @@ public final class LlmsTxtParser {
    * @param llmsTxtContent the raw content of an llms.txt file
    * @return list of extracted URL strings, or empty list if content is null/blank
    */
-  public static List<String> parseUrls(String llmsTxtContent) {
+  public static List<String> parseUrls(@Nullable String llmsTxtContent) {
     if (llmsTxtContent == null || llmsTxtContent.isBlank()) {
       return List.of();
     }
@@ -80,7 +81,7 @@ public final class LlmsTxtParser {
    * @param content the content to check
    * @return true if content appears to be an llms.txt link index
    */
-  public static boolean isLlmsTxtContent(String content) {
+  public static boolean isLlmsTxtContent(@Nullable String content) {
     if (content == null || content.isBlank()) {
       return false;
     }
@@ -127,7 +128,7 @@ public final class LlmsTxtParser {
    * @param content the raw content of an llms.txt or llms-full.txt file
    * @return parsed result with URLs, raw content, and content type flag
    */
-  public static LlmsTxtResult parse(String content) {
+  public static LlmsTxtResult parse(@Nullable String content) {
     if (content == null || content.isBlank()) {
       return new LlmsTxtResult(List.of(), "", false);
     }

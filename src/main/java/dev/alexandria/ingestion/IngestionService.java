@@ -11,6 +11,7 @@ import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,11 @@ public class IngestionService {
    * @return number of chunks stored
    */
   public int ingestPage(
-      String markdown, String sourceUrl, String lastUpdated, String version, String sourceName) {
+      String markdown,
+      String sourceUrl,
+      String lastUpdated,
+      @Nullable String version,
+      @Nullable String sourceName) {
     return ingestPage(null, markdown, sourceUrl, lastUpdated, version, sourceName);
   }
 
@@ -92,12 +97,12 @@ public class IngestionService {
    * @return number of chunks stored
    */
   public int ingestPage(
-      UUID sourceId,
+      @Nullable UUID sourceId,
       String markdown,
       String sourceUrl,
       String lastUpdated,
-      String version,
-      String sourceName) {
+      @Nullable String version,
+      @Nullable String sourceName) {
     List<DocumentChunkData> chunks = chunker.chunk(markdown, sourceUrl, lastUpdated);
     if (version != null || sourceName != null) {
       chunks = enrichChunks(chunks, version, sourceName);
@@ -107,7 +112,7 @@ public class IngestionService {
   }
 
   private List<DocumentChunkData> enrichChunks(
-      List<DocumentChunkData> chunks, String version, String sourceName) {
+      List<DocumentChunkData> chunks, @Nullable String version, @Nullable String sourceName) {
     return chunks.stream()
         .map(
             c ->
@@ -154,7 +159,7 @@ public class IngestionService {
 
   private static final int EMBED_BATCH_SIZE = 256;
 
-  private void storeChunks(List<DocumentChunkData> chunks, UUID sourceId) {
+  private void storeChunks(List<DocumentChunkData> chunks, @Nullable UUID sourceId) {
     if (chunks.isEmpty()) {
       return;
     }

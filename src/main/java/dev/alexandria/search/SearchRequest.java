@@ -1,5 +1,7 @@
 package dev.alexandria.search;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Domain request DTO for search queries with configurable result count and optional filters.
  *
@@ -27,12 +29,12 @@ package dev.alexandria.search;
 public record SearchRequest(
     String query,
     int maxResults,
-    String source,
-    String sectionPath,
-    String version,
-    String contentType,
-    Double minScore,
-    Integer rrfK) {
+    @Nullable String source,
+    @Nullable String sectionPath,
+    @Nullable String version,
+    @Nullable String contentType,
+    @Nullable Double minScore,
+    @Nullable Integer rrfK) {
 
   /** Default number of results when not specified. */
   private static final int DEFAULT_MAX_RESULTS = 10;

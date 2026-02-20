@@ -35,6 +35,7 @@ class ContentTypeTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void fromValueRejectsNull() {
     assertThatThrownBy(() -> ContentType.fromValue(null)).isInstanceOf(Exception.class);
   }

@@ -2,13 +2,17 @@ package dev.alexandria.crawl;
 
 import dev.alexandria.source.Source;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Immutable scope configuration for crawl URL filtering. Defines allow/block glob patterns, maximum
  * crawl depth, and page limits.
  */
 public record CrawlScope(
-    List<String> allowPatterns, List<String> blockPatterns, Integer maxDepth, int maxPages) {
+    List<String> allowPatterns,
+    List<String> blockPatterns,
+    @Nullable Integer maxDepth,
+    int maxPages) {
 
   public CrawlScope {
     allowPatterns = allowPatterns == null ? List.of() : List.copyOf(allowPatterns);

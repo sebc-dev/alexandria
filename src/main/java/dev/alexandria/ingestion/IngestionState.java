@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Tracks incremental crawl state for a single page within a {@link dev.alexandria.source.Source}.
@@ -28,19 +29,19 @@ public class IngestionState {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+  private @Nullable UUID id;
 
   @Column(name = "source_id", nullable = false)
-  private UUID sourceId;
+  private @Nullable UUID sourceId;
 
   @Column(name = "page_url", nullable = false)
-  private String pageUrl;
+  private @Nullable String pageUrl;
 
   @Column(name = "content_hash", nullable = false)
-  private String contentHash;
+  private @Nullable String contentHash;
 
   @Column(name = "last_ingested_at", nullable = false)
-  private Instant lastIngestedAt;
+  private @Nullable Instant lastIngestedAt;
 
   protected IngestionState() {
     // JPA requires no-arg constructor
@@ -64,19 +65,19 @@ public class IngestionState {
     this.lastIngestedAt = Instant.now();
   }
 
-  public UUID getId() {
+  public @Nullable UUID getId() {
     return id;
   }
 
-  public UUID getSourceId() {
+  public @Nullable UUID getSourceId() {
     return sourceId;
   }
 
-  public String getPageUrl() {
+  public @Nullable String getPageUrl() {
     return pageUrl;
   }
 
-  public String getContentHash() {
+  public @Nullable String getContentHash() {
     return contentHash;
   }
 
@@ -84,7 +85,7 @@ public class IngestionState {
     this.contentHash = contentHash;
   }
 
-  public Instant getLastIngestedAt() {
+  public @Nullable Instant getLastIngestedAt() {
     return lastIngestedAt;
   }
 

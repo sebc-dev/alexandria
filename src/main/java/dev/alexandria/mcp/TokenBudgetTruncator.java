@@ -2,6 +2,7 @@ package dev.alexandria.mcp;
 
 import dev.alexandria.search.SearchResult;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +35,7 @@ public class TokenBudgetTruncator {
    * @param results the search results to format and truncate
    * @return formatted text containing as many results as fit within the token budget
    */
-  public String truncate(List<SearchResult> results) {
+  public String truncate(@Nullable List<SearchResult> results) {
     if (results == null || results.isEmpty()) {
       return "";
     }

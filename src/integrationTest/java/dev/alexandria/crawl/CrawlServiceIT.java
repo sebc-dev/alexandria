@@ -6,6 +6,7 @@ import dev.alexandria.BaseIntegrationTest;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -20,7 +21,7 @@ class CrawlServiceIT extends BaseIntegrationTest {
       new GenericContainer<>(DockerImageName.parse("unclecode/crawl4ai:0.8.0"))
           .withExposedPorts(11235)
           .withCreateContainerCmdModifier(
-              cmd -> cmd.getHostConfig().withShmSize(1024L * 1024L * 1024L))
+              cmd -> Objects.requireNonNull(cmd.getHostConfig()).withShmSize(1024L * 1024L * 1024L))
           .waitingFor(
               Wait.forHttp("/health")
                   .forPort(11235)
