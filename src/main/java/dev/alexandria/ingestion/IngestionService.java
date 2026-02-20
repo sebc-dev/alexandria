@@ -58,9 +58,36 @@ public class IngestionService {
      * @return number of chunks stored
      */
     public int ingestPage(String markdown, String sourceUrl, String lastUpdated) {
+        return ingestPage(markdown, sourceUrl, lastUpdated, null, null);
+    }
+
+    /**
+     * Ingest a single page with version and source name metadata.
+     *
+     * @param markdown    the raw Markdown text
+     * @param sourceUrl   the URL of the page
+     * @param lastUpdated ISO-8601 timestamp
+     * @param version     documentation version label (nullable)
+     * @param sourceName  human-readable source name (nullable)
+     * @return number of chunks stored
+     */
+    public int ingestPage(String markdown, String sourceUrl, String lastUpdated,
+                          String version, String sourceName) {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, sourceUrl, lastUpdated);
+        if (version != null || sourceName != null) {
+            chunks = enrichChunks(chunks, version, sourceName);
+        }
         storeChunks(chunks);
         return chunks.size();
+    }
+
+    private List<DocumentChunkData> enrichChunks(List<DocumentChunkData> chunks,
+                                                  String version, String sourceName) {
+        return chunks.stream()
+                .map(c -> new DocumentChunkData(
+                        c.text(), c.sourceUrl(), c.sectionPath(), c.contentType(),
+                        c.lastUpdated(), c.language(), version, sourceName))
+                .toList();
     }
 
     /**

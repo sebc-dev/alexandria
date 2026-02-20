@@ -57,7 +57,7 @@ class IngestionServiceTest {
     @Test
     void ingestPageChunksAndStoresWithProvidedTimestamp() {
         var chunkData = new DocumentChunkData("content", "https://example.com/page",
-                "section", ContentType.PROSE, "2026-05-01T12:00:00Z", null);
+                "section", ContentType.PROSE, "2026-05-01T12:00:00Z", null, null, null);
         when(chunker.chunk("# Heading\nContent", "https://example.com/page", "2026-05-01T12:00:00Z"))
                 .thenReturn(List.of(chunkData));
         when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.4f}))));
@@ -82,7 +82,7 @@ class IngestionServiceTest {
     @Test
     void ingestPageCreatesTextSegmentsWithCorrectMetadata() {
         var chunkData = new DocumentChunkData("Setup instructions", "https://docs.spring.io/config",
-                "config/setup", ContentType.PROSE, "2026-02-15T10:30:00Z", null);
+                "config/setup", ContentType.PROSE, "2026-02-15T10:30:00Z", null, null, null);
         when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
         when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.5f}))));
 
@@ -99,7 +99,7 @@ class IngestionServiceTest {
     @Test
     void ingestPageCreatesTextSegmentsWithLanguageForCodeChunks() {
         var codeChunk = new DocumentChunkData("System.out.println();", "https://docs.example.com/code",
-                "code", ContentType.CODE, "2026-01-01T00:00:00Z", "java");
+                "code", ContentType.CODE, "2026-01-01T00:00:00Z", "java", null, null);
         when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(codeChunk));
         when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.3f}))));
 
@@ -113,8 +113,8 @@ class IngestionServiceTest {
 
     @Test
     void ingestPageEmbedsBatchesOfChunks() {
-        var chunk1 = new DocumentChunkData("text A", "https://example.com/a", "a", ContentType.PROSE, "2026-01-01T00:00:00Z", null);
-        var chunk2 = new DocumentChunkData("text B", "https://example.com/a", "b", ContentType.PROSE, "2026-01-01T00:00:00Z", null);
+        var chunk1 = new DocumentChunkData("text A", "https://example.com/a", "a", ContentType.PROSE, "2026-01-01T00:00:00Z", null, null, null);
+        var chunk2 = new DocumentChunkData("text B", "https://example.com/a", "b", ContentType.PROSE, "2026-01-01T00:00:00Z", null, null, null);
         when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunk1, chunk2));
         when(embeddingModel.embedAll(any())).thenAnswer(invocation -> {
             List<TextSegment> segments = invocation.getArgument(0);

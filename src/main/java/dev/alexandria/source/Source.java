@@ -72,6 +72,9 @@ public class Source {
     @Column(name = "llms_txt_url")
     private String llmsTxtUrl;
 
+    @Column(name = "version")
+    private String version;
+
     protected Source() {
         // JPA requires no-arg constructor
     }
@@ -182,6 +185,14 @@ public class Source {
 
     public void setLlmsTxtUrl(String llmsTxtUrl) {
         this.llmsTxtUrl = llmsTxtUrl;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     /**

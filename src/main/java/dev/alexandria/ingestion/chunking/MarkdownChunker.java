@@ -150,11 +150,11 @@ public class MarkdownChunker {
         }
         if (proseText.length() <= maxChunkSize) {
             chunks.add(new DocumentChunkData(
-                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null));
+                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null));
         } else {
             splitOversizedText(proseText, maxChunkSize).forEach(part ->
                     chunks.add(new DocumentChunkData(
-                            part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null)));
+                            part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null)));
         }
     }
 
@@ -173,7 +173,7 @@ public class MarkdownChunker {
             }
             String language = detectLanguage(codeBlock);
             chunks.add(new DocumentChunkData(
-                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language));
+                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language, null, null));
         }
     }
 
