@@ -1,6 +1,6 @@
 # Milestones
 
-## v1.5 Full RAG System (Shipped: 2026-02-20)
+## v0.1 Full RAG System (Shipped: 2026-02-20)
 
 **Phases completed:** 10 phases, 28 plans, 0 tasks
 

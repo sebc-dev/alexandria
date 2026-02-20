@@ -12,25 +12,25 @@ Claude Code peut trouver et retourner des extraits de documentation technique pe
 
 ### Validated
 
-- ✓ Ingestion de documentation depuis des URLs arbitraires — v1.5
-- ✓ Crawling web via Crawl4AI (sidecar Python/Docker) — v1.5
-- ✓ Chunking markdown-aware (respecte blocs de code, tableaux, hierarchie de titres) — v1.5
-- ✓ Embeddings in-process via ONNX (bge-small-en-v1.5-q) — v1.5
-- ✓ Stockage vectoriel pgvector avec recherche HNSW — v1.5
-- ✓ Recherche hybride (vecteur + PostgreSQL FTS via RRF) — v1.5
-- ✓ Metadonnees riches (framework, version, section path, content type) — v1.5
-- ✓ Serveur MCP (stdio) exposant la recherche a Claude Code — v1.5
-- ✓ Outils MCP de gestion : ajouter une source, declencher un crawl, voir le statut — v1.5
-- ✓ Mise a jour incrementale des sources deja indexees — v1.5
-- ✓ Docker-compose tout-en-un (app Java + Crawl4AI + PostgreSQL) — v1.5
-- ✓ Cross-encoder reranking pour precision amelioree — v1.5
-- ✓ Filtrage par source, version, section, type de contenu — v1.5
-- ✓ Cascade delete des sources et chunks associes — v1.5
-- ✓ Statistiques d'index via MCP tool — v1.5
+- ✓ Ingestion de documentation depuis des URLs arbitraires — v0.1
+- ✓ Crawling web via Crawl4AI (sidecar Python/Docker) — v0.1
+- ✓ Chunking markdown-aware (respecte blocs de code, tableaux, hierarchie de titres) — v0.1
+- ✓ Embeddings in-process via ONNX (bge-small-en-v1.5-q) — v0.1
+- ✓ Stockage vectoriel pgvector avec recherche HNSW — v0.1
+- ✓ Recherche hybride (vecteur + PostgreSQL FTS via RRF) — v0.1
+- ✓ Metadonnees riches (framework, version, section path, content type) — v0.1
+- ✓ Serveur MCP (stdio) exposant la recherche a Claude Code — v0.1
+- ✓ Outils MCP de gestion : ajouter une source, declencher un crawl, voir le statut — v0.1
+- ✓ Mise a jour incrementale des sources deja indexees — v0.1
+- ✓ Docker-compose tout-en-un (app Java + Crawl4AI + PostgreSQL) — v0.1
+- ✓ Cross-encoder reranking pour precision amelioree — v0.1
+- ✓ Filtrage par source, version, section, type de contenu — v0.1
+- ✓ Cascade delete des sources et chunks associes — v0.1
+- ✓ Statistiques d'index via MCP tool — v0.1
 
 ### Active
 
-(None yet — define with next milestone)
+(Defined in REQUIREMENTS.md for v0.2)
 
 ### Out of Scope
 
@@ -38,17 +38,37 @@ Claude Code peut trouver et retourner des extraits de documentation technique pe
 - Interface web — Claude Code est l'interface unique
 - GPU / API payantes — tout tourne sur CPU, zero cout externe
 - Techniques RAG avancees (GraphRAG, Self-RAG, RAPTOR) — la recherche hybride + reranking couvre 90%+ des cas
-- Scheduling automatique des recrawls — le recrawl manuel via MCP suffit pour v1
+- Scheduling automatique des recrawls — le recrawl manuel via MCP suffit pour v0.x
+- Migration modele d'embedding (nomic, bge-m3) — benchmarker d'abord, migrer dans un futur milestone
+- Fine-tuning embeddings — investissement disproportionne pour v0.2
+- Contextual Retrieval avec LLM local — trop lourd pour CPU contraint
+- ColBERT reranking (bge-m3) — stockage prohibitif, hors scope
+
+## Current Milestone: v0.2 Audit & Optimisation
+
+**Goal:** Auditer et optimiser la qualite RAG, la robustesse du code, la performance et l'observabilite du systeme, en s'appuyant sur les 4 axes d'audit documentes dans `docs/audit/`.
+
+**Target features:**
+- Parent-child retrieval (reunir code+prose)
+- Convex Combination remplacant RRF pour la fusion hybride
+- Prefixe query BGE pour +1-5% retrieval
+- Candidats reranking configurables (20/30/50)
+- Golden set 100 requetes + metriques IR + ablation study
+- Pack qualite complet (Error Prone, NullAway, Spotless, Trivy, OWASP DC, CycloneDX, jqwik)
+- Tests MCP snapshot + round-trip integration
+- Tuning ONNX Runtime + PostgreSQL + HikariCP
+- Stack monitoring (Micrometer + VictoriaMetrics + Grafana + postgres_exporter)
 
 ## Context
 
 - Machine cible : 4 cores, 24 Go RAM, CPU-only, pas de GPU
-- v1.5 shipped : 9,839 LOC Java, 10 phases, 28 plans, 171 commits en 7 jours
+- v0.1 shipped : 9,839 LOC Java, 10 phases, 28 plans, 171 commits en 7 jours
 - Stack : Java 21 + Spring Boot 3.5 + LangChain4j 1.0 + Crawl4AI sidecar
 - 7 outils MCP : search_docs, list_sources, add_source, remove_source, crawl_status, recrawl_source, index_statistics
 - Les rapports de recherche dans `docs/` documentent les decisions de stack
 - Budget memoire estime : ~10-14 Go pour l'ensemble de la stack
-- Tech debt : 9 items Low/Info identifies dans l'audit v1.5
+- Tech debt : 9 items Low/Info identifies dans l'audit v0.1
+- Audits detailles dans `docs/audit/` : 4 axes (chunking/embeddings, qualite/securite, performance, retrieval)
 
 ## Constraints
 
@@ -75,5 +95,9 @@ Claude Code peut trouver et retourner des extraits de documentation technique pe
 | Flyway pour les migrations DB | Schema versionne, reproductible, automatique | ✓ Good — 8 migrations, zero intervention manuelle |
 | Spring AI MCP @Tool pour le serveur MCP | Annotations declaratives, stdio transport natif | ✓ Good — 7 outils exposes proprement |
 
+| Renumerotation v1.5 → v0.1, v0.2 milestone | Le projet est pre-v1.0 : la v1.0 sera le premier release stable complet | — Pending |
+| Convex Combination remplace RRF | CC surpasse systematiquement RRF (Bruch et al. 2022), meilleure utilisation des scores | — Pending |
+| Parent-child retrieval | Reunir code+prose dans des chunks parents, resout le probleme #1 identifie par l'audit | — Pending |
+
 ---
-*Last updated: 2026-02-20 after v1.5 milestone completion*
+*Last updated: 2026-02-20 after v0.2 milestone start*
