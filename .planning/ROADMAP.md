@@ -189,11 +189,13 @@ Plans:
   4. User can filter search results by content type (code examples vs prose vs all)
   5. User can filter search results by source name
   6. User can tag each source with a version label that persists and is filterable in search
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [ ] 08-01-PLAN.md -- Version tagging on Source entity, metadata denormalization (version + source_name), ContentType case-insensitive parsing
+- [ ] 08-02-PLAN.md -- Cross-encoder RerankerService TDD with OnnxScoringModel, Gradle dependency, Docker model setup, RRF k config
+- [ ] 08-03-PLAN.md -- SearchRequest filter fields, SearchService filter composition (MetadataFilterBuilder) + reranking pipeline wiring
+- [ ] 08-04-PLAN.md -- MCP tool extensions (search_docs filters, add_source/recrawl_source version), CrawlService version passthrough, empty filter messages
 
 ## Progress
 
