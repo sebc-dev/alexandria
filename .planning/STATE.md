@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 7 - Crawl Operations (in progress)
+**Current focus:** Phase 7 - Crawl Operations (complete)
 
 ## Current Position
 
 Phase: 7 of 8 (Crawl Operations)
-Plan: 4 of 5 in Phase 07
-Status: Executing Phase 07
-Last activity: 2026-02-20 -- Completed 07-04 (Crawl Orchestration)
+Plan: 5 of 5 in Phase 07 (COMPLETE)
+Status: Phase 07 complete
+Last activity: 2026-02-20 -- Completed 07-05 (MCP Tool Integration)
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 4.8min
-- Total execution time: 1.4 hours
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [████████░░] 78%
 | 03-web-crawling | 2 | 9min | 4.5min |
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
 | 05-mcp-server | 2 | 6min | 3.0min |
+| 07-crawl-operations | 5 | 33min | 6.6min |
 
 **Recent Trend:**
-- Last 5 plans: 3min, 5min, 5min, 7min, 10min
-- Trend: increasing (complexity growing with orchestration plans)
+- Last 5 plans: 5min, 5min, 7min, 10min, 6min
+- Trend: stabilizing (MCP integration faster than crawl orchestration)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -47,6 +48,7 @@ Progress: [████████░░] 78%
 | Phase 07 P02 | 5min | 1 task | 2 files |
 | Phase 07 P03 | 7min | 2 tasks | 11 files |
 | Phase 07 P04 | 10min | 2 tasks | 5 files |
+| Phase 07 P05 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -112,6 +114,9 @@ Recent decisions affecting current work:
 - [07-04]: Removed ingest(List<CrawlResult>) from IngestionService to break ingestion->crawl dependency
 - [07-04]: deleteChunksForUrl() on IngestionService as URL-scoped chunk deletion abstraction
 - [07-04]: LinkedHashMap<URL, depth> for BFS depth tracking instead of LinkedHashSet
+- [07-05]: dispatchCrawl as package-private method for testability -- spy pattern suppresses virtual thread in unit tests
+- [07-05]: Scope overrides on recrawl are one-time: CrawlScope built from overrides, Source entity unchanged
+- [07-05]: results.size() used for chunkCount on Source after crawl (page count proxy; actual chunk counts tracked internally by CrawlService)
 
 ### Pending Todos
 
@@ -131,6 +136,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 07-04-PLAN.md
-Resume file: .planning/phases/07-crawl-operations/07-04-SUMMARY.md
-Next: Execute 07-05-PLAN.md
+Stopped at: Completed 07-05-PLAN.md (Phase 07 complete)
+Resume file: .planning/phases/07-crawl-operations/07-05-SUMMARY.md
+Next: Phase 08 (Polish & Hardening)

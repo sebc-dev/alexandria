@@ -176,7 +176,7 @@ Plans:
 - [x] 07-02-PLAN.md -- TDD LlmsTxtParser for llms.txt/llms-full.txt URL extraction
 - [x] 07-03-PLAN.md -- Schema migration, Source scope fields, IngestionStateRepository, CrawlProgressTracker, PageDiscoveryService llms.txt cascade
 - [x] 07-04-PLAN.md -- CrawlService evolution (scope, depth, incremental, progress, llms-full.txt hybrid)
-- [ ] 07-05-PLAN.md -- MCP tool wiring (add_source, crawl_status, recrawl_source real implementations)
+- [x] 07-05-PLAN.md -- MCP tool wiring (add_source, crawl_status, recrawl_source real implementations)
 
 ### Phase 8: Advanced Search & Quality
 **Goal**: Search results are more precise through cross-encoder reranking and richer filtering options -- the quality multiplier layer
@@ -212,7 +212,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
 | 5. MCP Server | 2/2 | Complete    | 2026-02-20 |
 | 6. Source Management | 0/TBD | Not started | - |
-| 7. Crawl Operations | 0/TBD | Not started | - |
+| 7. Crawl Operations | 5/5 | Complete | 2026-02-20 |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |
 
 
