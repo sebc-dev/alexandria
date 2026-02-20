@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Auto-format staged Java files before commit (Phase 11)
+./gradlew spotlessApply --console=plain -q 2>/dev/null
+git add -u -- '*.java'

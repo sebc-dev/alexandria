@@ -27,6 +27,9 @@ jobs:
       - name: Compile all sources
         run: ./gradlew classes testClasses integrationTestClasses --console=plain
 
+      - name: Check code formatting
+        run: ./gradlew spotlessCheck --console=plain
+
       - name: Upload build output
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
