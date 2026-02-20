@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 8 (Advanced Search & Quality)
 Plan: 2 of 4 in Phase 08
 Status: Executing Phase 08
-Last activity: 2026-02-20 -- Completed 08-02 (Cross-Encoder Reranking Service)
+Last activity: 2026-02-20 -- Completed 08-01 (Version Tagging & Metadata Denormalization)
 
 Progress: [█████████░] 91%
 
