@@ -108,4 +108,52 @@ class CrawlProgressTrackerTest {
 
         assertThat(tracker.getProgress(sourceId)).isEmpty();
     }
+
+    // --- Cancellation ---
+
+    @Test
+    void cancelCrawlMakesCrawlCancelled() {
+        tracker.startCrawl(sourceId, 5);
+
+        tracker.cancelCrawl(sourceId);
+
+        assertThat(tracker.isCancelled(sourceId)).isTrue();
+    }
+
+    @Test
+    void isCancelledReturnsFalseForUncancelledCrawl() {
+        tracker.startCrawl(sourceId, 5);
+
+        assertThat(tracker.isCancelled(sourceId)).isFalse();
+    }
+
+    @Test
+    void completeCrawlClearsCancellationFlag() {
+        tracker.startCrawl(sourceId, 5);
+        tracker.cancelCrawl(sourceId);
+
+        tracker.completeCrawl(sourceId);
+
+        assertThat(tracker.isCancelled(sourceId)).isFalse();
+    }
+
+    @Test
+    void failCrawlClearsCancellationFlag() {
+        tracker.startCrawl(sourceId, 5);
+        tracker.cancelCrawl(sourceId);
+
+        tracker.failCrawl(sourceId);
+
+        assertThat(tracker.isCancelled(sourceId)).isFalse();
+    }
+
+    @Test
+    void removeCrawlClearsCancellationFlag() {
+        tracker.startCrawl(sourceId, 5);
+        tracker.cancelCrawl(sourceId);
+
+        tracker.removeCrawl(sourceId);
+
+        assertThat(tracker.isCancelled(sourceId)).isFalse();
+    }
 }

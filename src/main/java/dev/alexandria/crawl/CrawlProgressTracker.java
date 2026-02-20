@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class CrawlProgressTracker {
 
     private final ConcurrentHashMap<UUID, CrawlProgress> activeCrawls = new ConcurrentHashMap<>();
+    private final Set<UUID> cancelledCrawls = ConcurrentHashMap.newKeySet();
 
     /**
      * Start tracking a new crawl.
@@ -162,6 +164,7 @@ public class CrawlProgressTracker {
      * @param sourceId the source that finished crawling
      */
     public void completeCrawl(UUID sourceId) {
+        cancelledCrawls.remove(sourceId);
         activeCrawls.computeIfPresent(sourceId, (id, progress) ->
                 new CrawlProgress(
                         progress.sourceId(),
@@ -183,6 +186,7 @@ public class CrawlProgressTracker {
      * @param sourceId the source whose crawl failed
      */
     public void failCrawl(UUID sourceId) {
+        cancelledCrawls.remove(sourceId);
         activeCrawls.computeIfPresent(sourceId, (id, progress) ->
                 new CrawlProgress(
                         progress.sourceId(),
@@ -196,6 +200,26 @@ public class CrawlProgressTracker {
                         progress.startedAt()
                 )
         );
+    }
+
+    /**
+     * Request cancellation of an active crawl.
+     * The crawl loop checks {@link #isCancelled(UUID)} and breaks when true.
+     *
+     * @param sourceId the source whose crawl should be cancelled
+     */
+    public void cancelCrawl(UUID sourceId) {
+        cancelledCrawls.add(sourceId);
+    }
+
+    /**
+     * Check if a crawl has been requested for cancellation.
+     *
+     * @param sourceId the source to check
+     * @return true if cancellation was requested
+     */
+    public boolean isCancelled(UUID sourceId) {
+        return cancelledCrawls.contains(sourceId);
     }
 
     /**
@@ -214,6 +238,7 @@ public class CrawlProgressTracker {
      * @param sourceId the source to stop tracking
      */
     public void removeCrawl(UUID sourceId) {
+        cancelledCrawls.remove(sourceId);
         activeCrawls.remove(sourceId);
     }
 }

@@ -116,6 +116,10 @@ public class CrawlService {
 
         try {
             while (!queue.isEmpty() && results.size() < scope.maxPages()) {
+                if (sourceId != null && progressTracker.isCancelled(sourceId)) {
+                    log.info("Crawl cancelled for source {}", sourceId);
+                    break;
+                }
                 Map.Entry<String, Integer> entry = dequeueFirst(queue);
                 String normalized = UrlNormalizer.normalize(entry.getKey());
                 int depth = entry.getValue();

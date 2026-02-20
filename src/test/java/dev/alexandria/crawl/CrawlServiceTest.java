@@ -459,4 +459,27 @@ class CrawlServiceTest {
         verify(ingestionStateRepository).save(existingState);
         verify(progressTracker).recordPageCrawled(sourceId);
     }
+
+    // --- Cancellation ---
+
+    @Test
+    void crawlSiteBreaksOnCancellation() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/page1", "https://docs.example.com/page2"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        // Mark as cancelled before any page is crawled
+        when(progressTracker.isCancelled(sourceId)).thenReturn(true);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        // Crawl loop should exit immediately due to cancellation
+        assertThat(results).isEmpty();
+        verify(crawl4AiClient, never()).crawl(anyString());
+        verify(progressTracker).completeCrawl(sourceId);
+    }
 }
