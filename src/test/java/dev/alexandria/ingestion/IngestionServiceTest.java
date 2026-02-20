@@ -141,6 +141,38 @@ class IngestionServiceTest {
         verify(embeddingStore).removeAll(any(Filter.class));
     }
 
+    // --- Version/sourceName passthrough ---
+
+    @Test
+    void ingestPageWithVersionAndSourceNameEnrichesChunkMetadata() {
+        var chunkData = new DocumentChunkData("content", "https://example.com/page",
+                "section", ContentType.PROSE, "2026-01-01T00:00:00Z", null, null, null);
+        when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
+        when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.5f}))));
+
+        ingestionService.ingestPage("# Page\nContent", "https://example.com/page", "2026-01-01T00:00:00Z", "3.5", "Spring Docs");
+
+        verify(embeddingStore).addAll(any(), segmentsCaptor.capture());
+        TextSegment segment = segmentsCaptor.getValue().getFirst();
+        assertThat(segment.metadata().getString("version")).isEqualTo("3.5");
+        assertThat(segment.metadata().getString("source_name")).isEqualTo("Spring Docs");
+    }
+
+    @Test
+    void ingestPageThreeParamDelegatesWithNullVersionAndSourceName() {
+        var chunkData = new DocumentChunkData("content", "https://example.com/page",
+                "section", ContentType.PROSE, "2026-01-01T00:00:00Z", null, null, null);
+        when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
+        when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.5f}))));
+
+        ingestionService.ingestPage("# Page\nContent", "https://example.com/page", "2026-01-01T00:00:00Z");
+
+        verify(embeddingStore).addAll(any(), segmentsCaptor.capture());
+        TextSegment segment = segmentsCaptor.getValue().getFirst();
+        assertThat(segment.metadata().containsKey("version")).isFalse();
+        assertThat(segment.metadata().containsKey("source_name")).isFalse();
+    }
+
     // --- Clear ingestion state ---
 
     @Test
