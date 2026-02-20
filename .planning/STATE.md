@@ -5,14 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** v0.2 Audit & Optimisation
+**Current focus:** Phase 11 — Quality & Security Tooling
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-20 — Milestone v0.2 started
+Phase: 11 of 18 (Quality & Security Tooling)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-02-20 — Roadmap created for v0.2 milestone
+
+Progress: [░░░░░░░░░░] 0% (0/8 phases)
+
+## Performance Metrics
+
+**Velocity:**
+- v0.1: 28 plans completed across 10 phases in 7 days
+- v0.2: Starting fresh
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
 
 ## Accumulated Context
 
@@ -20,15 +34,10 @@ Last activity: 2026-02-20 — Milestone v0.2 started
 
 All v0.1 decisions archived in PROJECT.md Key Decisions table.
 v0.2 decisions:
-- Parent-child retrieval (reunir code+prose)
-- Convex Combination remplace RRF
-- Pack qualite complet (Error Prone, NullAway, Spotless, Trivy, OWASP DC, CycloneDX, jqwik)
-- Tests MCP snapshot + round-trip
-- Stack monitoring complete (Micrometer + VictoriaMetrics + Grafana + postgres_exporter)
-- Golden set 100 requetes + metriques IR
-- Candidats reranking configurables
-- Prefixe query BGE
-- Versioning renumerote : v1.5 → v0.1, nouveau milestone v0.2
+- Parent-child retrieval (reunir code+prose) — Phase 14
+- Convex Combination remplace RRF — Phase 15
+- Build evaluation BEFORE pipeline changes — Phase 13 before 14/15
+- Quality/security tooling ships first as safety net — Phase 11
 
 ### Pending Todos
 
@@ -41,6 +50,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Defining v0.2 requirements
-Resume file: .planning/REQUIREMENTS.md
-Next: Complete requirements → roadmap → `/gsd:plan-phase`
+Stopped at: Roadmap created for v0.2 (8 phases, 27 requirements mapped)
+Resume file: None
+Next: `/gsd:plan-phase 11`

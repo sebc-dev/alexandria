@@ -96,39 +96,39 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CHUNK-01 | — | Pending |
-| CHUNK-02 | — | Pending |
-| CHUNK-03 | — | Pending |
-| FUSE-01 | — | Pending |
-| FUSE-02 | — | Pending |
-| FUSE-03 | — | Pending |
-| EVAL-01 | — | Pending |
-| EVAL-02 | — | Pending |
-| EVAL-03 | — | Pending |
-| EVAL-04 | — | Pending |
-| EVAL-05 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| QUAL-03 | — | Pending |
-| QUAL-04 | — | Pending |
-| SECU-01 | — | Pending |
-| SECU-02 | — | Pending |
-| SECU-03 | — | Pending |
-| MCPT-01 | — | Pending |
-| MCPT-02 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
-| MONI-01 | — | Pending |
-| MONI-02 | — | Pending |
-| MONI-03 | — | Pending |
-| MONI-04 | — | Pending |
+| QUAL-01 | Phase 11 | Pending |
+| QUAL-02 | Phase 11 | Pending |
+| QUAL-03 | Phase 11 | Pending |
+| SECU-01 | Phase 11 | Pending |
+| SECU-02 | Phase 11 | Pending |
+| SECU-03 | Phase 11 | Pending |
+| PERF-01 | Phase 12 | Pending |
+| PERF-02 | Phase 12 | Pending |
+| PERF-03 | Phase 12 | Pending |
+| CHUNK-03 | Phase 12 | Pending |
+| EVAL-01 | Phase 13 | Pending |
+| EVAL-02 | Phase 13 | Pending |
+| EVAL-03 | Phase 13 | Pending |
+| EVAL-05 | Phase 13 | Pending |
+| CHUNK-01 | Phase 14 | Pending |
+| CHUNK-02 | Phase 14 | Pending |
+| QUAL-04 | Phase 14 | Pending |
+| FUSE-01 | Phase 15 | Pending |
+| FUSE-02 | Phase 15 | Pending |
+| FUSE-03 | Phase 15 | Pending |
+| MCPT-01 | Phase 16 | Pending |
+| MCPT-02 | Phase 16 | Pending |
+| MONI-01 | Phase 17 | Pending |
+| MONI-02 | Phase 17 | Pending |
+| MONI-03 | Phase 17 | Pending |
+| MONI-04 | Phase 17 | Pending |
+| EVAL-04 | Phase 18 | Pending |
 
 **Coverage:**
 - v0.2 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27
+- Mapped to phases: 27
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-20*
-*Last updated: 2026-02-20 after initial definition*
+*Last updated: 2026-02-20 after roadmap creation*
