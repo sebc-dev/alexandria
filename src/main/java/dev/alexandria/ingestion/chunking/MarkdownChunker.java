@@ -1,5 +1,10 @@
 package dev.alexandria.ingestion.chunking;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Heading;
@@ -10,313 +15,328 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 /**
- * AST-based Markdown chunker that splits content at H1/H2/H3 heading boundaries
- * and extracts fenced code blocks as separate chunks.
+ * AST-based Markdown chunker that splits content at H1/H2/H3 heading boundaries and extracts fenced
+ * code blocks as separate chunks.
  *
- * <p>H4+ headings remain inside their parent H3 chunk.
- * Every chunk carries five metadata fields: sourceUrl, sectionPath, contentType,
- * lastUpdated, and language.
+ * <p>H4+ headings remain inside their parent H3 chunk. Every chunk carries five metadata fields:
+ * sourceUrl, sectionPath, contentType, lastUpdated, and language.
  */
 @Component
 public class MarkdownChunker {
 
-    static final int DEFAULT_MAX_CHUNK_SIZE = 2000;
+  static final int DEFAULT_MAX_CHUNK_SIZE = 2000;
 
-    private final Parser parser;
-    private final TextContentRenderer textRenderer;
-    private final int maxChunkSize;
+  private final Parser parser;
+  private final TextContentRenderer textRenderer;
+  private final int maxChunkSize;
 
-    public MarkdownChunker() {
-        this(DEFAULT_MAX_CHUNK_SIZE);
+  public MarkdownChunker() {
+    this(DEFAULT_MAX_CHUNK_SIZE);
+  }
+
+  public MarkdownChunker(int maxChunkSize) {
+    if (maxChunkSize < 100) {
+      throw new IllegalArgumentException("maxChunkSize must be at least 100");
+    }
+    this.maxChunkSize = maxChunkSize;
+    var extensions = List.of(TablesExtension.create());
+    this.parser =
+        Parser.builder()
+            .extensions(extensions)
+            .includeSourceSpans(IncludeSourceSpans.BLOCKS)
+            .build();
+    this.textRenderer = TextContentRenderer.builder().extensions(extensions).build();
+  }
+
+  /**
+   * Chunks a Markdown document into prose and code segments.
+   *
+   * @param markdown the raw Markdown text
+   * @param sourceUrl the URL of the page this content came from
+   * @param lastUpdated ISO-8601 timestamp of the source page
+   * @return ordered list of chunks with metadata
+   */
+  public List<DocumentChunkData> chunk(String markdown, String sourceUrl, String lastUpdated) {
+    if (markdown == null || markdown.isBlank()) {
+      return List.of();
     }
 
-    public MarkdownChunker(int maxChunkSize) {
-        if (maxChunkSize < 100) {
-            throw new IllegalArgumentException("maxChunkSize must be at least 100");
-        }
-        this.maxChunkSize = maxChunkSize;
-        var extensions = List.of(TablesExtension.create());
-        this.parser = Parser.builder()
-                .extensions(extensions)
-                .includeSourceSpans(IncludeSourceSpans.BLOCKS)
-                .build();
-        this.textRenderer = TextContentRenderer.builder()
-                .extensions(extensions)
-                .build();
+    Node document = parser.parse(markdown);
+    String[] lines = markdown.split("\n", -1);
+    List<DocumentChunkData> chunks = new ArrayList<>();
+
+    // Track heading hierarchy: index 0=H1, 1=H2, 2=H3
+    String[] headingPath = new String[3];
+    Heading currentHeading = null;
+    List<Node> currentContentNodes = new ArrayList<>();
+    List<FencedCodeBlock> currentCodeBlocks = new ArrayList<>();
+
+    Node child = document.getFirstChild();
+    while (child != null) {
+      Node next = child.getNext();
+
+      if (child instanceof Heading heading && heading.getLevel() <= 3) {
+        emitSection(
+            chunks,
+            currentHeading,
+            currentContentNodes,
+            currentCodeBlocks,
+            headingPath,
+            sourceUrl,
+            lastUpdated,
+            lines);
+        currentContentNodes.clear();
+        currentCodeBlocks.clear();
+        updateHeadingPath(headingPath, heading);
+        currentHeading = heading;
+      } else if (child instanceof FencedCodeBlock codeBlock) {
+        currentCodeBlocks.add(codeBlock);
+      } else {
+        currentContentNodes.add(child);
+      }
+
+      child = next;
     }
 
-    /**
-     * Chunks a Markdown document into prose and code segments.
-     *
-     * @param markdown    the raw Markdown text
-     * @param sourceUrl   the URL of the page this content came from
-     * @param lastUpdated ISO-8601 timestamp of the source page
-     * @return ordered list of chunks with metadata
-     */
-    public List<DocumentChunkData> chunk(String markdown, String sourceUrl, String lastUpdated) {
-        if (markdown == null || markdown.isBlank()) {
-            return List.of();
-        }
+    emitSection(
+        chunks,
+        currentHeading,
+        currentContentNodes,
+        currentCodeBlocks,
+        headingPath,
+        sourceUrl,
+        lastUpdated,
+        lines);
 
-        Node document = parser.parse(markdown);
-        String[] lines = markdown.split("\n", -1);
-        List<DocumentChunkData> chunks = new ArrayList<>();
+    return chunks;
+  }
 
-        // Track heading hierarchy: index 0=H1, 1=H2, 2=H3
-        String[] headingPath = new String[3];
-        Heading currentHeading = null;
-        List<Node> currentContentNodes = new ArrayList<>();
-        List<FencedCodeBlock> currentCodeBlocks = new ArrayList<>();
+  /**
+   * Updates the heading hierarchy when a new H1/H2/H3 heading is encountered. Clears all sub-levels
+   * beneath the current heading level.
+   */
+  private void updateHeadingPath(String[] headingPath, Heading heading) {
+    int level = heading.getLevel();
+    headingPath[level - 1] = extractHeadingText(heading);
+    for (int i = level; i < 3; i++) {
+      headingPath[i] = null;
+    }
+  }
 
-        Node child = document.getFirstChild();
-        while (child != null) {
-            Node next = child.getNext();
-
-            if (child instanceof Heading heading && heading.getLevel() <= 3) {
-                emitSection(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
-                        headingPath, sourceUrl, lastUpdated, lines);
-                currentContentNodes.clear();
-                currentCodeBlocks.clear();
-                updateHeadingPath(headingPath, heading);
-                currentHeading = heading;
-            } else if (child instanceof FencedCodeBlock codeBlock) {
-                currentCodeBlocks.add(codeBlock);
-            } else {
-                currentContentNodes.add(child);
-            }
-
-            child = next;
-        }
-
-        emitSection(chunks, currentHeading, currentContentNodes, currentCodeBlocks,
-                headingPath, sourceUrl, lastUpdated, lines);
-
-        return chunks;
+  /** Emits prose and code chunks for a completed section, if the section has any content. */
+  private void emitSection(
+      List<DocumentChunkData> chunks,
+      Heading sectionHeading,
+      List<Node> contentNodes,
+      List<FencedCodeBlock> codeBlocks,
+      String[] headingPath,
+      String sourceUrl,
+      String lastUpdated,
+      String[] lines) {
+    if (sectionHeading == null && contentNodes.isEmpty() && codeBlocks.isEmpty()) {
+      return;
     }
 
-    /**
-     * Updates the heading hierarchy when a new H1/H2/H3 heading is encountered.
-     * Clears all sub-levels beneath the current heading level.
-     */
-    private void updateHeadingPath(String[] headingPath, Heading heading) {
-        int level = heading.getLevel();
-        headingPath[level - 1] = extractHeadingText(heading);
-        for (int i = level; i < 3; i++) {
-            headingPath[i] = null;
-        }
+    String sectionPath = buildSectionPath(headingPath);
+    emitProseChunk(
+        chunks, sectionHeading, contentNodes, sectionPath, sourceUrl, lastUpdated, lines);
+    emitCodeChunks(chunks, codeBlocks, sectionPath, sourceUrl, lastUpdated);
+  }
+
+  /**
+   * Builds prose text from the section heading and content nodes, then adds it as one or more
+   * chunks. Oversized prose is split at paragraph or sentence boundaries.
+   */
+  private void emitProseChunk(
+      List<DocumentChunkData> chunks,
+      Heading sectionHeading,
+      List<Node> contentNodes,
+      String sectionPath,
+      String sourceUrl,
+      String lastUpdated,
+      String[] lines) {
+    String proseText = extractProseText(sectionHeading, contentNodes, lines);
+    if (proseText.isBlank()) {
+      return;
+    }
+    if (proseText.length() <= maxChunkSize) {
+      chunks.add(
+          new DocumentChunkData(
+              proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null));
+    } else {
+      splitOversizedText(proseText, maxChunkSize)
+          .forEach(
+              part ->
+                  chunks.add(
+                      new DocumentChunkData(
+                          part,
+                          sourceUrl,
+                          sectionPath,
+                          ContentType.PROSE,
+                          lastUpdated,
+                          null,
+                          null,
+                          null)));
+    }
+  }
+
+  /** Emits each fenced code block as a separate chunk with its detected language. */
+  private void emitCodeChunks(
+      List<DocumentChunkData> chunks,
+      List<FencedCodeBlock> codeBlocks,
+      String sectionPath,
+      String sourceUrl,
+      String lastUpdated) {
+    for (FencedCodeBlock codeBlock : codeBlocks) {
+      String code = codeBlock.getLiteral();
+      if (code.endsWith("\n")) {
+        code = code.substring(0, code.length() - 1);
+      }
+      String language = detectLanguage(codeBlock);
+      chunks.add(
+          new DocumentChunkData(
+              code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language, null, null));
+    }
+  }
+
+  private String extractProseText(Heading sectionHeading, List<Node> contentNodes, String[] lines) {
+    // If there are no content nodes (only code blocks in the section), do not emit
+    // the heading as a standalone prose chunk
+    if (contentNodes.isEmpty()) {
+      return "";
     }
 
-    /**
-     * Emits prose and code chunks for a completed section, if the section has any content.
-     */
-    private void emitSection(List<DocumentChunkData> chunks,
-                             Heading sectionHeading,
-                             List<Node> contentNodes,
-                             List<FencedCodeBlock> codeBlocks,
-                             String[] headingPath,
-                             String sourceUrl,
-                             String lastUpdated,
-                             String[] lines) {
-        if (sectionHeading == null && contentNodes.isEmpty() && codeBlocks.isEmpty()) {
-            return;
-        }
+    StringBuilder sb = new StringBuilder();
 
-        String sectionPath = buildSectionPath(headingPath);
-        emitProseChunk(chunks, sectionHeading, contentNodes, sectionPath, sourceUrl, lastUpdated, lines);
-        emitCodeChunks(chunks, codeBlocks, sectionPath, sourceUrl, lastUpdated);
+    // Include the heading itself in the prose output
+    if (sectionHeading != null) {
+      appendNodeText(sectionHeading, lines, sb);
     }
 
-    /**
-     * Builds prose text from the section heading and content nodes, then adds it as one or more
-     * chunks. Oversized prose is split at paragraph or sentence boundaries.
-     */
-    private void emitProseChunk(List<DocumentChunkData> chunks,
-                                Heading sectionHeading,
-                                List<Node> contentNodes,
-                                String sectionPath,
-                                String sourceUrl,
-                                String lastUpdated,
-                                String[] lines) {
-        String proseText = extractProseText(sectionHeading, contentNodes, lines);
-        if (proseText.isBlank()) {
-            return;
+    for (Node node : contentNodes) {
+      appendNodeText(node, lines, sb);
+    }
+
+    return sb.toString().trim();
+  }
+
+  private void appendNodeText(Node node, String[] lines, StringBuilder sb) {
+    var sourceSpans = node.getSourceSpans();
+    if (sourceSpans != null && !sourceSpans.isEmpty()) {
+      for (SourceSpan span : sourceSpans) {
+        if (span == null) {
+          continue;
         }
-        if (proseText.length() <= maxChunkSize) {
-            chunks.add(new DocumentChunkData(
-                    proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null));
+        int lineIndex = span.getLineIndex();
+        if (lineIndex >= 0 && lineIndex < lines.length) {
+          if (!sb.isEmpty()) {
+            sb.append("\n");
+          }
+          sb.append(lines[lineIndex]);
+        }
+      }
+    } else {
+      // Fallback to TextContentRenderer for nodes without source spans
+      String rendered = textRenderer.render(node).trim();
+      if (!rendered.isEmpty()) {
+        if (!sb.isEmpty()) {
+          sb.append("\n");
+        }
+        sb.append(rendered);
+      }
+    }
+  }
+
+  private String extractHeadingText(Heading heading) {
+    return textRenderer.render(heading).trim();
+  }
+
+  private String buildSectionPath(String[] headingPath) {
+    return Arrays.stream(headingPath)
+        .filter(Objects::nonNull)
+        .map(this::slugify)
+        .collect(Collectors.joining("/"));
+  }
+
+  private String slugify(String text) {
+    return text.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "");
+  }
+
+  private String detectLanguage(FencedCodeBlock codeBlock) {
+    String info = codeBlock.getInfo();
+    if (info != null && !info.isBlank()) {
+      return info.split("\\s+")[0].toLowerCase();
+    }
+    return LanguageDetector.detect(codeBlock.getLiteral());
+  }
+
+  /**
+   * Splits oversized text into parts that each fit within maxSize. Splits at paragraph boundaries
+   * (blank lines) first, then at sentence boundaries.
+   */
+  static List<String> splitOversizedText(String text, int maxSize) {
+    // Split at paragraph boundaries (blank lines)
+    String[] paragraphs = text.split("\n\n");
+    List<String> result = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+
+    for (String para : paragraphs) {
+      String trimmed = para.trim();
+      if (trimmed.isEmpty()) {
+        continue;
+      }
+
+      if (current.isEmpty()) {
+        if (trimmed.length() <= maxSize) {
+          current.append(trimmed);
         } else {
-            splitOversizedText(proseText, maxChunkSize).forEach(part ->
-                    chunks.add(new DocumentChunkData(
-                            part, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null)));
+          // Single paragraph too large — split by sentences
+          result.addAll(splitBySentences(trimmed, maxSize));
         }
-    }
-
-    /**
-     * Emits each fenced code block as a separate chunk with its detected language.
-     */
-    private void emitCodeChunks(List<DocumentChunkData> chunks,
-                                List<FencedCodeBlock> codeBlocks,
-                                String sectionPath,
-                                String sourceUrl,
-                                String lastUpdated) {
-        for (FencedCodeBlock codeBlock : codeBlocks) {
-            String code = codeBlock.getLiteral();
-            if (code.endsWith("\n")) {
-                code = code.substring(0, code.length() - 1);
-            }
-            String language = detectLanguage(codeBlock);
-            chunks.add(new DocumentChunkData(
-                    code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language, null, null));
-        }
-    }
-
-    private String extractProseText(Heading sectionHeading, List<Node> contentNodes,
-                                    String[] lines) {
-        // If there are no content nodes (only code blocks in the section), do not emit
-        // the heading as a standalone prose chunk
-        if (contentNodes.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        // Include the heading itself in the prose output
-        if (sectionHeading != null) {
-            appendNodeText(sectionHeading, lines, sb);
-        }
-
-        for (Node node : contentNodes) {
-            appendNodeText(node, lines, sb);
-        }
-
-        return sb.toString().trim();
-    }
-
-    private void appendNodeText(Node node, String[] lines, StringBuilder sb) {
-        var sourceSpans = node.getSourceSpans();
-        if (sourceSpans != null && !sourceSpans.isEmpty()) {
-            for (SourceSpan span : sourceSpans) {
-                if (span == null) {
-                    continue;
-                }
-                int lineIndex = span.getLineIndex();
-                if (lineIndex >= 0 && lineIndex < lines.length) {
-                    if (!sb.isEmpty()) {
-                        sb.append("\n");
-                    }
-                    sb.append(lines[lineIndex]);
-                }
-            }
+      } else if (current.length() + 2 + trimmed.length() <= maxSize) {
+        current.append("\n\n").append(trimmed);
+      } else {
+        result.add(current.toString());
+        current.setLength(0);
+        if (trimmed.length() <= maxSize) {
+          current.append(trimmed);
         } else {
-            // Fallback to TextContentRenderer for nodes without source spans
-            String rendered = textRenderer.render(node).trim();
-            if (!rendered.isEmpty()) {
-                if (!sb.isEmpty()) {
-                    sb.append("\n");
-                }
-                sb.append(rendered);
-            }
+          result.addAll(splitBySentences(trimmed, maxSize));
         }
+      }
     }
 
-    private String extractHeadingText(Heading heading) {
-        return textRenderer.render(heading).trim();
+    if (!current.isEmpty()) {
+      result.add(current.toString());
     }
 
-    private String buildSectionPath(String[] headingPath) {
-        return Arrays.stream(headingPath)
-                .filter(Objects::nonNull)
-                .map(this::slugify)
-                .collect(Collectors.joining("/"));
+    return result;
+  }
+
+  private static List<String> splitBySentences(String text, int maxSize) {
+    // Split on sentence-ending punctuation followed by space
+    String[] sentences = text.split("(?<=[.!?])\\s+");
+    List<String> result = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+
+    for (String sentence : sentences) {
+      if (current.isEmpty()) {
+        current.append(sentence);
+      } else if (current.length() + 1 + sentence.length() <= maxSize) {
+        current.append(" ").append(sentence);
+      } else {
+        result.add(current.toString());
+        current.setLength(0);
+        current.append(sentence);
+      }
     }
 
-    private String slugify(String text) {
-        return text.toLowerCase()
-                .replaceAll("[^a-z0-9]+", "-")
-                .replaceAll("^-+|-+$", "");
+    if (!current.isEmpty()) {
+      // If a single sentence exceeds maxSize, we still emit it as-is
+      result.add(current.toString());
     }
 
-    private String detectLanguage(FencedCodeBlock codeBlock) {
-        String info = codeBlock.getInfo();
-        if (info != null && !info.isBlank()) {
-            return info.split("\\s+")[0].toLowerCase();
-        }
-        return LanguageDetector.detect(codeBlock.getLiteral());
-    }
-
-    /**
-     * Splits oversized text into parts that each fit within maxSize.
-     * Splits at paragraph boundaries (blank lines) first, then at sentence boundaries.
-     */
-    static List<String> splitOversizedText(String text, int maxSize) {
-        // Split at paragraph boundaries (blank lines)
-        String[] paragraphs = text.split("\n\n");
-        List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-
-        for (String para : paragraphs) {
-            String trimmed = para.trim();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-
-            if (current.isEmpty()) {
-                if (trimmed.length() <= maxSize) {
-                    current.append(trimmed);
-                } else {
-                    // Single paragraph too large — split by sentences
-                    result.addAll(splitBySentences(trimmed, maxSize));
-                }
-            } else if (current.length() + 2 + trimmed.length() <= maxSize) {
-                current.append("\n\n").append(trimmed);
-            } else {
-                result.add(current.toString());
-                current.setLength(0);
-                if (trimmed.length() <= maxSize) {
-                    current.append(trimmed);
-                } else {
-                    result.addAll(splitBySentences(trimmed, maxSize));
-                }
-            }
-        }
-
-        if (!current.isEmpty()) {
-            result.add(current.toString());
-        }
-
-        return result;
-    }
-
-    private static List<String> splitBySentences(String text, int maxSize) {
-        // Split on sentence-ending punctuation followed by space
-        String[] sentences = text.split("(?<=[.!?])\\s+");
-        List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-
-        for (String sentence : sentences) {
-            if (current.isEmpty()) {
-                current.append(sentence);
-            } else if (current.length() + 1 + sentence.length() <= maxSize) {
-                current.append(" ").append(sentence);
-            } else {
-                result.add(current.toString());
-                current.setLength(0);
-                current.append(sentence);
-            }
-        }
-
-        if (!current.isEmpty()) {
-            // If a single sentence exceeds maxSize, we still emit it as-is
-            result.add(current.toString());
-        }
-
-        return result;
-    }
+    return result;
+  }
 }
