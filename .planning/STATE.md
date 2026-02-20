@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 8 of 8 (Advanced Search & Quality)
-Plan: 2 of 4 in Phase 08
+Plan: 3 of 4 in Phase 08
 Status: Executing Phase 08
-Last activity: 2026-02-20 -- Completed 08-01 (Version Tagging & Metadata Denormalization)
+Last activity: 2026-02-20 -- Completed 08-03 (Search Pipeline Integration)
 
-Progress: [█████████░] 91%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
-- Average duration: 4.7min
-- Total execution time: 1.6 hours
+- Total plans completed: 21
+- Average duration: 4.6min
+- Total execution time: 1.7 hours
 
 **By Phase:**
 
@@ -33,10 +33,10 @@ Progress: [█████████░] 91%
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
 | 05-mcp-server | 2 | 6min | 3.0min |
 | 07-crawl-operations | 5 | 33min | 6.6min |
-| 08-advanced-search-quality | 2 | 10min | 5.0min |
+| 08-advanced-search-quality | 3 | 14min | 4.7min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 10min, 6min, 5min, 5min
+- Last 5 plans: 10min, 6min, 5min, 5min, 4min
 - Trend: stable (~5min for focused feature plans)
 
 *Updated after each plan completion*
@@ -52,6 +52,7 @@ Progress: [█████████░] 91%
 | Phase 07 P05 | 6min | 2 tasks | 2 files |
 | Phase 08 P01 | 5min | 2 tasks | 8 files |
 | Phase 08 P02 | 5min | 2 tasks | 9 files |
+| Phase 08 P03 | 4min | 1 task | 4 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - [08-02]: SearchResult backward compatibility via 4-arg convenience constructor (rerankScore defaults to 0.0)
 - [08-02]: RRF k is store-level config via Spring property alexandria.search.rrf-k (not per-request; LangChain4j limitation)
 - [08-02]: Cross-encoder model files downloaded during Docker build, not runtime; path configurable via RERANKER_MODEL_PATH env var
+- [08-03]: Lambda (a, b) -> a.and(b) for Filter composition to avoid ambiguous method reference between instance and static and() methods
+- [08-03]: rrfK carried on SearchRequest for API completeness but not applied per-request (store-level config); debug-logged when provided
+- [08-03]: slugify() as static method on SearchService (not extracted from MarkdownChunker) to avoid over-engineering for 3 lines of regex
 
 ### Pending Todos
 
@@ -145,6 +149,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 08-01-PLAN.md
-Resume file: .planning/phases/08-advanced-search-quality/08-01-SUMMARY.md
-Next: 08-03 (Search Pipeline Integration) or 08-04
+Stopped at: Completed 08-03-PLAN.md
+Resume file: .planning/phases/08-advanced-search-quality/08-03-SUMMARY.md
+Next: 08-04 (MCP Search Tool Integration)

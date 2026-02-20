@@ -189,12 +189,12 @@ Plans:
   4. User can filter search results by content type (code examples vs prose vs all)
   5. User can filter search results by source name
   6. User can tag each source with a version label that persists and is filterable in search
-**Plans:** 2/4 plans complete
+**Plans:** 3/4 plans complete
 
 Plans:
 - [x] 08-01-PLAN.md -- Version tagging on Source entity, metadata denormalization (version + source_name), ContentType case-insensitive parsing
 - [x] 08-02-PLAN.md -- Cross-encoder RerankerService TDD with OnnxScoringModel, Gradle dependency, Docker model setup, RRF k config
-- [ ] 08-03-PLAN.md -- SearchRequest filter fields, SearchService filter composition (MetadataFilterBuilder) + reranking pipeline wiring
+- [x] 08-03-PLAN.md -- SearchRequest filter fields, SearchService filter composition (MetadataFilterBuilder) + reranking pipeline wiring
 - [ ] 08-04-PLAN.md -- MCP tool extensions (search_docs filters, add_source/recrawl_source version), CrawlService version passthrough, empty filter messages
 
 ## Progress
@@ -215,6 +215,6 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 5. MCP Server | 2/2 | ✓ Complete | 2026-02-20 |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 5/5 | ✓ Complete | 2026-02-20 |
-| 8. Advanced Search & Quality | 2/4 | In Progress | - |
+| 8. Advanced Search & Quality | 3/4 | In Progress | - |
 
 
