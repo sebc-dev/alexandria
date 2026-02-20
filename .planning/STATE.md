@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 7 - Crawl Operations (complete)
+**Current focus:** Phase 8 - Advanced Search & Quality (in progress)
 
 ## Current Position
 
-Phase: 7 of 8 (Crawl Operations)
-Plan: 5 of 5 in Phase 07 (COMPLETE)
-Status: Phase 07 complete
-Last activity: 2026-02-20 -- Completed 07-05 (MCP Tool Integration)
+Phase: 8 of 8 (Advanced Search & Quality)
+Plan: 2 of 4 in Phase 08
+Status: Executing Phase 08
+Last activity: 2026-02-20 -- Completed 08-02 (Cross-Encoder Reranking Service)
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 4.8min
-- Total execution time: 1.5 hours
+- Total plans completed: 20
+- Average duration: 4.7min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
@@ -33,10 +33,11 @@ Progress: [█████████░] 87%
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
 | 05-mcp-server | 2 | 6min | 3.0min |
 | 07-crawl-operations | 5 | 33min | 6.6min |
+| 08-advanced-search-quality | 2 | 10min | 5.0min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 5min, 7min, 10min, 6min
-- Trend: stabilizing (MCP integration faster than crawl orchestration)
+- Last 5 plans: 7min, 10min, 6min, 5min, 5min
+- Trend: stable (~5min for focused feature plans)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -49,6 +50,8 @@ Progress: [█████████░] 87%
 | Phase 07 P03 | 7min | 2 tasks | 11 files |
 | Phase 07 P04 | 10min | 2 tasks | 5 files |
 | Phase 07 P05 | 6min | 2 tasks | 2 files |
+| Phase 08 P01 | 5min | 2 tasks | 8 files |
+| Phase 08 P02 | 5min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -117,6 +120,12 @@ Recent decisions affecting current work:
 - [07-05]: dispatchCrawl as package-private method for testability -- spy pattern suppresses virtual thread in unit tests
 - [07-05]: Scope overrides on recrawl are one-time: CrawlScope built from overrides, Source entity unchanged
 - [07-05]: results.size() used for chunkCount on Source after crawl (page count proxy; actual chunk counts tracked internally by CrawlService)
+- [08-01]: DocumentChunkData extended with nullable version/sourceName fields (no requireNonNull) to preserve backward compat
+- [08-01]: Batch update queries use metadata source_url matching (not source_id FK) for consistency with MCP layer
+- [08-01]: parseSearchFilter() on ContentType as separate method from fromValue() for clean separation of concerns
+- [08-02]: SearchResult backward compatibility via 4-arg convenience constructor (rerankScore defaults to 0.0)
+- [08-02]: RRF k is store-level config via Spring property alexandria.search.rrf-k (not per-request; LangChain4j limitation)
+- [08-02]: Cross-encoder model files downloaded during Docker build, not runtime; path configurable via RERANKER_MODEL_PATH env var
 
 ### Pending Todos
 
@@ -136,6 +145,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 07-05-PLAN.md (Phase 07 complete)
-Resume file: .planning/phases/07-crawl-operations/07-05-SUMMARY.md
-Next: Phase 08 (Advanced Search & Quality)
+Stopped at: Completed 08-01-PLAN.md
+Resume file: .planning/phases/08-advanced-search-quality/08-01-SUMMARY.md
+Next: 08-03 (Search Pipeline Integration) or 08-04
