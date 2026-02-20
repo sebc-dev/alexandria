@@ -19,9 +19,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction (completed 2026-02-18)
 - [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
 - [x] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
-- [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
+- [ ] ~~**Phase 6: Source Management**~~ - *Superseded by Phase 9 (gap closure from v1.5 audit)*
 - [x] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring (completed 2026-02-20)
 - [x] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type (completed 2026-02-20)
+- [ ] **Phase 9: Source Management Completion** - Gap closure: fix source_id FK, cascade delete, chunk_count, staleness, index stats MCP tool
 
 ## Phase Details
 
@@ -142,21 +143,27 @@ Plans:
 - [x] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
 - [x] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
 
-### Phase 6: Source Management
-**Goal**: Users can manage documentation sources through MCP tools -- add, remove, list, and inspect the health of their indexed documentation
-**Depends on**: Phase 5, Phase 3
+### ~~Phase 6: Source Management~~ *(Superseded by Phase 9)*
+Phase 6 was never executed. Its requirements (SRC-01..05) are addressed by Phase 9 gap closure.
+
+### Phase 9: Source Management Completion *(Gap Closure)*
+**Goal**: Close all v1.5 audit gaps — fix source_id FK population so cascade delete works, correct chunk_count accuracy, add staleness indicators, implement index statistics MCP tool, and wire orphaned exports
+**Depends on**: Phase 7, Phase 8
 **Requirements**: SRC-01, SRC-02, SRC-03, SRC-04, SRC-05
+**Gap Closure**: Closes gaps from v1.5-MILESTONE-AUDIT.md
 **Success Criteria** (what must be TRUE):
-  1. User can add a documentation URL as a source via `add_source` MCP tool and it triggers crawling and indexing
-  2. User can list all configured sources with status, last crawl time, and chunk count via `list_sources`
-  3. User can remove a source via `remove_source` and all its indexed data (chunks, embeddings) is cascade-deleted
-  4. User can see freshness status of each source (time since last crawl, staleness indicator)
-  5. User can view index statistics (total chunks, total sources, storage size, embedding dimensions) via MCP tool
+  1. source_id FK is populated on document_chunks rows during ingestion (post-LangChain4j addAll batch update)
+  2. `remove_source` MCP tool deletes source AND all associated chunks via ON DELETE CASCADE
+  3. `list_sources` shows accurate chunk_count (real DocumentChunk count per source, not page count)
+  4. `list_sources` or `crawl_status` includes a staleness indicator (days since last crawl, stale/fresh label)
+  5. New MCP tool `index_statistics` returns total chunks, total sources, storage size, embedding dimensions
+  6. `add_source` formally satisfies SRC-01 (already functional from Phase 7)
+  7. updateSourceNameMetadata() is called when source name changes during recrawl
 **Plans**: TBD
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 09-01: TBD
+- [ ] 09-02: TBD
 
 ### Phase 7: Crawl Operations
 **Goal**: Users have full operational control over crawling -- scope limits, incremental updates, scheduled recrawls, progress monitoring, and llms.txt support
@@ -213,8 +220,9 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 4.5. Code Quality & Test Consolidation | 5/5 | ✓ Complete | 2026-02-19 |
 | 5. MCP Server | 2/2 | ✓ Complete | 2026-02-20 |
-| 6. Source Management | 0/TBD | Not started | - |
+| ~~6. Source Management~~ | — | Superseded by Phase 9 | — |
 | 7. Crawl Operations | 5/5 | ✓ Complete | 2026-02-20 |
 | 8. Advanced Search & Quality | 4/4 | ✓ Complete | 2026-02-20 |
+| 9. Source Management Completion | 0/TBD | Not started | - |
 
 

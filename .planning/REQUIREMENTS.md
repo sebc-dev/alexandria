@@ -36,7 +36,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CHUNK-03**: Each chunk carries metadata: source URL, section path (breadcrumb), heading hierarchy, content type, last updated timestamp
 - [x] **CHUNK-04**: System generates embeddings via ONNX in-process (bge-small-en-v1.5-q, 384 dimensions)
 - [x] **CHUNK-05**: System extracts code examples as separate chunks tagged with language and content_type="code"
-- [ ] **CHUNK-06**: User can tag each source with a version label (e.g., "React 19", "Spring Boot 3.5")
+- [x] **CHUNK-06**: User can tag each source with a version label (e.g., "React 19", "Spring Boot 3.5")
 - [x] **CHUNK-07**: User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) instead of relying on built-in automatic chunking
 
 ### Search & Retrieval
@@ -44,13 +44,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SRCH-01**: User can search indexed documentation via semantic vector search (cosine similarity, pgvector HNSW)
 - [x] **SRCH-02**: User can search indexed documentation via keyword search (PostgreSQL tsvector/tsquery BM25)
 - [x] **SRCH-03**: System combines vector and keyword results via Reciprocal Rank Fusion (RRF) for hybrid search
-- [ ] **SRCH-04**: User can filter search results by source name
+- [x] **SRCH-04**: User can filter search results by source name
 - [x] **SRCH-05**: Every search result includes source URL and section path for citation
 - [x] **SRCH-06**: User can configure number of results returned (default 10)
-- [ ] **SRCH-07**: System re-ranks top candidates via cross-encoder model for improved precision
-- [ ] **SRCH-08**: User can filter search results by section path (e.g., "API Reference" only)
-- [ ] **SRCH-09**: User can filter search results by version tag
-- [ ] **SRCH-10**: User can filter search results by content type (code vs prose vs all)
+- [x] **SRCH-07**: System re-ranks top candidates via cross-encoder model for improved precision
+- [x] **SRCH-08**: User can filter search results by section path (e.g., "API Reference" only)
+- [x] **SRCH-09**: User can filter search results by version tag
+- [x] **SRCH-10**: User can filter search results by content type (code vs prose vs all)
 
 ### MCP Server
 
@@ -100,11 +100,11 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRC-01 | Phase 6 | Pending |
-| SRC-02 | Phase 6 | Pending |
-| SRC-03 | Phase 6 | Pending |
-| SRC-04 | Phase 6 | Pending |
-| SRC-05 | Phase 6 | Pending |
+| SRC-01 | Phase 9 | Pending |
+| SRC-02 | Phase 9 | Pending |
+| SRC-03 | Phase 9 | Pending |
+| SRC-04 | Phase 9 | Pending |
+| SRC-05 | Phase 9 | Pending |
 | CRWL-01 | Phase 3 | ✓ Complete |
 | CRWL-02 | Phase 3 | ✓ Complete |
 | CRWL-03 | Phase 7 | ✓ Complete |
@@ -121,18 +121,18 @@ Deferred to future release. Tracked but not in current roadmap.
 | CHUNK-03 | Phase 4 | ✓ Complete |
 | CHUNK-04 | Phase 1 | ✓ Complete |
 | CHUNK-05 | Phase 4 | ✓ Complete |
-| CHUNK-06 | Phase 8 | Pending |
+| CHUNK-06 | Phase 8 | ✓ Complete |
 | CHUNK-07 | Phase 4 | ✓ Complete |
 | SRCH-01 | Phase 2 | ✓ Complete |
 | SRCH-02 | Phase 2 | ✓ Complete |
 | SRCH-03 | Phase 2 | ✓ Complete |
-| SRCH-04 | Phase 8 | Pending |
+| SRCH-04 | Phase 8 | ✓ Complete |
 | SRCH-05 | Phase 2 | ✓ Complete |
 | SRCH-06 | Phase 2 | ✓ Complete |
-| SRCH-07 | Phase 8 | Pending |
-| SRCH-08 | Phase 8 | Pending |
-| SRCH-09 | Phase 8 | Pending |
-| SRCH-10 | Phase 8 | Pending |
+| SRCH-07 | Phase 8 | ✓ Complete |
+| SRCH-08 | Phase 8 | ✓ Complete |
+| SRCH-09 | Phase 8 | ✓ Complete |
+| SRCH-10 | Phase 8 | ✓ Complete |
 | MCP-01 | Phase 5 | ✓ Complete |
 | MCP-02 | Phase 5 | ✓ Complete |
 | MCP-03 | Phase 5 | ✓ Complete |
@@ -147,10 +147,10 @@ Deferred to future release. Tracked but not in current roadmap.
 - v1 requirements: 42 total
 - Mapped to phases: 42
 - Unmapped: 0
-- Complete: 30/42 (71%)
-- Pending: 11 (SRC-01..05, CHUNK-06, SRCH-04, SRCH-07..10)
+- Complete: 36/42 (86%)
+- Pending: 5 (SRC-01..05 → Phase 9)
 - Deferred: 1 (CRWL-07)
 
 ---
 *Requirements defined: 2026-02-14*
-*Last updated: 2026-02-20 after phase 7 completion*
+*Last updated: 2026-02-20 after v1.5 audit gap closure planning*
