@@ -524,4 +524,142 @@ class McpToolServiceTest {
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("Invalid source ID");
     }
+
+    // --- searchDocs filter parameters ---
+
+    @Test
+    void searchDocsPassesFilterParamsToSearchRequest() {
+        given(searchService.search(searchRequestCaptor.capture())).willReturn(
+                List.of(new SearchResult("content", 0.9, "https://docs.example.com", "Section")));
+        given(truncator.truncate(any())).willReturn("output");
+
+        mcpToolService.searchDocs("query", 5, "Spring Docs", "API Reference", "React 19", "PROSE", null, null);
+
+        var captured = searchRequestCaptor.getValue();
+        assertThat(captured.source()).isEqualTo("Spring Docs");
+        assertThat(captured.sectionPath()).isEqualTo("API Reference");
+        assertThat(captured.version()).isEqualTo("React 19");
+        assertThat(captured.contentType()).isEqualTo("PROSE");
+    }
+
+    @Test
+    void searchDocsPassesMinScoreToSearchRequest() {
+        given(searchService.search(searchRequestCaptor.capture())).willReturn(
+                List.of(new SearchResult("content", 0.9, "https://docs.example.com", "Section")));
+        given(truncator.truncate(any())).willReturn("output");
+
+        mcpToolService.searchDocs("query", null, null, null, null, null, 0.75, null);
+
+        assertThat(searchRequestCaptor.getValue().minScore()).isEqualTo(0.75);
+    }
+
+    @Test
+    void searchDocsEmptyResultWithFiltersShowsAvailableValues() {
+        given(searchService.search(any())).willReturn(Collections.emptyList());
+        given(documentChunkRepository.findDistinctVersions()).willReturn(List.of("3.5", "React 19"));
+        given(documentChunkRepository.findDistinctSourceNames()).willReturn(List.of("Spring Docs", "React Docs"));
+
+        String output = mcpToolService.searchDocs("query", null, null, null, "React 19", null, null, null);
+
+        assertThat(output).contains("No results for query");
+        assertThat(output).contains("version='React 19'");
+        assertThat(output).contains("3.5");
+        assertThat(output).contains("React 19");
+        assertThat(output).contains("Spring Docs");
+        assertThat(output).contains("React Docs");
+    }
+
+    @Test
+    void searchDocsEmptyResultWithoutFiltersShowsPlainMessage() {
+        given(searchService.search(any())).willReturn(Collections.emptyList());
+
+        String output = mcpToolService.searchDocs("query", null, null, null, null, null, null, null);
+
+        assertThat(output).isEqualTo("No results found for query: query");
+    }
+
+    // --- addSource version ---
+
+    @Test
+    void addSourceSetsVersionOnEntity() {
+        suppressAsyncDispatch();
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.addSource("https://docs.spring.io", "Spring Docs",
+                null, null, null, null, null, "React 19");
+
+        ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        assertThat(sourceCaptor.getValue().getVersion()).isEqualTo("React 19");
+    }
+
+    @Test
+    void addSourceWithNullVersionLeavesVersionNull() {
+        suppressAsyncDispatch();
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.addSource("https://docs.spring.io", "Spring Docs",
+                null, null, null, null, null, null);
+
+        ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        assertThat(sourceCaptor.getValue().getVersion()).isNull();
+    }
+
+    // --- recrawlSource version ---
+
+    @Test
+    void recrawlSourceUpdatesVersionAndBatchUpdatesMetadata() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("React Docs")
+                .url("https://react.dev")
+                .status(SourceStatus.INDEXED)
+                .build();
+        source.setVersion("React 18");
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19");
+
+        assertThat(source.getVersion()).isEqualTo("React 19");
+        verify(documentChunkRepository).updateVersionMetadata("https://react.dev", "React 19");
+    }
+
+    @Test
+    void recrawlSourceSameVersionSkipsBatchUpdate() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("React Docs")
+                .url("https://react.dev")
+                .status(SourceStatus.INDEXED)
+                .build();
+        source.setVersion("React 19");
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, "React 19");
+
+        verify(documentChunkRepository, never()).updateVersionMetadata(anyString(), anyString());
+    }
+
+    @Test
+    void recrawlSourceNullVersionSkipsBatchUpdate() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("React Docs")
+                .url("https://react.dev")
+                .status(SourceStatus.INDEXED)
+                .build();
+        source.setVersion("React 18");
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
+
+        verify(documentChunkRepository, never()).updateVersionMetadata(anyString(), anyString());
+    }
 }

@@ -95,4 +95,35 @@ class TokenBudgetTruncatorTest {
 
         assertThat(output).isEmpty();
     }
+
+    @Test
+    void formatResultIncludesRerankScore() {
+        var truncator = new TokenBudgetTruncator(5000);
+        var result = new SearchResult("Content text", 0.9, "https://docs.example.com", "Section", 0.85);
+
+        String output = truncator.truncate(List.of(result));
+
+        assertThat(output).contains("Score: 0.850");
+    }
+
+    @Test
+    void formatResultWithZeroRerankScoreShowsZero() {
+        var truncator = new TokenBudgetTruncator(5000);
+        var result = new SearchResult("Content text", 0.9, "https://docs.example.com", "Section", 0.0);
+
+        String output = truncator.truncate(List.of(result));
+
+        assertThat(output).contains("Score: 0.000");
+    }
+
+    @Test
+    void formatResultWithBackwardCompatConstructorShowsZeroScore() {
+        var truncator = new TokenBudgetTruncator(5000);
+        // 4-arg convenience constructor defaults rerankScore to 0.0
+        var result = new SearchResult("Content text", 0.9, "https://docs.example.com", "Section");
+
+        String output = truncator.truncate(List.of(result));
+
+        assertThat(output).contains("Score: 0.000");
+    }
 }
