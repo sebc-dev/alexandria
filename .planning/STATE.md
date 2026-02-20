@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 7 of 8 (Crawl Operations)
-Plan: 2 of 5 in Phase 07
+Plan: 3 of 5 in Phase 07
 Status: Executing Phase 07
-Last activity: 2026-02-20 -- Completed 07-02 (LlmsTxtParser TDD)
+Last activity: 2026-02-20 -- Completed 07-03 (Infrastructure Layer)
 
-Progress: [███████░░░] 70%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [███████░░░] 70%
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
 | Phase 07 P01 | 5min | 2 tasks | 6 files |
 | Phase 07 P02 | 5min | 1 task | 2 files |
+| Phase 07 P03 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,10 @@ Recent decisions affecting current work:
 - [07-01]: Block patterns take priority over allow patterns in UrlScopeFilter (per user decision from plan)
 - [07-02]: LlmsTxtParser link index threshold 0.3 ratio: >= 30% markdown link lines classifies content as llms.txt link index
 - [07-02]: LlmsTxtResult as nested record in LlmsTxtParser (self-contained API, not separate file)
+- [07-03]: CrawlProgress.Status enum instead of SourceStatus to avoid crawl<->source package cycle (ArchUnit no_package_cycles)
+- [07-03]: CrawlScope.fromSource() factory instead of Source.toCrawlScope() to maintain unidirectional crawl->source dependency
+- [07-03]: Comma-separated TEXT columns for scope patterns (simplest JPA mapping, no Hibernate array type complexity)
+- [07-03]: Answer-based URI routing in PageDiscoveryService tests for RestClient mock chain
 
 ### Pending Todos
 
@@ -121,6 +126,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 07-02-PLAN.md
-Resume file: .planning/phases/07-crawl-operations/07-02-SUMMARY.md
-Next: Execute 07-03-PLAN.md
+Stopped at: Completed 07-03-PLAN.md
+Resume file: .planning/phases/07-crawl-operations/07-03-SUMMARY.md
+Next: Execute 07-04-PLAN.md
