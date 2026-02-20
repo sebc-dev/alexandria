@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 7 of 8 (Crawl Operations)
-Plan: 3 of 5 in Phase 07
+Plan: 4 of 5 in Phase 07
 Status: Executing Phase 07
-Last activity: 2026-02-20 -- Completed 07-03 (Infrastructure Layer)
+Last activity: 2026-02-20 -- Completed 07-04 (Crawl Orchestration)
 
-Progress: [████████░░] 75%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 4.6min
-- Total execution time: 1.2 hours
+- Total plans completed: 17
+- Average duration: 4.8min
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
@@ -34,8 +34,8 @@ Progress: [████████░░] 75%
 | 05-mcp-server | 2 | 6min | 3.0min |
 
 **Recent Trend:**
-- Last 5 plans: 11min, 3min, 3min, 5min, 5min
-- Trend: stable
+- Last 5 plans: 3min, 5min, 5min, 7min, 10min
+- Trend: increasing (complexity growing with orchestration plans)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -46,6 +46,7 @@ Progress: [████████░░] 75%
 | Phase 07 P01 | 5min | 2 tasks | 6 files |
 | Phase 07 P02 | 5min | 1 task | 2 files |
 | Phase 07 P03 | 7min | 2 tasks | 11 files |
+| Phase 07 P04 | 10min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,10 @@ Recent decisions affecting current work:
 - [07-03]: CrawlScope.fromSource() factory instead of Source.toCrawlScope() to maintain unidirectional crawl->source dependency
 - [07-03]: Comma-separated TEXT columns for scope patterns (simplest JPA mapping, no Hibernate array type complexity)
 - [07-03]: Answer-based URI routing in PageDiscoveryService tests for RestClient mock chain
+- [07-04]: Incremental ingestion logic in CrawlService (not IngestionService) to avoid ArchUnit crawl<->ingestion package cycle
+- [07-04]: Removed ingest(List<CrawlResult>) from IngestionService to break ingestion->crawl dependency
+- [07-04]: deleteChunksForUrl() on IngestionService as URL-scoped chunk deletion abstraction
+- [07-04]: LinkedHashMap<URL, depth> for BFS depth tracking instead of LinkedHashSet
 
 ### Pending Todos
 
@@ -126,6 +131,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 07-03-PLAN.md
-Resume file: .planning/phases/07-crawl-operations/07-03-SUMMARY.md
-Next: Execute 07-04-PLAN.md
+Stopped at: Completed 07-04-PLAN.md
+Resume file: .planning/phases/07-crawl-operations/07-04-SUMMARY.md
+Next: Execute 07-05-PLAN.md
