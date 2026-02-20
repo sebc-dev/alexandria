@@ -1,5 +1,7 @@
 package dev.alexandria.crawl;
 
+import dev.alexandria.source.Source;
+
 import java.util.List;
 
 /**
@@ -26,5 +28,20 @@ public record CrawlScope(
      */
     public static CrawlScope withDefaults(int maxPages) {
         return new CrawlScope(List.of(), List.of(), null, maxPages);
+    }
+
+    /**
+     * Builds a CrawlScope from a Source entity's scope configuration fields.
+     *
+     * @param source the source entity with scope configuration
+     * @return crawl scope reflecting the source's allow/block patterns, depth, and page limits
+     */
+    public static CrawlScope fromSource(Source source) {
+        return new CrawlScope(
+                source.getAllowPatternList(),
+                source.getBlockPatternList(),
+                source.getMaxDepth(),
+                source.getMaxPages() != null ? source.getMaxPages() : 500
+        );
     }
 }

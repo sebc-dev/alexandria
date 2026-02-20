@@ -12,6 +12,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -55,6 +57,21 @@ public class Source {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "allow_patterns")
+    private String allowPatterns;
+
+    @Column(name = "block_patterns")
+    private String blockPatterns;
+
+    @Column(name = "max_depth")
+    private Integer maxDepth;
+
+    @Column(name = "max_pages")
+    private Integer maxPages;
+
+    @Column(name = "llms_txt_url")
+    private String llmsTxtUrl;
+
     protected Source() {
         // JPA requires no-arg constructor
     }
@@ -69,6 +86,7 @@ public class Source {
         this.url = url;
         this.name = name;
         this.chunkCount = 0;
+        this.maxPages = 500;
     }
 
     @PrePersist
@@ -124,5 +142,73 @@ public class Source {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getAllowPatterns() {
+        return allowPatterns;
+    }
+
+    public void setAllowPatterns(String allowPatterns) {
+        this.allowPatterns = allowPatterns;
+    }
+
+    public String getBlockPatterns() {
+        return blockPatterns;
+    }
+
+    public void setBlockPatterns(String blockPatterns) {
+        this.blockPatterns = blockPatterns;
+    }
+
+    public Integer getMaxDepth() {
+        return maxDepth;
+    }
+
+    public void setMaxDepth(Integer maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
+    public Integer getMaxPages() {
+        return maxPages;
+    }
+
+    public void setMaxPages(Integer maxPages) {
+        this.maxPages = maxPages;
+    }
+
+    public String getLlmsTxtUrl() {
+        return llmsTxtUrl;
+    }
+
+    public void setLlmsTxtUrl(String llmsTxtUrl) {
+        this.llmsTxtUrl = llmsTxtUrl;
+    }
+
+    /**
+     * Parses the comma-separated allow patterns into a list.
+     *
+     * @return list of allow glob patterns, or empty list if none configured
+     */
+    public List<String> getAllowPatternList() {
+        return parseCommaSeparated(allowPatterns);
+    }
+
+    /**
+     * Parses the comma-separated block patterns into a list.
+     *
+     * @return list of block glob patterns, or empty list if none configured
+     */
+    public List<String> getBlockPatternList() {
+        return parseCommaSeparated(blockPatterns);
+    }
+
+    private static List<String> parseCommaSeparated(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }
