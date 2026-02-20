@@ -50,6 +50,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Roadmap created for v0.2 (8 phases, 27 requirements mapped)
-Resume file: None
+Stopped at: Phase 11 context gathered
+Resume file: .planning/phases/11-quality-security-tooling/11-CONTEXT.md
 Next: `/gsd:plan-phase 11`
