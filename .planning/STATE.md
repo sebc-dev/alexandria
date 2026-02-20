@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 4.5 - Code Quality & Test Consolidation (in progress)
+**Current focus:** Phase 5 - MCP Server (in progress)
 
 ## Current Position
 
-Phase: 4.5 of 8 (Code Quality & Test Consolidation)
-Plan: 5 of 5 in Phase 04.5
-Status: Phase 04.5 complete
-Last activity: 2026-02-19 -- Completed 04.5-05 (Final cleanup: Javadoc, camelCase, IT consolidation)
+Phase: 5 of 8 (MCP Server)
+Plan: 1 of N in Phase 05
+Status: Plan 05-01 complete
+Last activity: 2026-02-20 -- Completed 05-01 (MCP adapter package with 6 tools)
 
-Progress: [██████░░░░] 56%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 5.0min
-- Total execution time: 1.0 hours
+- Total plans completed: 13
+- Average duration: 4.8min
+- Total execution time: 1.05 hours
 
 **By Phase:**
 
@@ -31,15 +31,17 @@ Progress: [██████░░░░] 56%
 | 01-foundation-infrastructure | 2 | 7min | 3.5min |
 | 03-web-crawling | 2 | 9min | 4.5min |
 | 04.5-code-quality-consolidation | 5 | 31min | 6.2min |
+| 05-mcp-server | 1 | 3min | 3.0min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 5min, 12min, 3min, 11min
+- Last 5 plans: 5min, 12min, 3min, 11min, 3min
 - Trend: stable
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
 | Phase 04.5 P04 | 3min | 2 tasks | 6 files |
 | Phase 04.5 P05 | 11min | 2 tasks | 38 files |
+| Phase 05 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -89,6 +91,9 @@ Recent decisions affecting current work:
 - [04.5-05]: camelCase test naming convention enforced across entire codebase (~56 renames)
 - [Phase 04.5-03]: RestClient mock chain uses answer-based URI routing for multi-URL SitemapParser tests
 - [Phase 04.5-03]: CrawlService.crawlSite() refactored from ~50 to ~22 lines (seedQueue, dequeueAndNormalize, processPage, enqueueDiscoveredLinks)
+- [05-01]: Token estimation uses chars/4 industry standard, configurable via alexandria.mcp.token-budget property (default 5000)
+- [05-01]: Source management tools are functional stubs (add_source/remove_source interact with DB, others query status) with future-update messages for crawl orchestration
+- [05-01]: First search result always included even if exceeding token budget (truncated at char level) to guarantee non-empty responses
 
 ### Pending Todos
 
@@ -103,11 +108,11 @@ None yet.
 
 - [Research]: Flexmark-java chunking API needs validation during Phase 4 planning (hands-on prototyping recommended)
 - [Resolved]: LangChain4j 1.11.0-beta19 hybrid search API verified: SearchMode is nested enum, DatasourceBuilder has searchMode/textSearchConfig/rrfK methods, EmbeddingSearchRequest has query() builder method
-- [Research]: Spring AI MCP @Tool annotation with stdio transport may differ from webmvc -- test early in Phase 5
+- [Resolved]: Spring AI MCP @Tool annotation compiles and passes ArchUnit with existing webmvc starter -- verified in Phase 5 Plan 1
 
 ## Session Continuity
 
-Last session: 2026-02-19
-Stopped at: Completed 04.5-05-PLAN.md (Phase 04.5 complete)
-Resume file: .planning/phases/04.5-code-quality-consolidation/04.5-05-SUMMARY.md
-Next: Begin Phase 5 (MCP Server)
+Last session: 2026-02-20
+Stopped at: Completed 05-01-PLAN.md
+Resume file: .planning/phases/05-mcp-server/05-01-SUMMARY.md
+Next: Continue Phase 5 (MCP Server) -- unit tests for MCP tools

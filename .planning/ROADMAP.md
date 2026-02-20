@@ -139,7 +139,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
+- [x] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
 - [ ] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
 
 ### Phase 6: Source Management
@@ -207,7 +207,7 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
 | 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
 | 4.5. Code Quality & Test Consolidation | 1/5 | Complete    | 2026-02-19 |
-| 5. MCP Server | 0/2 | Planned | - |
+| 5. MCP Server | 1/2 | In progress | - |
 | 6. Source Management | 0/TBD | Not started | - |
 | 7. Crawl Operations | 0/TBD | Not started | - |
 | 8. Advanced Search & Quality | 0/TBD | Not started | - |
