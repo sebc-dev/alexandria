@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import dev.alexandria.ingestion.IngestionService;
 import dev.alexandria.ingestion.IngestionState;
 import dev.alexandria.ingestion.IngestionStateRepository;
+import dev.alexandria.source.SourceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,12 +41,15 @@ class CrawlServiceTest {
     @Mock
     private IngestionStateRepository ingestionStateRepository;
 
+    @Mock
+    private SourceRepository sourceRepository;
+
     private CrawlService crawlService;
 
     @BeforeEach
     void setUp() {
         crawlService = new CrawlService(crawl4AiClient, pageDiscoveryService,
-                progressTracker, ingestionService, ingestionStateRepository);
+                progressTracker, ingestionService, ingestionStateRepository, sourceRepository);
     }
 
     // --- Existing behavior: BFS, maxPages, link following, sitemap mode ---
@@ -256,7 +261,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/guide", "# Guide", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -280,7 +285,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/docs/guide", "# Guide", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -310,7 +315,7 @@ class CrawlServiceTest {
                         "# Level 1", List.of("https://docs.example.com/level2"), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -334,7 +339,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/page1", "# Page", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -355,13 +360,13 @@ class CrawlServiceTest {
                 List.of("https://docs.example.com/guide", "https://docs.example.com/api"),
                 PageDiscoveryService.DiscoveryMethod.LLMS_FULL_TXT, "# Full content\nAll docs here");
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(5);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(5);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // llms-full.txt content ingested directly
-        verify(ingestionService).ingestPage(eq("# Full content\nAll docs here"), eq(rootUrl), anyString());
+        verify(ingestionService).ingestPage(eq("# Full content\nAll docs here"), eq(rootUrl), anyString(), isNull(), isNull());
         // Covered URLs are skipped (not crawled)
         verify(crawl4AiClient, never()).crawl(anyString());
         // The URLs are still counted as visited
@@ -384,7 +389,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/current", "# Current", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
 
         // Simulate pre-existing state with an orphaned page
         var existingState = new IngestionState(sourceId, "https://docs.example.com/deleted", "oldhash");
@@ -423,7 +428,7 @@ class CrawlServiceTest {
         crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // Should skip ingestion since hash matches
-        verify(ingestionService, never()).ingestPage(anyString(), anyString(), anyString());
+        verify(ingestionService, never()).ingestPage(anyString(), anyString(), anyString(), any(), any());
         verify(progressTracker).recordPageSkipped(sourceId);
     }
 
@@ -443,14 +448,14 @@ class CrawlServiceTest {
                 ContentHasher.sha256("# Old Guide"));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://docs.example.com/guide"))
                 .thenReturn(Optional.of(existingState));
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(2);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(2);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of(existingState));
 
         crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // Should delete old chunks, re-ingest, and update state
         verify(ingestionService).deleteChunksForUrl("https://docs.example.com/guide");
-        verify(ingestionService).ingestPage(eq("# Updated Guide"), eq("https://docs.example.com/guide"), anyString());
+        verify(ingestionService).ingestPage(eq("# Updated Guide"), eq("https://docs.example.com/guide"), anyString(), isNull(), isNull());
         verify(ingestionStateRepository).save(existingState);
         verify(progressTracker).recordPageCrawled(sourceId);
     }

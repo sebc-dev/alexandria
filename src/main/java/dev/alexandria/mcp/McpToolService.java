@@ -5,6 +5,7 @@ import dev.alexandria.crawl.CrawlProgressTracker;
 import dev.alexandria.crawl.CrawlResult;
 import dev.alexandria.crawl.CrawlScope;
 import dev.alexandria.crawl.CrawlService;
+import dev.alexandria.document.DocumentChunkRepository;
 import dev.alexandria.ingestion.IngestionService;
 import dev.alexandria.search.SearchRequest;
 import dev.alexandria.search.SearchResult;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,39 +51,55 @@ public class McpToolService {
     private final CrawlService crawlService;
     private final CrawlProgressTracker progressTracker;
     private final IngestionService ingestionService;
+    private final DocumentChunkRepository documentChunkRepository;
 
     public McpToolService(SearchService searchService,
                           SourceRepository sourceRepository,
                           TokenBudgetTruncator truncator,
                           CrawlService crawlService,
                           CrawlProgressTracker progressTracker,
-                          IngestionService ingestionService) {
+                          IngestionService ingestionService,
+                          DocumentChunkRepository documentChunkRepository) {
         this.searchService = searchService;
         this.sourceRepository = sourceRepository;
         this.truncator = truncator;
         this.crawlService = crawlService;
         this.progressTracker = progressTracker;
         this.ingestionService = ingestionService;
+        this.documentChunkRepository = documentChunkRepository;
     }
 
     /**
      * Searches indexed documentation by semantic query with token budget enforcement.
+     * Supports metadata filters (source, section path, version, content type) and
+     * reranking score threshold for precision control.
      */
     @Tool(name = "search_docs",
           description = "Search indexed documentation by semantic query. "
-                      + "Returns relevant excerpts with source URLs and section paths for citation.")
+                      + "Returns relevant excerpts with source URLs, section paths, and reranking scores for citation. "
+                      + "Supports metadata filters for narrowing results.")
     public String searchDocs(
             @ToolParam(description = "Search query text") String query,
-            @ToolParam(description = "Maximum number of results (1-50, default 10)") Integer maxResults) {
+            @ToolParam(description = "Maximum number of results (1-50, default 10)") Integer maxResults,
+            @ToolParam(description = "Filter by source name", required = false) String source,
+            @ToolParam(description = "Filter by section path prefix, e.g. 'API Reference'", required = false) String sectionPath,
+            @ToolParam(description = "Filter by version tag, e.g. 'React 19'", required = false) String version,
+            @ToolParam(description = "Filter by content type: PROSE, CODE, or MIXED (all)", required = false) String contentType,
+            @ToolParam(description = "Minimum reranking confidence score (0.0-1.0). Results below this threshold are excluded.", required = false) Double minScore,
+            @ToolParam(description = "RRF k parameter for reciprocal rank fusion (default 60). Higher values reduce the impact of rank differences.", required = false) Integer rrfK) {
         try {
             if (query == null || query.isBlank()) {
                 return "Error: Query must not be empty. Provide a search query string.";
             }
+            if (rrfK != null) {
+                log.debug("rrfK={} accepted but applied at store-level configuration only", rrfK);
+            }
             int max = clampMaxResults(maxResults);
-            List<SearchResult> results = searchService.search(new SearchRequest(query, max));
+            List<SearchResult> results = searchService.search(
+                    new SearchRequest(query, max, source, sectionPath, version, contentType, minScore, rrfK));
 
             if (results.isEmpty()) {
-                return "No results found for query: " + query;
+                return buildEmptyResultMessage(query, source, sectionPath, version, contentType);
             }
 
             return truncator.truncate(results);
@@ -131,7 +149,8 @@ public class McpToolService {
             @ToolParam(description = "Comma-separated glob patterns for blocked URL paths (e.g., '/archive/**,/old/**'). Empty = block none.", required = false) String blockPatterns,
             @ToolParam(description = "Maximum crawl depth from root URL. Null = unlimited.", required = false) Integer maxDepth,
             @ToolParam(description = "Maximum number of pages to crawl (default: 500).", required = false) Integer maxPages,
-            @ToolParam(description = "Manual llms.txt URL if auto-detection fails.", required = false) String llmsTxtUrl) {
+            @ToolParam(description = "Manual llms.txt URL if auto-detection fails.", required = false) String llmsTxtUrl,
+            @ToolParam(description = "Version label for this source (e.g., 'React 19', '3.5')", required = false) String version) {
         try {
             if (url == null || url.isBlank()) {
                 return "Error: URL must not be empty. Provide a documentation site URL.";
@@ -142,6 +161,7 @@ public class McpToolService {
             source.setMaxDepth(maxDepth);
             source.setMaxPages(maxPages != null ? maxPages : 500);
             source.setLlmsTxtUrl(llmsTxtUrl);
+            source.setVersion(version);
             source.setStatus(SourceStatus.CRAWLING);
             sourceRepository.save(source);
 
@@ -217,7 +237,8 @@ public class McpToolService {
             @ToolParam(description = "Override allow patterns for this crawl run (comma-separated globs)", required = false) String allowPatterns,
             @ToolParam(description = "Override block patterns for this crawl run (comma-separated globs)", required = false) String blockPatterns,
             @ToolParam(description = "Override max depth for this crawl run", required = false) Integer maxDepth,
-            @ToolParam(description = "Override max pages for this crawl run", required = false) Integer maxPages) {
+            @ToolParam(description = "Override max pages for this crawl run", required = false) Integer maxPages,
+            @ToolParam(description = "Update the version label for this source", required = false) String version) {
         try {
             UUID uuid = parseUuid(sourceId);
             Optional<Source> found = sourceRepository.findById(uuid);
@@ -235,6 +256,13 @@ public class McpToolService {
 
             if (isFullRecrawl) {
                 ingestionService.clearIngestionState(uuid);
+            }
+
+            // Update version before crawl so new chunks get the updated version
+            if (version != null && !version.equals(source.getVersion())) {
+                source.setVersion(version);
+                sourceRepository.save(source);
+                documentChunkRepository.updateVersionMetadata(source.getUrl(), version);
             }
 
             CrawlScope scope = buildRecrawlScope(source, allowPatterns, blockPatterns, maxDepth, maxPages);
@@ -331,6 +359,35 @@ public class McpToolService {
 
     private UUID parseUuid(String sourceId) {
         return UUID.fromString(sourceId);
+    }
+
+    private String buildEmptyResultMessage(String query, String source, String sectionPath,
+                                              String version, String contentType) {
+        boolean hasFilters = source != null || sectionPath != null || version != null || contentType != null;
+
+        if (!hasFilters) {
+            return "No results found for query: " + query;
+        }
+
+        List<String> activeFilters = new ArrayList<>();
+        if (source != null) {
+            activeFilters.add("source='" + source + "'");
+        }
+        if (sectionPath != null) {
+            activeFilters.add("sectionPath='" + sectionPath + "'");
+        }
+        if (version != null) {
+            activeFilters.add("version='" + version + "'");
+        }
+        if (contentType != null) {
+            activeFilters.add("contentType='" + contentType + "'");
+        }
+
+        List<String> availableVersions = documentChunkRepository.findDistinctVersions();
+        List<String> availableSources = documentChunkRepository.findDistinctSourceNames();
+
+        return "No results for query '%s' with filters [%s]. Available versions: %s. Available sources: %s."
+                .formatted(query, String.join(", ", activeFilters), availableVersions, availableSources);
     }
 
     private static List<String> parseCommaSeparated(String value) {

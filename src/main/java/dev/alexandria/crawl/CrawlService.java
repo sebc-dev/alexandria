@@ -3,6 +3,8 @@ package dev.alexandria.crawl;
 import dev.alexandria.ingestion.IngestionService;
 import dev.alexandria.ingestion.IngestionState;
 import dev.alexandria.ingestion.IngestionStateRepository;
+import dev.alexandria.source.Source;
+import dev.alexandria.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,17 +34,20 @@ public class CrawlService {
     private final CrawlProgressTracker progressTracker;
     private final IngestionService ingestionService;
     private final IngestionStateRepository ingestionStateRepository;
+    private final SourceRepository sourceRepository;
 
     public CrawlService(Crawl4AiClient crawl4AiClient,
                         PageDiscoveryService pageDiscoveryService,
                         CrawlProgressTracker progressTracker,
                         IngestionService ingestionService,
-                        IngestionStateRepository ingestionStateRepository) {
+                        IngestionStateRepository ingestionStateRepository,
+                        SourceRepository sourceRepository) {
         this.crawl4AiClient = crawl4AiClient;
         this.pageDiscoveryService = pageDiscoveryService;
         this.progressTracker = progressTracker;
         this.ingestionService = ingestionService;
         this.ingestionStateRepository = ingestionStateRepository;
+        this.sourceRepository = sourceRepository;
     }
 
     /**
@@ -71,11 +76,23 @@ public class CrawlService {
         PageDiscoveryService.DiscoveryResult discovery = pageDiscoveryService.discoverUrls(rootUrl);
         boolean followLinks = discovery.method() == PageDiscoveryService.DiscoveryMethod.LINK_CRAWL;
 
+        // Load Source once to cache version and name for metadata denormalization
+        String sourceVersion = null;
+        String sourceName = null;
+        if (sourceId != null) {
+            Optional<Source> sourceOpt = sourceRepository.findById(sourceId);
+            if (sourceOpt.isPresent()) {
+                sourceVersion = sourceOpt.get().getVersion();
+                sourceName = sourceOpt.get().getName();
+            }
+        }
+
         // Handle llms-full.txt hybrid ingestion
         Set<String> llmsFullCoveredUrls = new HashSet<>();
         if (discovery.llmsFullContent() != null && sourceId != null) {
             log.info("Ingesting llms-full.txt content directly for {}", rootUrl);
-            ingestionService.ingestPage(discovery.llmsFullContent(), rootUrl, Instant.now().toString());
+            ingestionService.ingestPage(discovery.llmsFullContent(), rootUrl, Instant.now().toString(),
+                    sourceVersion, sourceName);
             // All URLs from LLMS_FULL_TXT discovery are covered by the full content
             if (discovery.method() == PageDiscoveryService.DiscoveryMethod.LLMS_FULL_TXT) {
                 llmsFullCoveredUrls.addAll(discovery.urls().stream()
@@ -124,7 +141,7 @@ public class CrawlService {
 
                 log.info("Crawling [{}/{}]: {}", results.size() + 1, scope.maxPages(), normalized);
                 processPage(sourceId, normalized, rootUrl, depth, followLinks, scope, results,
-                        queue, visited, crawledUrls);
+                        queue, visited, crawledUrls, sourceVersion, sourceName);
             }
 
             // Post-crawl cleanup: remove orphaned pages
@@ -171,7 +188,8 @@ public class CrawlService {
     private void processPage(UUID sourceId, String url, String rootUrl, int depth,
                              boolean followLinks, CrawlScope scope,
                              List<CrawlResult> results, LinkedHashMap<String, Integer> queue,
-                             Set<String> visited, Set<String> crawledUrls) {
+                             Set<String> visited, Set<String> crawledUrls,
+                             String version, String sourceName) {
         try {
             CrawlResult result = crawl4AiClient.crawl(url);
             if (result.success()) {
@@ -180,7 +198,8 @@ public class CrawlService {
 
                 // Incremental ingestion with hash-based change detection
                 if (sourceId != null) {
-                    IngestionService.IngestResult ingestResult = ingestIncremental(sourceId, url, result.markdown());
+                    IngestionService.IngestResult ingestResult = ingestIncremental(sourceId, url, result.markdown(),
+                            version, sourceName);
                     if (ingestResult.skipped()) {
                         progressTracker.recordPageSkipped(sourceId);
                     } else {
@@ -209,7 +228,8 @@ public class CrawlService {
      * Perform incremental ingestion for a single page: compare content hash,
      * skip if unchanged, delete old chunks and re-ingest if changed or new.
      */
-    private IngestionService.IngestResult ingestIncremental(UUID sourceId, String normalizedUrl, String markdown) {
+    private IngestionService.IngestResult ingestIncremental(UUID sourceId, String normalizedUrl, String markdown,
+                                                             String version, String sourceName) {
         String newHash = ContentHasher.sha256(markdown);
 
         Optional<IngestionState> existingState =
@@ -224,7 +244,8 @@ public class CrawlService {
         ingestionService.deleteChunksForUrl(normalizedUrl);
 
         // Chunk and embed
-        int chunkCount = ingestionService.ingestPage(markdown, normalizedUrl, Instant.now().toString());
+        int chunkCount = ingestionService.ingestPage(markdown, normalizedUrl, Instant.now().toString(),
+                version, sourceName);
 
         // Update or create ingestion state
         if (existingState.isPresent()) {

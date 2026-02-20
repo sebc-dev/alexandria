@@ -4,6 +4,7 @@ import dev.alexandria.crawl.CrawlProgress;
 import dev.alexandria.crawl.CrawlProgressTracker;
 import dev.alexandria.crawl.CrawlScope;
 import dev.alexandria.crawl.CrawlService;
+import dev.alexandria.document.DocumentChunkRepository;
 import dev.alexandria.fixture.SourceBuilder;
 import dev.alexandria.ingestion.IngestionService;
 import dev.alexandria.search.SearchResult;
@@ -57,6 +58,9 @@ class McpToolServiceTest {
     @Mock
     IngestionService ingestionService;
 
+    @Mock
+    DocumentChunkRepository documentChunkRepository;
+
     McpToolService mcpToolService;
 
     @Captor
@@ -66,7 +70,8 @@ class McpToolServiceTest {
     void setUp() {
         mcpToolService = spy(new McpToolService(
                 searchService, sourceRepository, truncator,
-                crawlService, progressTracker, ingestionService));
+                crawlService, progressTracker, ingestionService,
+                documentChunkRepository));
     }
 
     /**
@@ -85,21 +90,21 @@ class McpToolServiceTest {
         given(searchService.search(any())).willReturn(results);
         given(truncator.truncate(results)).willReturn("formatted output");
 
-        String output = mcpToolService.searchDocs("spring boot", null);
+        String output = mcpToolService.searchDocs("spring boot", null, null, null, null, null, null, null);
 
         assertThat(output).isEqualTo("formatted output");
     }
 
     @Test
     void searchDocsWithNullQueryReturnsError() {
-        String output = mcpToolService.searchDocs(null, null);
+        String output = mcpToolService.searchDocs(null, null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
     }
 
     @Test
     void searchDocsWithBlankQueryReturnsError() {
-        String output = mcpToolService.searchDocs("   ", null);
+        String output = mcpToolService.searchDocs("   ", null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
     }
@@ -108,7 +113,7 @@ class McpToolServiceTest {
     void searchDocsWithNoResultsReturnsNotFoundMessage() {
         given(searchService.search(any())).willReturn(Collections.emptyList());
 
-        String output = mcpToolService.searchDocs("nonexistent topic", null);
+        String output = mcpToolService.searchDocs("nonexistent topic", null, null, null, null, null, null, null);
 
         assertThat(output).contains("No results found");
     }
@@ -117,7 +122,7 @@ class McpToolServiceTest {
     void searchDocsDefaultsMaxResultsTo10() {
         given(searchService.search(searchRequestCaptor.capture())).willReturn(Collections.emptyList());
 
-        mcpToolService.searchDocs("test query", null);
+        mcpToolService.searchDocs("test query", null, null, null, null, null, null, null);
 
         assertThat(searchRequestCaptor.getValue().maxResults()).isEqualTo(10);
     }
@@ -126,7 +131,7 @@ class McpToolServiceTest {
     void searchDocsClampsMaxResultsTo50() {
         given(searchService.search(searchRequestCaptor.capture())).willReturn(Collections.emptyList());
 
-        mcpToolService.searchDocs("test query", 100);
+        mcpToolService.searchDocs("test query", 100, null, null, null, null, null, null);
 
         assertThat(searchRequestCaptor.getValue().maxResults()).isEqualTo(50);
     }
@@ -135,7 +140,7 @@ class McpToolServiceTest {
     void searchDocsHandlesExceptionGracefully() {
         given(searchService.search(any())).willThrow(new RuntimeException("connection failed"));
 
-        String output = mcpToolService.searchDocs("test query", null);
+        String output = mcpToolService.searchDocs("test query", null, null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error");
         assertThat(output).contains("connection failed");
@@ -198,7 +203,7 @@ class McpToolServiceTest {
 
         String output = mcpToolService.addSource(
                 "https://docs.spring.io", "Spring Docs",
-                "/docs/**,/api/**", "/archive/**", 3, 200, null);
+                "/docs/**,/api/**", "/archive/**", 3, 200, null, null);
 
         ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
         verify(sourceRepository).save(sourceCaptor.capture());
@@ -222,7 +227,7 @@ class McpToolServiceTest {
 
         String output = mcpToolService.addSource(
                 "https://docs.spring.io", "Spring Docs",
-                null, null, null, null, null);
+                null, null, null, null, null, null);
 
         ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
         verify(sourceRepository).save(sourceCaptor.capture());
@@ -241,7 +246,7 @@ class McpToolServiceTest {
 
         String output = mcpToolService.addSource(
                 "https://docs.spring.io", "Spring Docs",
-                null, null, null, null, null);
+                null, null, null, null, null, null);
 
         assertThat(output).contains("Spring Docs");
         assertThat(output).contains("Crawl started");
@@ -251,7 +256,7 @@ class McpToolServiceTest {
     @Test
     void addSourceWithBlankUrlReturnsError() {
         String output = mcpToolService.addSource("", "Some Name",
-                null, null, null, null, null);
+                null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
     }
@@ -263,7 +268,7 @@ class McpToolServiceTest {
 
         mcpToolService.addSource(
                 "https://docs.spring.io", "Spring Docs",
-                null, null, null, null, "https://docs.spring.io/llms.txt");
+                null, null, null, null, "https://docs.spring.io/llms.txt", null);
 
         ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
         verify(sourceRepository).save(sourceCaptor.capture());
@@ -417,7 +422,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
 
         assertThat(output).contains("incremental");
         assertThat(output).contains("Spring Docs");
@@ -440,7 +445,7 @@ class McpToolServiceTest {
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), true, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), true, null, null, null, null, null);
 
         assertThat(output).contains("full");
         verify(ingestionService).clearIngestionState(uuid);
@@ -462,7 +467,7 @@ class McpToolServiceTest {
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
         String output = mcpToolService.recrawlSource(
-                uuid.toString(), null, "/api/**", "/old/**", 5, 100);
+                uuid.toString(), null, "/api/**", "/old/**", 5, 100, null);
 
         assertThat(output).contains("incremental");
         assertThat(output).contains("Spring Docs");
@@ -480,7 +485,7 @@ class McpToolServiceTest {
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("already being crawled");
@@ -495,7 +500,7 @@ class McpToolServiceTest {
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("already being crawled");
@@ -506,7 +511,7 @@ class McpToolServiceTest {
         UUID uuid = UUID.randomUUID();
         given(sourceRepository.findById(uuid)).willReturn(Optional.empty());
 
-        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("not found");
@@ -514,7 +519,7 @@ class McpToolServiceTest {
 
     @Test
     void recrawlSourceWithInvalidIdReturnsError() {
-        String output = mcpToolService.recrawlSource("not-a-uuid", null, null, null, null, null);
+        String output = mcpToolService.recrawlSource("not-a-uuid", null, null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("Invalid source ID");

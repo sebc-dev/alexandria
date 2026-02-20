@@ -80,10 +80,11 @@ public class TokenBudgetTruncator {
     }
 
     private String formatResult(int index, SearchResult result) {
-        return "## [%d] Source: %s\nSection: %s\n\n%s\n\n---\n".formatted(
+        return "## [%d] Source: %s\nSection: %s\nScore: %.3f\n\n%s\n\n---\n".formatted(
                 index,
                 result.sourceUrl(),
                 result.sectionPath(),
+                result.rerankScore(),
                 result.text()
         );
     }
