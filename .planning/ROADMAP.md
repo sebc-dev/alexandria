@@ -169,11 +169,14 @@ Plans:
   4. User can check crawl progress (pages crawled, pages remaining, errors) via `crawl_status` MCP tool
   5. User can trigger a manual recrawl of an existing source via `recrawl_source` MCP tool
   6. System can ingest llms.txt and llms-full.txt files as documentation sources and use them for page discovery
-**Plans**: TBD
+**Plans:** 5 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md -- TDD pure crawl utilities: CrawlScope, UrlScopeFilter, ContentHasher
+- [ ] 07-02-PLAN.md -- TDD LlmsTxtParser for llms.txt/llms-full.txt URL extraction
+- [ ] 07-03-PLAN.md -- Schema migration, Source scope fields, IngestionStateRepository, CrawlProgressTracker, PageDiscoveryService llms.txt cascade
+- [ ] 07-04-PLAN.md -- CrawlService evolution (scope, depth, incremental, progress, llms-full.txt hybrid)
+- [ ] 07-05-PLAN.md -- MCP tool wiring (add_source, crawl_status, recrawl_source real implementations)
 
 ### Phase 8: Advanced Search & Quality
 **Goal**: Search results are more precise through cross-encoder reranking and richer filtering options -- the quality multiplier layer
