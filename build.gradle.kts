@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     java
     alias(libs.plugins.spring.boot)
@@ -6,6 +8,8 @@ plugins {
     alias(libs.plugins.pitest)
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.sonarqube)
+    alias(libs.plugins.errorprone)
+    alias(libs.plugins.spotless)
 }
 
 java {
@@ -47,6 +51,9 @@ dependencies {
     // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.archunit)
+
+    // Error Prone
+    errorprone(libs.errorprone.core)
 }
 
 dependencyManagement {
@@ -170,5 +177,32 @@ sonar {
             "sonar.coverage.jacoco.xmlReportPaths",
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
         )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Error Prone - Compile-time Bug Detection
+// ---------------------------------------------------------------------------
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        isEnabled.set(true)
+        disableWarningsInGeneratedCode.set(true)
+        excludedPaths.set(".*/build/generated/.*")
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Spotless - Code Formatting (google-java-format)
+// ---------------------------------------------------------------------------
+spotless {
+    // ratchetFrom only checks files changed since origin/master (optimization).
+    // JGit cannot resolve git worktree .git files, so skip ratchet in worktrees.
+    val dotGit = rootProject.file(".git")
+    if (dotGit.isDirectory) {
+        ratchetFrom("origin/master")
+    }
+    java {
+        target("src/**/*.java")
+        googleJavaFormat()
     }
 }
