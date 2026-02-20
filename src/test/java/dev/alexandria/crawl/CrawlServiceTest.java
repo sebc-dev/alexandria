@@ -1,13 +1,20 @@
 package dev.alexandria.crawl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+import dev.alexandria.ingestion.IngestionService;
+import dev.alexandria.ingestion.IngestionState;
+import dev.alexandria.ingestion.IngestionStateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +30,24 @@ class CrawlServiceTest {
     @Mock
     private PageDiscoveryService pageDiscoveryService;
 
+    @Mock
+    private CrawlProgressTracker progressTracker;
+
+    @Mock
+    private IngestionService ingestionService;
+
+    @Mock
+    private IngestionStateRepository ingestionStateRepository;
+
     private CrawlService crawlService;
 
     @BeforeEach
     void setUp() {
-        crawlService = new CrawlService(crawl4AiClient, pageDiscoveryService);
+        crawlService = new CrawlService(crawl4AiClient, pageDiscoveryService,
+                progressTracker, ingestionService, ingestionStateRepository);
     }
+
+    // --- Existing behavior: BFS, maxPages, link following, sitemap mode ---
 
     @Test
     void crawlSiteHappyPathReturnsSinglePageResult() {
@@ -150,7 +169,6 @@ class CrawlServiceTest {
                 List.of(),
                 PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
-        // Root page returns a link that will normalize to the same URL as root
         when(crawl4AiClient.crawl("https://docs.example.com/"))
                 .thenReturn(new CrawlResult("https://docs.example.com/",
                         "# Home",
@@ -171,7 +189,6 @@ class CrawlServiceTest {
                 List.of(),
                 PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
-        // Root page returns links with fragments that normalize to the same page
         when(crawl4AiClient.crawl("https://docs.example.com/"))
                 .thenReturn(new CrawlResult("https://docs.example.com/",
                         "# Home",
@@ -183,7 +200,6 @@ class CrawlServiceTest {
 
         List<CrawlResult> results = crawlService.crawlSite(rootUrl, 10);
 
-        // guide#intro and guide#details normalize to the same URL, only one crawl
         assertThat(results).hasSize(2);
     }
 
@@ -222,5 +238,220 @@ class CrawlServiceTest {
 
         assertThat(results).hasSize(2);
         verify(crawl4AiClient, never()).crawl("https://external.com/page");
+    }
+
+    // --- Scope filtering ---
+
+    @Test
+    void scopeFilterRejectsBlockedUrls() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = new CrawlScope(List.of(), List.of("/api/**"), null, 10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/guide",
+                        "https://docs.example.com/api/internal"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/guide"))
+                .thenReturn(new CrawlResult("https://docs.example.com/guide", "# Guide", List.of(), true, null));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
+                .thenReturn(Optional.empty());
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.getFirst().url()).isEqualTo("https://docs.example.com/guide");
+        verify(crawl4AiClient, never()).crawl("https://docs.example.com/api/internal");
+    }
+
+    @Test
+    void scopeFilterAllowsMatchingUrls() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = new CrawlScope(List.of("/docs/**"), List.of(), null, 10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/docs/guide",
+                        "https://docs.example.com/blog/post"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/docs/guide"))
+                .thenReturn(new CrawlResult("https://docs.example.com/docs/guide", "# Guide", List.of(), true, null));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
+                .thenReturn(Optional.empty());
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.getFirst().url()).isEqualTo("https://docs.example.com/docs/guide");
+        verify(crawl4AiClient, never()).crawl("https://docs.example.com/blog/post");
+    }
+
+    // --- Depth tracking ---
+
+    @Test
+    void maxDepthLimitsUrlDiscovery() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = new CrawlScope(List.of(), List.of(), 1, 10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of(),
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        // Root (depth 0) -> /level1 (depth 1) -> /level2 (depth 2, should not be crawled)
+        when(crawl4AiClient.crawl("https://docs.example.com/"))
+                .thenReturn(new CrawlResult("https://docs.example.com/",
+                        "# Home", List.of("https://docs.example.com/level1"), true, null));
+        when(crawl4AiClient.crawl("https://docs.example.com/level1"))
+                .thenReturn(new CrawlResult("https://docs.example.com/level1",
+                        "# Level 1", List.of("https://docs.example.com/level2"), true, null));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
+                .thenReturn(Optional.empty());
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        assertThat(results).hasSize(2);
+        verify(crawl4AiClient, never()).crawl("https://docs.example.com/level2");
+    }
+
+    // --- Progress tracking ---
+
+    @Test
+    void progressTrackerUpdatedDuringCrawl() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/page1"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/page1"))
+                .thenReturn(new CrawlResult("https://docs.example.com/page1", "# Page", List.of(), true, null));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
+                .thenReturn(Optional.empty());
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        verify(progressTracker).startCrawl(sourceId, 1);
+        verify(progressTracker).recordPageCrawled(sourceId);
+        verify(progressTracker).completeCrawl(sourceId);
+    }
+
+    // --- llms-full.txt hybrid ingestion ---
+
+    @Test
+    void llmsFullContentIngestedDirectlyAndCoveredUrlsSkipped() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/guide", "https://docs.example.com/api"),
+                PageDiscoveryService.DiscoveryMethod.LLMS_FULL_TXT, "# Full content\nAll docs here");
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(5);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
+
+        List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        // llms-full.txt content ingested directly
+        verify(ingestionService).ingestPage(eq("# Full content\nAll docs here"), eq(rootUrl), anyString());
+        // Covered URLs are skipped (not crawled)
+        verify(crawl4AiClient, never()).crawl(anyString());
+        // The URLs are still counted as visited
+        assertThat(results).isEmpty();
+        verify(progressTracker).completeCrawl(sourceId);
+    }
+
+    // --- Deleted page cleanup ---
+
+    @Test
+    void cleanupDeletedPagesRemovesOrphanedChunksAndState() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/current"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/current"))
+                .thenReturn(new CrawlResult("https://docs.example.com/current", "# Current", List.of(), true, null));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
+                .thenReturn(Optional.empty());
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(1);
+
+        // Simulate pre-existing state with an orphaned page
+        var existingState = new IngestionState(sourceId, "https://docs.example.com/deleted", "oldhash");
+        var currentState = new IngestionState(sourceId, "https://docs.example.com/current", "currenthash");
+        when(ingestionStateRepository.findAllBySourceId(sourceId))
+                .thenReturn(List.of(currentState, existingState));
+
+        crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        // Orphaned page chunks should be deleted via ingestionService
+        verify(ingestionService).deleteChunksForUrl("https://docs.example.com/deleted");
+        verify(ingestionStateRepository).deleteAllBySourceIdAndPageUrlNotIn(eq(sourceId), any());
+    }
+
+    // --- Incremental ingestion (hash-based change detection in CrawlService) ---
+
+    @Test
+    void incrementalIngestionSkipsUnchangedContent() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        String markdown = "# Guide";
+        String hash = ContentHasher.sha256(markdown);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/guide"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/guide"))
+                .thenReturn(new CrawlResult("https://docs.example.com/guide", markdown, List.of(), true, null));
+        // Existing state with same hash
+        var existingState = new IngestionState(sourceId, "https://docs.example.com/guide", hash);
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://docs.example.com/guide"))
+                .thenReturn(Optional.of(existingState));
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of(existingState));
+
+        crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        // Should skip ingestion since hash matches
+        verify(ingestionService, never()).ingestPage(anyString(), anyString(), anyString());
+        verify(progressTracker).recordPageSkipped(sourceId);
+    }
+
+    @Test
+    void incrementalIngestionReprocessesChangedContent() {
+        UUID sourceId = UUID.randomUUID();
+        String rootUrl = "https://docs.example.com";
+        var scope = CrawlScope.withDefaults(10);
+        var discovery = new PageDiscoveryService.DiscoveryResult(
+                List.of("https://docs.example.com/guide"),
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
+        when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
+        when(crawl4AiClient.crawl("https://docs.example.com/guide"))
+                .thenReturn(new CrawlResult("https://docs.example.com/guide", "# Updated Guide", List.of(), true, null));
+        // Existing state with different hash
+        var existingState = new IngestionState(sourceId, "https://docs.example.com/guide",
+                ContentHasher.sha256("# Old Guide"));
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://docs.example.com/guide"))
+                .thenReturn(Optional.of(existingState));
+        when(ingestionService.ingestPage(anyString(), anyString(), anyString())).thenReturn(2);
+        when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of(existingState));
+
+        crawlService.crawlSite(sourceId, rootUrl, scope);
+
+        // Should delete old chunks, re-ingest, and update state
+        verify(ingestionService).deleteChunksForUrl("https://docs.example.com/guide");
+        verify(ingestionService).ingestPage(eq("# Updated Guide"), eq("https://docs.example.com/guide"), anyString());
+        verify(ingestionStateRepository).save(existingState);
+        verify(progressTracker).recordPageCrawled(sourceId);
     }
 }

@@ -1,8 +1,5 @@
 package dev.alexandria.ingestion;
 
-import dev.alexandria.crawl.ContentHasher;
-import dev.alexandria.crawl.CrawlResult;
-import dev.alexandria.crawl.UrlNormalizer;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import dev.alexandria.ingestion.chunking.MarkdownChunker;
 import dev.langchain4j.data.embedding.Embedding;
@@ -13,19 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 
 /**
- * Orchestrates the ingestion pipeline: crawl result -> chunk -> embed -> store.
+ * Orchestrates the ingestion pipeline: markdown content -> chunk -> embed -> store.
  *
- * <p>Takes crawled pages from Phase 3's CrawlService, chunks each page's Markdown
- * via MarkdownChunker, embeds the chunks, and stores them in the EmbeddingStore
- * where they become searchable by Phase 2's SearchService.
+ * <p>Takes markdown content and metadata, chunks it via MarkdownChunker, embeds the
+ * chunks, and stores them in the EmbeddingStore where they become searchable by
+ * Phase 2's SearchService.
  *
  * <p><strong>Transaction semantics:</strong> this service uses best-effort processing.
  * Each page is chunked, embedded, and stored independently. If a page fails mid-batch,
@@ -55,26 +50,7 @@ public class IngestionService {
     }
 
     /**
-     * Ingests all crawled pages into the EmbeddingStore.
-     *
-     * @param pages the successfully crawled pages from CrawlService
-     * @return total number of chunks stored across all pages
-     */
-    public int ingest(List<CrawlResult> pages) {
-        String lastUpdated = Instant.now().toString();
-        int totalChunks = 0;
-        for (CrawlResult page : pages) {
-            List<DocumentChunkData> chunks = chunker.chunk(
-                    page.markdown(), page.url(), lastUpdated
-            );
-            storeChunks(chunks);
-            totalChunks += chunks.size();
-        }
-        return totalChunks;
-    }
-
-    /**
-     * Convenience method for single-page ingestion.
+     * Ingest a single page: chunk markdown, embed chunks, and store in embedding store.
      *
      * @param markdown    the raw Markdown text
      * @param sourceUrl   the URL of the page
@@ -88,48 +64,13 @@ public class IngestionService {
     }
 
     /**
-     * Incrementally ingest a single page with content hash-based change detection.
+     * Delete all existing chunks for a given URL from the embedding store.
+     * Used before re-ingesting changed content to avoid stale data.
      *
-     * <p>Compares the SHA-256 hash of the provided markdown against the stored hash
-     * for this source+URL. If unchanged, the page is skipped entirely. If changed
-     * (or new), old chunks are deleted and the page is re-chunked and re-embedded.
-     *
-     * @param sourceId the UUID of the source being crawled
-     * @param url      the URL of the page
-     * @param markdown the raw Markdown content
-     * @return result indicating chunks stored, whether skipped, and whether content changed
+     * @param normalizedUrl the URL whose chunks should be removed
      */
-    public IngestResult ingestPageIncremental(UUID sourceId, String url, String markdown) {
-        String normalizedUrl = UrlNormalizer.normalize(url);
-        String newHash = ContentHasher.sha256(markdown);
-
-        Optional<IngestionState> existingState =
-                ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, normalizedUrl);
-
-        if (existingState.isPresent() && existingState.get().getContentHash().equals(newHash)) {
-            log.debug("Content unchanged for {}, skipping ingestion", normalizedUrl);
-            return new IngestResult(0, true, false);
-        }
-
-        // Delete old chunks before re-ingesting
+    public void deleteChunksForUrl(String normalizedUrl) {
         embeddingStore.removeAll(metadataKey("source_url").isEqualTo(normalizedUrl));
-
-        // Chunk and embed
-        int chunkCount = ingestPage(markdown, normalizedUrl, Instant.now().toString());
-
-        // Update or create ingestion state
-        if (existingState.isPresent()) {
-            IngestionState state = existingState.get();
-            state.setContentHash(newHash);
-            state.setLastIngestedAt(Instant.now());
-            ingestionStateRepository.save(state);
-        } else {
-            ingestionStateRepository.save(new IngestionState(sourceId, normalizedUrl, newHash));
-        }
-
-        log.debug("Ingested {} chunks for {} ({})", chunkCount, normalizedUrl,
-                existingState.isPresent() ? "updated" : "new");
-        return new IngestResult(chunkCount, false, true);
     }
 
     /**
