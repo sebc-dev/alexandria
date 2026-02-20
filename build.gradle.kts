@@ -52,8 +52,12 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.archunit)
 
-    // Error Prone
+    // Error Prone + NullAway
     errorprone(libs.errorprone.core)
+    errorprone(libs.nullaway)
+
+    // Null-safety annotations (JSpecify)
+    implementation(libs.jspecify)
 }
 
 dependencyManagement {
@@ -188,6 +192,8 @@ tasks.withType<JavaCompile>().configureEach {
         isEnabled.set(true)
         disableWarningsInGeneratedCode.set(true)
         excludedPaths.set(".*/build/generated/.*")
+        option("NullAway:AnnotatedPackages", "dev.alexandria")
+        option("NullAway:JSpecifyMode", "true")
     }
 }
 
