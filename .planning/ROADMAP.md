@@ -159,11 +159,11 @@ Phase 6 was never executed. Its requirements (SRC-01..05) are addressed by Phase
   5. New MCP tool `index_statistics` returns total chunks, total sources, storage size, embedding dimensions
   6. `add_source` formally satisfies SRC-01 (already functional from Phase 7)
   7. updateSourceNameMetadata() is called when source name changes during recrawl
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md -- Data layer fixes: source_id FK population, Flyway orphan cleanup, CrawlProgressTracker cancellation
+- [ ] 09-02-PLAN.md -- MCP tool upgrades: enhanced remove_source/list_sources/crawl_status, new index_statistics tool, updateSourceNameMetadata wiring
 
 ### Phase 7: Crawl Operations
 **Goal**: Users have full operational control over crawling -- scope limits, incremental updates, scheduled recrawls, progress monitoring, and llms.txt support
