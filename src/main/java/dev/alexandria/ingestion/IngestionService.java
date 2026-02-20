@@ -1,16 +1,24 @@
 package dev.alexandria.ingestion;
 
+import dev.alexandria.crawl.ContentHasher;
 import dev.alexandria.crawl.CrawlResult;
+import dev.alexandria.crawl.UrlNormalizer;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import dev.alexandria.ingestion.chunking.MarkdownChunker;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 
 /**
  * Orchestrates the ingestion pipeline: crawl result -> chunk -> embed -> store.
@@ -29,16 +37,21 @@ import java.util.List;
 @Service
 public class IngestionService {
 
+    private static final Logger log = LoggerFactory.getLogger(IngestionService.class);
+
     private final MarkdownChunker chunker;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final EmbeddingModel embeddingModel;
+    private final IngestionStateRepository ingestionStateRepository;
 
     public IngestionService(MarkdownChunker chunker,
                             EmbeddingStore<TextSegment> embeddingStore,
-                            EmbeddingModel embeddingModel) {
+                            EmbeddingModel embeddingModel,
+                            IngestionStateRepository ingestionStateRepository) {
         this.chunker = chunker;
         this.embeddingStore = embeddingStore;
         this.embeddingModel = embeddingModel;
+        this.ingestionStateRepository = ingestionStateRepository;
     }
 
     /**
@@ -73,6 +86,70 @@ public class IngestionService {
         storeChunks(chunks);
         return chunks.size();
     }
+
+    /**
+     * Incrementally ingest a single page with content hash-based change detection.
+     *
+     * <p>Compares the SHA-256 hash of the provided markdown against the stored hash
+     * for this source+URL. If unchanged, the page is skipped entirely. If changed
+     * (or new), old chunks are deleted and the page is re-chunked and re-embedded.
+     *
+     * @param sourceId the UUID of the source being crawled
+     * @param url      the URL of the page
+     * @param markdown the raw Markdown content
+     * @return result indicating chunks stored, whether skipped, and whether content changed
+     */
+    public IngestResult ingestPageIncremental(UUID sourceId, String url, String markdown) {
+        String normalizedUrl = UrlNormalizer.normalize(url);
+        String newHash = ContentHasher.sha256(markdown);
+
+        Optional<IngestionState> existingState =
+                ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, normalizedUrl);
+
+        if (existingState.isPresent() && existingState.get().getContentHash().equals(newHash)) {
+            log.debug("Content unchanged for {}, skipping ingestion", normalizedUrl);
+            return new IngestResult(0, true, false);
+        }
+
+        // Delete old chunks before re-ingesting
+        embeddingStore.removeAll(metadataKey("source_url").isEqualTo(normalizedUrl));
+
+        // Chunk and embed
+        int chunkCount = ingestPage(markdown, normalizedUrl, Instant.now().toString());
+
+        // Update or create ingestion state
+        if (existingState.isPresent()) {
+            IngestionState state = existingState.get();
+            state.setContentHash(newHash);
+            state.setLastIngestedAt(Instant.now());
+            ingestionStateRepository.save(state);
+        } else {
+            ingestionStateRepository.save(new IngestionState(sourceId, normalizedUrl, newHash));
+        }
+
+        log.debug("Ingested {} chunks for {} ({})", chunkCount, normalizedUrl,
+                existingState.isPresent() ? "updated" : "new");
+        return new IngestResult(chunkCount, false, true);
+    }
+
+    /**
+     * Clear all ingestion state records for a source.
+     * Used when triggering a full recrawl to reset change detection.
+     *
+     * @param sourceId the UUID of the source to clear
+     */
+    public void clearIngestionState(UUID sourceId) {
+        ingestionStateRepository.deleteAllBySourceId(sourceId);
+    }
+
+    /**
+     * Result of incremental page ingestion.
+     *
+     * @param chunksStored number of chunks stored (0 if skipped)
+     * @param skipped      true if content hash was unchanged
+     * @param changed      true if content was new or changed
+     */
+    public record IngestResult(int chunksStored, boolean skipped, boolean changed) {}
 
     private static final int EMBED_BATCH_SIZE = 256;
 

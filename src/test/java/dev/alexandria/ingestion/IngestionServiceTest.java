@@ -1,5 +1,6 @@
 package dev.alexandria.ingestion;
 
+import dev.alexandria.crawl.ContentHasher;
 import dev.alexandria.crawl.CrawlResult;
 import dev.alexandria.ingestion.chunking.ContentType;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
@@ -9,20 +10,25 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.filter.Filter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +44,9 @@ class IngestionServiceTest {
 
     @Mock
     EmbeddingModel embeddingModel;
+
+    @Mock
+    IngestionStateRepository ingestionStateRepository;
 
     @InjectMocks
     IngestionService ingestionService;
@@ -182,5 +191,101 @@ class IngestionServiceTest {
 
         assertThat(result).isEqualTo(0);
         verify(embeddingStore, never()).addAll(any(), any());
+    }
+
+    // --- Incremental ingestion ---
+
+    @Test
+    void ingestPageIncrementalSkipsUnchangedContent() {
+        UUID sourceId = UUID.randomUUID();
+        String url = "https://example.com/page";
+        String markdown = "# Hello";
+        String hash = ContentHasher.sha256(markdown);
+        var existingState = new IngestionState(sourceId, "https://example.com/page", hash);
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://example.com/page"))
+                .thenReturn(Optional.of(existingState));
+
+        IngestionService.IngestResult result = ingestionService.ingestPageIncremental(sourceId, url, markdown);
+
+        assertThat(result.skipped()).isTrue();
+        assertThat(result.changed()).isFalse();
+        assertThat(result.chunksStored()).isZero();
+        verify(embeddingStore, never()).removeAll(any(Filter.class));
+        verify(chunker, never()).chunk(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void ingestPageIncrementalReprocessesChangedContent() {
+        UUID sourceId = UUID.randomUUID();
+        String url = "https://example.com/page";
+        String oldHash = ContentHasher.sha256("old content");
+        var existingState = new IngestionState(sourceId, "https://example.com/page", oldHash);
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://example.com/page"))
+                .thenReturn(Optional.of(existingState));
+        var chunkData = new DocumentChunkData("new content", "https://example.com/page",
+                "section", ContentType.PROSE, "2026-01-01T00:00:00Z", null);
+        when(chunker.chunk(eq("# New content"), eq("https://example.com/page"), anyString()))
+                .thenReturn(List.of(chunkData));
+        when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.1f}))));
+
+        IngestionService.IngestResult result = ingestionService.ingestPageIncremental(sourceId, url, "# New content");
+
+        assertThat(result.skipped()).isFalse();
+        assertThat(result.changed()).isTrue();
+        assertThat(result.chunksStored()).isEqualTo(1);
+        verify(embeddingStore).removeAll(any(Filter.class));
+        verify(ingestionStateRepository).save(existingState);
+    }
+
+    @Test
+    void ingestPageIncrementalCreatesNewStateForNewPage() {
+        UUID sourceId = UUID.randomUUID();
+        String url = "https://example.com/new-page";
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://example.com/new-page"))
+                .thenReturn(Optional.empty());
+        var chunkData = new DocumentChunkData("content", "https://example.com/new-page",
+                "section", ContentType.PROSE, "2026-01-01T00:00:00Z", null);
+        when(chunker.chunk(eq("# Brand new"), eq("https://example.com/new-page"), anyString()))
+                .thenReturn(List.of(chunkData));
+        when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.2f}))));
+
+        IngestionService.IngestResult result = ingestionService.ingestPageIncremental(sourceId, url, "# Brand new");
+
+        assertThat(result.skipped()).isFalse();
+        assertThat(result.changed()).isTrue();
+        assertThat(result.chunksStored()).isEqualTo(1);
+        ArgumentCaptor<IngestionState> stateCaptor = ArgumentCaptor.forClass(IngestionState.class);
+        verify(ingestionStateRepository).save(stateCaptor.capture());
+        assertThat(stateCaptor.getValue().getSourceId()).isEqualTo(sourceId);
+        assertThat(stateCaptor.getValue().getPageUrl()).isEqualTo("https://example.com/new-page");
+        assertThat(stateCaptor.getValue().getContentHash()).isEqualTo(ContentHasher.sha256("# Brand new"));
+    }
+
+    @Test
+    void ingestPageIncrementalDeletesOldChunksBeforeReingesting() {
+        UUID sourceId = UUID.randomUUID();
+        String url = "https://example.com/page";
+        when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://example.com/page"))
+                .thenReturn(Optional.empty());
+        var chunkData = new DocumentChunkData("content", "https://example.com/page",
+                "section", ContentType.PROSE, "2026-01-01T00:00:00Z", null);
+        when(chunker.chunk(eq("# Content"), eq("https://example.com/page"), anyString()))
+                .thenReturn(List.of(chunkData));
+        when(embeddingModel.embedAll(any())).thenReturn(Response.from(List.of(Embedding.from(new float[]{0.3f}))));
+
+        ingestionService.ingestPageIncremental(sourceId, url, "# Content");
+
+        InOrder inOrder = inOrder(embeddingStore);
+        inOrder.verify(embeddingStore).removeAll(any(Filter.class));
+        inOrder.verify(embeddingStore).addAll(any(), any());
+    }
+
+    @Test
+    void clearIngestionStateDelegatesDeleteToRepository() {
+        UUID sourceId = UUID.randomUUID();
+
+        ingestionService.clearIngestionState(sourceId);
+
+        verify(ingestionStateRepository).deleteAllBySourceId(sourceId);
     }
 }
