@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 9 - Source Management Completion (in progress)
+**Current focus:** Phase 9 - Source Management Completion (complete)
 
 ## Current Position
 
 Phase: 9 (Source Management Completion)
-Plan: 1 of 2 in Phase 09
-Status: Executing Phase 09
-Last activity: 2026-02-20 -- Completed 09-01 (source_id FK population + cancellation)
+Plan: 2 of 2 in Phase 09
+Status: Phase 09 Complete
+Last activity: 2026-02-20 -- Completed 09-02 (MCP tool enhancements + index_statistics)
 
-Progress: [█████-----] 50% (Plan 1/2 of Phase 09)
+Progress: [██████████] 100% (Plan 2/2 of Phase 09)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
+- Total plans completed: 24
 - Average duration: 4.9min
-- Total execution time: 1.9 hours
+- Total execution time: 2.0 hours
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [█████-----] 50% (Plan 1/2 of Phase 09)
 | 05-mcp-server | 2 | 6min | 3.0min |
 | 07-crawl-operations | 5 | 33min | 6.6min |
 | 08-advanced-search-quality | 4 | 22min | 5.5min |
-| 09-source-management-completion | 1 | 8min | 8.0min |
+| 09-source-management-completion | 2 | 15min | 7.5min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 5min, 4min, 8min, 8min
-- Trend: stable (~6min average)
+- Last 5 plans: 5min, 4min, 8min, 8min, 7min
+- Trend: stable (~6.4min average)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -56,6 +56,7 @@ Progress: [█████-----] 50% (Plan 1/2 of Phase 09)
 | Phase 08 P03 | 4min | 1 task | 4 files |
 | Phase 08 P04 | 8min | 2 tasks | 6 files |
 | Phase 09 P01 | 8min | 2 tasks | 8 files |
+| Phase 09 P02 | 7min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,10 @@ Recent decisions affecting current work:
 - [09-01]: Best-effort source_id linking: updateSourceIdBatch runs as separate @Transactional after embeddingStore.addAll -- not atomic with LangChain4j insert
 - [09-01]: 6-arg ingestPage(UUID sourceId, String markdown, ...) overload; existing 3-arg and 5-arg delegate with null sourceId
 - [09-01]: ConcurrentHashMap.newKeySet() for thread-safe cancellation flags, cleaned up in completeCrawl/failCrawl/removeCrawl
+- [09-02]: formatChunkCount returns plain total for single content type, breakdown for multiple (e.g. "1247 (892 prose, 355 code)")
+- [09-02]: Thread.sleep(500) in removeSource after cancelCrawl for cooperative cancellation observation
+- [09-02]: recrawlSource name parameter is 8th (last) param to maintain backward compatibility
+- [09-02]: Source.setName setter added to enable name updates (was previously immutable after construction)
 
 ### Pending Todos
 
@@ -159,6 +164,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 09-01-PLAN.md (source_id FK population + cancellation)
-Resume file: .planning/phases/09-source-management-completion/09-01-SUMMARY.md
-Next: Execute 09-02-PLAN.md
+Stopped at: Completed 09-02-PLAN.md (MCP tool enhancements + index_statistics)
+Resume file: .planning/phases/09-source-management-completion/09-02-SUMMARY.md
+Next: Phase 09 complete. Plan next phase.

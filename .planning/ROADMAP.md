@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] ~~**Phase 6: Source Management**~~ - *Superseded by Phase 9 (gap closure from v1.5 audit)*
 - [x] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring (completed 2026-02-20)
 - [x] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type (completed 2026-02-20)
-- [ ] **Phase 9: Source Management Completion** - Gap closure: fix source_id FK, cascade delete, chunk_count, staleness, index stats MCP tool
+- [x] **Phase 9: Source Management Completion** - Gap closure: fix source_id FK, cascade delete, chunk_count, staleness, index stats MCP tool (completed 2026-02-20)
 
 ## Phase Details
 
@@ -159,11 +159,11 @@ Phase 6 was never executed. Its requirements (SRC-01..05) are addressed by Phase
   5. New MCP tool `index_statistics` returns total chunks, total sources, storage size, embedding dimensions
   6. `add_source` formally satisfies SRC-01 (already functional from Phase 7)
   7. updateSourceNameMetadata() is called when source name changes during recrawl
-**Plans:** 1/2 plans complete
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 09-01-PLAN.md -- Data layer fixes: source_id FK population, Flyway orphan cleanup, CrawlProgressTracker cancellation
-- [ ] 09-02-PLAN.md -- MCP tool upgrades: enhanced remove_source/list_sources/crawl_status, new index_statistics tool, updateSourceNameMetadata wiring
+- [x] 09-02-PLAN.md -- MCP tool upgrades: enhanced remove_source/list_sources/crawl_status, new index_statistics tool, updateSourceNameMetadata wiring
 
 ### Phase 7: Crawl Operations
 **Goal**: Users have full operational control over crawling -- scope limits, incremental updates, scheduled recrawls, progress monitoring, and llms.txt support
@@ -223,6 +223,6 @@ Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP
 | ~~6. Source Management~~ | — | Superseded by Phase 9 | — |
 | 7. Crawl Operations | 5/5 | ✓ Complete | 2026-02-20 |
 | 8. Advanced Search & Quality | 4/4 | ✓ Complete | 2026-02-20 |
-| 9. Source Management Completion | 1/2 | In Progress | - |
+| 9. Source Management Completion | 2/2 | Complete | 2026-02-20 |
 
 
