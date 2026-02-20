@@ -13,6 +13,11 @@ public record CrawlScope(
         int maxPages
 ) {
 
+    public CrawlScope {
+        allowPatterns = allowPatterns == null ? List.of() : List.copyOf(allowPatterns);
+        blockPatterns = blockPatterns == null ? List.of() : List.copyOf(blockPatterns);
+    }
+
     /**
      * Creates a default scope with no pattern restrictions.
      *
