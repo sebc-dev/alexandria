@@ -20,6 +20,8 @@ errorprone-plugin = "4.2.0"
 nullaway = "0.12.6"
 jspecify = "1.0.0"
 spotless = "7.0.3"
+owasp-depcheck = "12.1.1"
+cyclonedx = "2.4.1"
 
 [libraries]
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -55,4 +57,6 @@ spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone-plugin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+owasp-depcheck = { id = "org.owasp.dependencycheck", version.ref = "owasp-depcheck" }
+cyclonedx = { id = "org.cyclonedx.bom", version.ref = "cyclonedx" }
 

@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.errorprone)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.owasp.depcheck)
+    alias(libs.plugins.cyclonedx)
 }
 
 java {
@@ -99,6 +101,7 @@ testing {
 
 tasks.named("check") {
     dependsOn(testing.suites.named("integrationTest"))
+    dependsOn("dependencyCheckAnalyze")
 }
 
 // Disable plain jar — only produce the Spring Boot fat jar
@@ -212,4 +215,25 @@ spotless {
         target("src/**/*.java")
         googleJavaFormat()
     }
+}
+
+// ---------------------------------------------------------------------------
+// OWASP Dependency-Check - Vulnerability Scanning
+// ---------------------------------------------------------------------------
+dependencyCheck {
+    failBuildOnCVSS = 7.0f
+    suppressionFile = "owasp-suppressions.xml"
+    analyzers {
+        assemblyEnabled = false        // .NET analyzer, not needed
+        nodeEnabled = false            // Node.js analyzer, not needed
+        ossIndexEnabled = false        // Requires Sonatype OSS Index API key; NVD is sufficient
+    }
+    formats = listOf("HTML", "JSON")
+}
+
+// ---------------------------------------------------------------------------
+// CycloneDX - SBOM Generation
+// ---------------------------------------------------------------------------
+tasks.named("build") {
+    dependsOn("cyclonedxBom")
 }

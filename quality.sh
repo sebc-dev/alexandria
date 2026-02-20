@@ -237,6 +237,38 @@ cmd_coverage() {
     return $exit_code
 }
 
+cmd_owasp() {
+    echo "Running OWASP Dependency-Check..."
+    local exit_code=0
+    $GRADLEW dependencyCheckAnalyze || exit_code=$?
+    print_separator
+    local report="build/reports/dependency-check-report.json"
+    if [[ -f "$report" ]]; then
+        local total high medium low
+        total=$(python3 -c "import json; d=json.load(open('$report')); print(sum(1 for dep in d.get('dependencies',[]) if dep.get('vulnerabilities')))" 2>/dev/null) || total="?"
+        high=$(python3 -c "import json; d=json.load(open('$report')); print(sum(1 for dep in d.get('dependencies',[]) for v in dep.get('vulnerabilities',[]) if v.get('severity','').upper() in ('HIGH','CRITICAL')))" 2>/dev/null) || high="?"
+        medium=$(python3 -c "import json; d=json.load(open('$report')); print(sum(1 for dep in d.get('dependencies',[]) for v in dep.get('vulnerabilities',[]) if v.get('severity','').upper() == 'MEDIUM'))" 2>/dev/null) || medium="?"
+        low=$(python3 -c "import json; d=json.load(open('$report')); print(sum(1 for dep in d.get('dependencies',[]) for v in dep.get('vulnerabilities',[]) if v.get('severity','').upper() == 'LOW'))" 2>/dev/null) || low="?"
+        echo "OWASP: ${total} vulnerable dependencies (${high} high/critical, ${medium} medium, ${low} low)"
+    else
+        echo "OWASP: Report not found. Check build/reports/ for details."
+    fi
+    return $exit_code
+}
+
+cmd_sbom() {
+    echo "Generating CycloneDX SBOM..."
+    $GRADLEW cyclonedxBom
+    print_separator
+    local sbom_file
+    sbom_file=$(find build/reports -name "*.cdx.json" -o -name "bom.json" -o -name "bom.xml" 2>/dev/null | head -1)
+    if [[ -n "$sbom_file" ]]; then
+        echo "SBOM: Generated at ${sbom_file}"
+    else
+        echo "SBOM: File not found. Check build/reports/ for details."
+    fi
+}
+
 cmd_all() {
     echo "Running all quality gates..."
     echo ""
@@ -257,17 +289,23 @@ cmd_all() {
     summarize_spotbugs
     echo ""
 
-    # Phase 3: PIT mutation testing (heavy, run separately)
-    echo "=== Phase 3: Mutation Testing ==="
+    # Phase 3: OWASP Dependency-Check
+    echo "=== Phase 3: OWASP Dependency-Check ==="
+    $GRADLEW dependencyCheckAnalyze || true
+    print_separator
+    echo ""
+
+    # Phase 4: PIT mutation testing (heavy, run separately)
+    echo "=== Phase 4: Mutation Testing ==="
     $GRADLEW pitest || true
     print_separator
     summarize_mutations
 
-    # Phase 4: Integration tests (optional, requires Docker)
+    # Phase 5: Integration tests (optional, requires Docker)
     local integ_exit=0
     if [[ "$WITH_INTEGRATION" == "true" ]]; then
         echo ""
-        echo "=== Phase 4: Integration Tests ==="
+        echo "=== Phase 5: Integration Tests ==="
         $GRADLEW integrationTest || integ_exit=$?
         print_separator
         summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
@@ -305,6 +343,8 @@ COMMANDS:
     spotbugs       Run SpotBugs analysis, print bug count
     arch           Run ArchUnit architecture tests, print pass/fail
     coverage       Run tests + JaCoCo, print coverage percentages
+    owasp          Run OWASP Dependency-Check, print vulnerability summary
+    sbom           Generate CycloneDX SBOM, print file location
     all            Run all quality gates, print combined summary
     help           Show this help message
 
@@ -338,6 +378,8 @@ case "$COMMAND" in
     spotbugs)      cmd_spotbugs ;;
     arch)          cmd_arch ;;
     coverage)      cmd_coverage ;;
+    owasp)         cmd_owasp ;;
+    sbom)          cmd_sbom ;;
     all)           cmd_all ;;
     help|--help|-h)  cmd_help ;;
     *)
