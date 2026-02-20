@@ -1,16 +1,21 @@
 package dev.alexandria.mcp;
 
+import dev.alexandria.crawl.CrawlProgress;
+import dev.alexandria.crawl.CrawlProgressTracker;
+import dev.alexandria.crawl.CrawlScope;
+import dev.alexandria.crawl.CrawlService;
 import dev.alexandria.fixture.SourceBuilder;
+import dev.alexandria.ingestion.IngestionService;
 import dev.alexandria.search.SearchResult;
 import dev.alexandria.search.SearchService;
 import dev.alexandria.source.Source;
 import dev.alexandria.source.SourceRepository;
 import dev.alexandria.source.SourceStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,7 +27,13 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,11 +48,34 @@ class McpToolServiceTest {
     @Mock
     TokenBudgetTruncator truncator;
 
-    @InjectMocks
+    @Mock
+    CrawlService crawlService;
+
+    @Mock
+    CrawlProgressTracker progressTracker;
+
+    @Mock
+    IngestionService ingestionService;
+
     McpToolService mcpToolService;
 
     @Captor
     ArgumentCaptor<dev.alexandria.search.SearchRequest> searchRequestCaptor;
+
+    @BeforeEach
+    void setUp() {
+        mcpToolService = spy(new McpToolService(
+                searchService, sourceRepository, truncator,
+                crawlService, progressTracker, ingestionService));
+    }
+
+    /**
+     * Suppress async dispatch for tests that call addSource or recrawlSource.
+     * Must be called before invoking the method under test.
+     */
+    private void suppressAsyncDispatch() {
+        doNothing().when(mcpToolService).dispatchCrawl(any(), anyString(), any(CrawlScope.class), anyBoolean());
+    }
 
     // --- searchDocs ---
 
@@ -158,24 +192,82 @@ class McpToolServiceTest {
     // --- addSource ---
 
     @Test
-    void addSourceCreatesPendingSource() {
+    void addSourceCreatesSourceWithScopeAndTriggersCrawl() {
+        suppressAsyncDispatch();
         given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
 
-        String output = mcpToolService.addSource("https://docs.spring.io", "Spring Docs");
+        String output = mcpToolService.addSource(
+                "https://docs.spring.io", "Spring Docs",
+                "/docs/**,/api/**", "/archive/**", 3, 200, null);
 
-        assertThat(output).contains("Spring Docs");
-        assertThat(output).contains("PENDING");
         ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
         verify(sourceRepository).save(sourceCaptor.capture());
-        assertThat(sourceCaptor.getValue().getStatus()).isEqualTo(SourceStatus.PENDING);
-        assertThat(sourceCaptor.getValue().getUrl()).isEqualTo("https://docs.spring.io");
+        Source saved = sourceCaptor.getValue();
+        assertThat(saved.getUrl()).isEqualTo("https://docs.spring.io");
+        assertThat(saved.getName()).isEqualTo("Spring Docs");
+        assertThat(saved.getAllowPatterns()).isEqualTo("/docs/**,/api/**");
+        assertThat(saved.getBlockPatterns()).isEqualTo("/archive/**");
+        assertThat(saved.getMaxDepth()).isEqualTo(3);
+        assertThat(saved.getMaxPages()).isEqualTo(200);
+        assertThat(saved.getStatus()).isEqualTo(SourceStatus.CRAWLING);
+        assertThat(output).contains("Crawl started");
+        assertThat(output).contains("Spring Docs");
+        verify(mcpToolService).dispatchCrawl(any(), eq("https://docs.spring.io"), any(CrawlScope.class), eq(false));
+    }
+
+    @Test
+    void addSourceWithNullScopeUsesDefaults() {
+        suppressAsyncDispatch();
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        String output = mcpToolService.addSource(
+                "https://docs.spring.io", "Spring Docs",
+                null, null, null, null, null);
+
+        ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        Source saved = sourceCaptor.getValue();
+        assertThat(saved.getAllowPatterns()).isNull();
+        assertThat(saved.getBlockPatterns()).isNull();
+        assertThat(saved.getMaxDepth()).isNull();
+        assertThat(saved.getMaxPages()).isEqualTo(500);
+        assertThat(output).contains("Crawl started");
+    }
+
+    @Test
+    void addSourceReturnsImmediatelyWithId() {
+        suppressAsyncDispatch();
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        String output = mcpToolService.addSource(
+                "https://docs.spring.io", "Spring Docs",
+                null, null, null, null, null);
+
+        assertThat(output).contains("Spring Docs");
+        assertThat(output).contains("Crawl started");
+        assertThat(output).contains("crawl_status");
     }
 
     @Test
     void addSourceWithBlankUrlReturnsError() {
-        String output = mcpToolService.addSource("", "Some Name");
+        String output = mcpToolService.addSource("", "Some Name",
+                null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
+    }
+
+    @Test
+    void addSourceWithLlmsTxtUrlSavesIt() {
+        suppressAsyncDispatch();
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.addSource(
+                "https://docs.spring.io", "Spring Docs",
+                null, null, null, null, "https://docs.spring.io/llms.txt");
+
+        ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        assertThat(sourceCaptor.getValue().getLlmsTxtUrl()).isEqualTo("https://docs.spring.io/llms.txt");
     }
 
     // --- removeSource ---
@@ -201,21 +293,95 @@ class McpToolServiceTest {
     // --- crawlStatus ---
 
     @Test
-    void crawlStatusReturnsSourceInfo() {
+    void crawlStatusShowsActiveProgress() {
         UUID uuid = UUID.randomUUID();
         Source source = new SourceBuilder()
                 .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.CRAWLING)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        CrawlProgress progress = new CrawlProgress(
+                uuid, CrawlProgress.Status.CRAWLING, 15, 3, 50, 2,
+                List.of("https://docs.spring.io/broken"),
+                List.of("https://docs.spring.io/archive/old"),
+                Instant.now().minusSeconds(120));
+        given(progressTracker.getProgress(uuid)).willReturn(Optional.of(progress));
+
+        String output = mcpToolService.crawlStatus(uuid.toString());
+
+        assertThat(output).contains("Spring Docs");
+        assertThat(output).contains("CRAWLING");
+        assertThat(output).contains("15/50");
+        assertThat(output).contains("3 skipped");
+        assertThat(output).contains("2 errors");
+    }
+
+    @Test
+    void crawlStatusShowsCompletedSummary() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
                 .status(SourceStatus.INDEXED)
                 .chunkCount(42)
                 .lastCrawledAt(Instant.parse("2026-02-01T12:00:00Z"))
                 .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(progressTracker.getProgress(uuid)).willReturn(Optional.empty());
 
         String output = mcpToolService.crawlStatus(uuid.toString());
 
         assertThat(output).contains("Spring Docs");
         assertThat(output).contains("INDEXED");
         assertThat(output).contains("42");
+        assertThat(output).contains("2026-02-01");
+    }
+
+    @Test
+    void crawlStatusShowsFilteredUrls() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.CRAWLING)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        CrawlProgress progress = new CrawlProgress(
+                uuid, CrawlProgress.Status.CRAWLING, 5, 0, 20, 0,
+                List.of(),
+                List.of("https://docs.spring.io/archive/v1", "https://docs.spring.io/archive/v2"),
+                Instant.now().minusSeconds(60));
+        given(progressTracker.getProgress(uuid)).willReturn(Optional.of(progress));
+
+        String output = mcpToolService.crawlStatus(uuid.toString());
+
+        assertThat(output).contains("Filtered URLs");
+        assertThat(output).contains("https://docs.spring.io/archive/v1");
+        assertThat(output).contains("https://docs.spring.io/archive/v2");
+    }
+
+    @Test
+    void crawlStatusShowsErrorUrls() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.CRAWLING)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        CrawlProgress progress = new CrawlProgress(
+                uuid, CrawlProgress.Status.CRAWLING, 10, 0, 20, 2,
+                List.of("https://docs.spring.io/broken", "https://docs.spring.io/404"),
+                List.of(),
+                Instant.now().minusSeconds(60));
+        given(progressTracker.getProgress(uuid)).willReturn(Optional.of(progress));
+
+        String output = mcpToolService.crawlStatus(uuid.toString());
+
+        assertThat(output).contains("Error URLs");
+        assertThat(output).contains("https://docs.spring.io/broken");
+        assertThat(output).contains("https://docs.spring.io/404");
     }
 
     @Test
@@ -229,18 +395,110 @@ class McpToolServiceTest {
         assertThat(output).contains("not found");
     }
 
+    @Test
+    void crawlStatusWithInvalidIdReturnsError() {
+        String output = mcpToolService.crawlStatus("not-a-uuid");
+
+        assertThat(output).startsWith("Error:");
+        assertThat(output).contains("Invalid source ID");
+    }
+
     // --- recrawlSource ---
 
     @Test
-    void recrawlSourceReturnsStubMessage() {
+    void recrawlSourceTriggersIncrementalByDefault() {
+        suppressAsyncDispatch();
         UUID uuid = UUID.randomUUID();
-        Source source = new SourceBuilder().name("Spring Docs").build();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+
+        assertThat(output).contains("incremental");
+        assertThat(output).contains("Spring Docs");
+        verify(ingestionService, never()).clearIngestionState(any());
+        ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        assertThat(sourceCaptor.getValue().getStatus()).isEqualTo(SourceStatus.UPDATING);
+        verify(mcpToolService).dispatchCrawl(eq(uuid), eq("https://docs.spring.io"), any(CrawlScope.class), eq(false));
+    }
+
+    @Test
+    void recrawlSourceWithFullFlagClearsStateFirst() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        String output = mcpToolService.recrawlSource(uuid.toString(), true, null, null, null, null);
+
+        assertThat(output).contains("full");
+        verify(ingestionService).clearIngestionState(uuid);
+        verify(mcpToolService).dispatchCrawl(eq(uuid), eq("https://docs.spring.io"), any(CrawlScope.class), eq(true));
+    }
+
+    @Test
+    void recrawlSourceWithScopeOverridesUsesOverrides() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .allowPatterns("/docs/**")
+                .maxPages(500)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        String output = mcpToolService.recrawlSource(
+                uuid.toString(), null, "/api/**", "/old/**", 5, 100);
+
+        assertThat(output).contains("incremental");
+        assertThat(output).contains("Spring Docs");
+        // Source entity scope should NOT be modified (overrides are one-time)
+        assertThat(source.getAllowPatterns()).isEqualTo("/docs/**");
+        assertThat(source.getMaxPages()).isEqualTo(500);
+    }
+
+    @Test
+    void recrawlSourceRejectsActivelyRunningCrawl() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .status(SourceStatus.CRAWLING)
+                .build();
         given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
 
-        String output = mcpToolService.recrawlSource(uuid.toString());
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
 
-        assertThat(output).contains("Spring Docs");
-        assertThat(output).contains("will be available");
+        assertThat(output).startsWith("Error:");
+        assertThat(output).contains("already being crawled");
+    }
+
+    @Test
+    void recrawlSourceRejectsUpdatingSource() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .status(SourceStatus.UPDATING)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
+
+        assertThat(output).startsWith("Error:");
+        assertThat(output).contains("already being crawled");
     }
 
     @Test
@@ -248,9 +506,17 @@ class McpToolServiceTest {
         UUID uuid = UUID.randomUUID();
         given(sourceRepository.findById(uuid)).willReturn(Optional.empty());
 
-        String output = mcpToolService.recrawlSource(uuid.toString());
+        String output = mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null);
 
         assertThat(output).startsWith("Error:");
         assertThat(output).contains("not found");
+    }
+
+    @Test
+    void recrawlSourceWithInvalidIdReturnsError() {
+        String output = mcpToolService.recrawlSource("not-a-uuid", null, null, null, null, null);
+
+        assertThat(output).startsWith("Error:");
+        assertThat(output).contains("Invalid source ID");
     }
 }
