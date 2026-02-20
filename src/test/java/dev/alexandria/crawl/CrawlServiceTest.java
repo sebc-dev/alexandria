@@ -35,7 +35,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/guide"),
-                PageDiscoveryService.DiscoveryMethod.SITEMAP);
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/guide"))
                 .thenReturn(new CrawlResult("https://docs.example.com/guide", "# Guide", List.of(), true, null));
@@ -52,7 +52,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
-                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL);
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/"))
                 .thenReturn(new CrawlResult("https://docs.example.com/",
@@ -73,7 +73,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/page1"),
-                PageDiscoveryService.DiscoveryMethod.SITEMAP);
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/page1"))
                 .thenReturn(new CrawlResult("https://docs.example.com/page1",
@@ -92,7 +92,7 @@ class CrawlServiceTest {
                 List.of("https://docs.example.com/p1",
                         "https://docs.example.com/p2",
                         "https://docs.example.com/p3"),
-                PageDiscoveryService.DiscoveryMethod.SITEMAP);
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/p1"))
                 .thenReturn(new CrawlResult("https://docs.example.com/p1", "# P1", List.of(), true, null));
@@ -111,7 +111,7 @@ class CrawlServiceTest {
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/fail",
                         "https://docs.example.com/ok"),
-                PageDiscoveryService.DiscoveryMethod.SITEMAP);
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/fail"))
                 .thenReturn(new CrawlResult("https://docs.example.com/fail", null, List.of(), false, "404"));
@@ -130,7 +130,7 @@ class CrawlServiceTest {
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of("https://docs.example.com/error",
                         "https://docs.example.com/ok"),
-                PageDiscoveryService.DiscoveryMethod.SITEMAP);
+                PageDiscoveryService.DiscoveryMethod.SITEMAP, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/error"))
                 .thenThrow(new RuntimeException("Connection refused"));
@@ -148,7 +148,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
-                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL);
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         // Root page returns a link that will normalize to the same URL as root
         when(crawl4AiClient.crawl("https://docs.example.com/"))
@@ -169,7 +169,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
-                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL);
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         // Root page returns links with fragments that normalize to the same page
         when(crawl4AiClient.crawl("https://docs.example.com/"))
@@ -192,7 +192,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
-                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL);
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/"))
                 .thenReturn(new CrawlResult("https://docs.example.com/", "# Home", List.of(), true, null));
@@ -208,7 +208,7 @@ class CrawlServiceTest {
         String rootUrl = "https://docs.example.com";
         var discovery = new PageDiscoveryService.DiscoveryResult(
                 List.of(),
-                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL);
+                PageDiscoveryService.DiscoveryMethod.LINK_CRAWL, null);
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
         when(crawl4AiClient.crawl("https://docs.example.com/"))
                 .thenReturn(new CrawlResult("https://docs.example.com/",
