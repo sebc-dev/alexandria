@@ -138,6 +138,69 @@ jobs:
           name: pit-report
           path: build/reports/pitest/
 
+  security:
+    name: Security Scanning
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5
+
+      - name: Restore build output
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build-output
+          path: build/
+
+      - name: OWASP Dependency-Check
+        run: ./gradlew dependencyCheckAnalyze --console=plain
+
+      - name: Trivy filesystem scan (Java dependencies)
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          trivyignores: .trivyignore
+          format: table
+
+      - name: Scan PostgreSQL image
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        with:
+          image-ref: pgvector/pgvector:pg16
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          trivyignores: .trivyignore
+          format: table
+
+      - name: Scan Crawl4AI image
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        with:
+          image-ref: unclecode/crawl4ai:0.8.0
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          trivyignores: .trivyignore
+          format: table
+
+      - name: Build app image for scanning
+        run: docker build -t alexandria:scan .
+
+      - name: Scan Alexandria app image
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        with:
+          image-ref: alexandria:scan
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          trivyignores: .trivyignore
+          format: table
+
   sonarcloud:
     name: SonarCloud Analysis
     needs: [test]
