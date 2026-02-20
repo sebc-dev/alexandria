@@ -1,5 +1,6 @@
 package dev.alexandria.ingestion;
 
+import dev.alexandria.document.DocumentChunkRepository;
 import dev.alexandria.ingestion.chunking.DocumentChunkData;
 import dev.alexandria.ingestion.chunking.MarkdownChunker;
 import dev.langchain4j.data.embedding.Embedding;
@@ -38,15 +39,18 @@ public class IngestionService {
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final EmbeddingModel embeddingModel;
     private final IngestionStateRepository ingestionStateRepository;
+    private final DocumentChunkRepository documentChunkRepository;
 
     public IngestionService(MarkdownChunker chunker,
                             EmbeddingStore<TextSegment> embeddingStore,
                             EmbeddingModel embeddingModel,
-                            IngestionStateRepository ingestionStateRepository) {
+                            IngestionStateRepository ingestionStateRepository,
+                            DocumentChunkRepository documentChunkRepository) {
         this.chunker = chunker;
         this.embeddingStore = embeddingStore;
         this.embeddingModel = embeddingModel;
         this.ingestionStateRepository = ingestionStateRepository;
+        this.documentChunkRepository = documentChunkRepository;
     }
 
     /**
@@ -58,7 +62,7 @@ public class IngestionService {
      * @return number of chunks stored
      */
     public int ingestPage(String markdown, String sourceUrl, String lastUpdated) {
-        return ingestPage(markdown, sourceUrl, lastUpdated, null, null);
+        return ingestPage(null, markdown, sourceUrl, lastUpdated, null, null);
     }
 
     /**
@@ -73,11 +77,28 @@ public class IngestionService {
      */
     public int ingestPage(String markdown, String sourceUrl, String lastUpdated,
                           String version, String sourceName) {
+        return ingestPage(null, markdown, sourceUrl, lastUpdated, version, sourceName);
+    }
+
+    /**
+     * Ingest a single page with source association, version, and source name metadata.
+     * When sourceId is non-null, stored chunks are linked to the source via the source_id FK.
+     *
+     * @param sourceId    the UUID of the originating source (nullable for legacy callers)
+     * @param markdown    the raw Markdown text
+     * @param sourceUrl   the URL of the page
+     * @param lastUpdated ISO-8601 timestamp
+     * @param version     documentation version label (nullable)
+     * @param sourceName  human-readable source name (nullable)
+     * @return number of chunks stored
+     */
+    public int ingestPage(UUID sourceId, String markdown, String sourceUrl, String lastUpdated,
+                          String version, String sourceName) {
         List<DocumentChunkData> chunks = chunker.chunk(markdown, sourceUrl, lastUpdated);
         if (version != null || sourceName != null) {
             chunks = enrichChunks(chunks, version, sourceName);
         }
-        storeChunks(chunks);
+        storeChunks(chunks, sourceId);
         return chunks.size();
     }
 
@@ -121,7 +142,7 @@ public class IngestionService {
 
     private static final int EMBED_BATCH_SIZE = 256;
 
-    private void storeChunks(List<DocumentChunkData> chunks) {
+    private void storeChunks(List<DocumentChunkData> chunks, UUID sourceId) {
         if (chunks.isEmpty()) {
             return;
         }
@@ -133,7 +154,10 @@ public class IngestionService {
         for (int i = 0; i < segments.size(); i += EMBED_BATCH_SIZE) {
             List<TextSegment> batch = segments.subList(i, Math.min(i + EMBED_BATCH_SIZE, segments.size()));
             List<Embedding> embeddings = embeddingModel.embedAll(batch).content();
-            embeddingStore.addAll(embeddings, batch);
+            List<String> ids = embeddingStore.addAll(embeddings, batch);
+            if (sourceId != null) {
+                documentChunkRepository.updateSourceIdBatch(sourceId, ids.toArray(String[]::new));
+            }
         }
     }
 }

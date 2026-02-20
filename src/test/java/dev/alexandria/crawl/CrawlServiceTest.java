@@ -261,7 +261,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/guide", "# Guide", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -285,7 +285,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/docs/guide", "# Guide", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -315,7 +315,7 @@ class CrawlServiceTest {
                         "# Level 1", List.of("https://docs.example.com/level2"), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -339,7 +339,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/page1", "# Page", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         crawlService.crawlSite(sourceId, rootUrl, scope);
@@ -360,13 +360,13 @@ class CrawlServiceTest {
                 List.of("https://docs.example.com/guide", "https://docs.example.com/api"),
                 PageDiscoveryService.DiscoveryMethod.LLMS_FULL_TXT, "# Full content\nAll docs here");
         when(pageDiscoveryService.discoverUrls(rootUrl)).thenReturn(discovery);
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(5);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(5);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of());
 
         List<CrawlResult> results = crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // llms-full.txt content ingested directly
-        verify(ingestionService).ingestPage(eq("# Full content\nAll docs here"), eq(rootUrl), anyString(), isNull(), isNull());
+        verify(ingestionService).ingestPage(eq(sourceId), eq("# Full content\nAll docs here"), eq(rootUrl), anyString(), isNull(), isNull());
         // Covered URLs are skipped (not crawled)
         verify(crawl4AiClient, never()).crawl(anyString());
         // The URLs are still counted as visited
@@ -389,7 +389,7 @@ class CrawlServiceTest {
                 .thenReturn(new CrawlResult("https://docs.example.com/current", "# Current", List.of(), true, null));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(any(), anyString()))
                 .thenReturn(Optional.empty());
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(1);
 
         // Simulate pre-existing state with an orphaned page
         var existingState = new IngestionState(sourceId, "https://docs.example.com/deleted", "oldhash");
@@ -428,7 +428,7 @@ class CrawlServiceTest {
         crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // Should skip ingestion since hash matches
-        verify(ingestionService, never()).ingestPage(anyString(), anyString(), anyString(), any(), any());
+        verify(ingestionService, never()).ingestPage(any(), anyString(), anyString(), anyString(), any(), any());
         verify(progressTracker).recordPageSkipped(sourceId);
     }
 
@@ -448,14 +448,14 @@ class CrawlServiceTest {
                 ContentHasher.sha256("# Old Guide"));
         when(ingestionStateRepository.findBySourceIdAndPageUrl(sourceId, "https://docs.example.com/guide"))
                 .thenReturn(Optional.of(existingState));
-        when(ingestionService.ingestPage(anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(2);
+        when(ingestionService.ingestPage(any(UUID.class), anyString(), anyString(), anyString(), isNull(), isNull())).thenReturn(2);
         when(ingestionStateRepository.findAllBySourceId(sourceId)).thenReturn(List.of(existingState));
 
         crawlService.crawlSite(sourceId, rootUrl, scope);
 
         // Should delete old chunks, re-ingest, and update state
         verify(ingestionService).deleteChunksForUrl("https://docs.example.com/guide");
-        verify(ingestionService).ingestPage(eq("# Updated Guide"), eq("https://docs.example.com/guide"), anyString(), isNull(), isNull());
+        verify(ingestionService).ingestPage(eq(sourceId), eq("# Updated Guide"), eq("https://docs.example.com/guide"), anyString(), isNull(), isNull());
         verify(ingestionStateRepository).save(existingState);
         verify(progressTracker).recordPageCrawled(sourceId);
     }

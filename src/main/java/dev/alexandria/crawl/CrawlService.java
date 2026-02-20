@@ -91,7 +91,7 @@ public class CrawlService {
         Set<String> llmsFullCoveredUrls = new HashSet<>();
         if (discovery.llmsFullContent() != null && sourceId != null) {
             log.info("Ingesting llms-full.txt content directly for {}", rootUrl);
-            ingestionService.ingestPage(discovery.llmsFullContent(), rootUrl, Instant.now().toString(),
+            ingestionService.ingestPage(sourceId, discovery.llmsFullContent(), rootUrl, Instant.now().toString(),
                     sourceVersion, sourceName);
             // All URLs from LLMS_FULL_TXT discovery are covered by the full content
             if (discovery.method() == PageDiscoveryService.DiscoveryMethod.LLMS_FULL_TXT) {
@@ -244,7 +244,7 @@ public class CrawlService {
         ingestionService.deleteChunksForUrl(normalizedUrl);
 
         // Chunk and embed
-        int chunkCount = ingestionService.ingestPage(markdown, normalizedUrl, Instant.now().toString(),
+        int chunkCount = ingestionService.ingestPage(sourceId, markdown, normalizedUrl, Instant.now().toString(),
                 version, sourceName);
 
         // Update or create ingestion state
