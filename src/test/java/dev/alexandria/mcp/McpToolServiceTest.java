@@ -677,4 +677,208 @@ class McpToolServiceTest {
 
         verify(documentChunkRepository, never()).updateVersionMetadata(anyString(), anyString());
     }
+
+    // --- listSources real chunk count ---
+
+    @Test
+    void listSourcesShowsRealChunkCountWithContentTypeBreakdown() {
+        Source source = new SourceBuilder()
+                .url("https://docs.spring.io")
+                .name("Spring Docs")
+                .status(SourceStatus.INDEXED)
+                .lastCrawledAt(Instant.parse("2026-02-20T14:30:00Z"))
+                .build();
+        given(sourceRepository.findAll()).willReturn(List.of(source));
+        List<Object[]> grouped = List.<Object[]>of(
+                new Object[]{"prose", 892L},
+                new Object[]{"code", 355L});
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(grouped);
+
+        String output = mcpToolService.listSources();
+
+        assertThat(output).contains("chunks: 1247 (892 prose, 355 code)");
+    }
+
+    @Test
+    void listSourcesShowsZeroChunksForNewSource() {
+        Source source = new SourceBuilder()
+                .url("https://docs.spring.io")
+                .name("Spring Docs")
+                .status(SourceStatus.PENDING)
+                .build();
+        given(sourceRepository.findAll()).willReturn(List.of(source));
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(Collections.emptyList());
+
+        String output = mcpToolService.listSources();
+
+        assertThat(output).contains("chunks: 0");
+    }
+
+    @Test
+    void listSourcesShowsLastCrawledAtAsIsoDate() {
+        Source source = new SourceBuilder()
+                .url("https://docs.spring.io")
+                .name("Spring Docs")
+                .status(SourceStatus.INDEXED)
+                .lastCrawledAt(Instant.parse("2026-02-20T14:30:00Z"))
+                .build();
+        given(sourceRepository.findAll()).willReturn(List.of(source));
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(Collections.emptyList());
+
+        String output = mcpToolService.listSources();
+
+        assertThat(output).contains("2026-02-20T14:30:00Z");
+    }
+
+    // --- removeSource enhanced ---
+
+    @Test
+    void removeSourceCancelsActiveCrawlAndReturnsChunkCount() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .status(SourceStatus.CRAWLING)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(documentChunkRepository.countBySourceId(uuid)).willReturn(1247L);
+
+        String output = mcpToolService.removeSource(uuid.toString());
+
+        verify(progressTracker).cancelCrawl(uuid);
+        verify(sourceRepository).deleteById(uuid);
+        assertThat(output).contains("1,247 chunks deleted");
+    }
+
+    @Test
+    void removeSourceDeletesIdleSourceWithFeedback() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(documentChunkRepository.countBySourceId(uuid)).willReturn(42L);
+
+        String output = mcpToolService.removeSource(uuid.toString());
+
+        verify(progressTracker, never()).cancelCrawl(any());
+        assertThat(output).contains("42 chunks deleted");
+    }
+
+    @Test
+    void removeSourceReturnsErrorForNotFound() {
+        UUID uuid = UUID.randomUUID();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.empty());
+
+        String output = mcpToolService.removeSource(uuid.toString());
+
+        assertThat(output).startsWith("Error:");
+        assertThat(output).contains("not found");
+    }
+
+    // --- recrawlSource name update ---
+
+    @Test
+    void recrawlSourceUpdatesNameWhenChanged() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Old Name")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, "New Name");
+
+        assertThat(source.getName()).isEqualTo("New Name");
+        verify(documentChunkRepository).updateSourceNameMetadata("https://docs.spring.io", "New Name");
+    }
+
+    @Test
+    void recrawlSourceSkipsNameUpdateWhenNull() {
+        suppressAsyncDispatch();
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(sourceRepository.save(any(Source.class))).willAnswer(inv -> inv.getArgument(0));
+
+        mcpToolService.recrawlSource(uuid.toString(), null, null, null, null, null, null, null);
+
+        verify(documentChunkRepository, never()).updateSourceNameMetadata(anyString(), anyString());
+    }
+
+    // --- indexStatistics ---
+
+    @Test
+    void indexStatisticsReturnsFormattedGlobalStats() {
+        given(documentChunkRepository.countAllChunks()).willReturn(4521L);
+        given(sourceRepository.count()).willReturn(3L);
+        given(documentChunkRepository.getStorageSizeBytes()).willReturn(257_163_264L);
+        given(sourceRepository.findMaxLastCrawledAt()).willReturn(Instant.parse("2026-02-20T14:30:00Z"));
+
+        String output = mcpToolService.indexStatistics();
+
+        assertThat(output).contains("Total chunks: 4,521");
+        assertThat(output).contains("Total sources: 3");
+        assertThat(output).contains("384");
+        assertThat(output).contains("245.3 MB");
+        assertThat(output).contains("2026-02-20T14:30:00Z");
+    }
+
+    @Test
+    void indexStatisticsHandlesEmptyIndex() {
+        given(documentChunkRepository.countAllChunks()).willReturn(0L);
+        given(sourceRepository.count()).willReturn(0L);
+        given(documentChunkRepository.getStorageSizeBytes()).willReturn(0L);
+        given(sourceRepository.findMaxLastCrawledAt()).willReturn(null);
+
+        String output = mcpToolService.indexStatistics();
+
+        assertThat(output).contains("Total chunks: 0");
+        assertThat(output).contains("Total sources: 0");
+        assertThat(output).contains("never");
+    }
+
+    @Test
+    void indexStatisticsHandlesException() {
+        given(documentChunkRepository.countAllChunks()).willThrow(new RuntimeException("db error"));
+
+        String output = mcpToolService.indexStatistics();
+
+        assertThat(output).startsWith("Error");
+        assertThat(output).contains("db error");
+    }
+
+    // --- crawlStatus with real chunk count ---
+
+    @Test
+    void crawlStatusCompletedSummaryShowsRealChunkCountWithBreakdown() {
+        UUID uuid = UUID.randomUUID();
+        Source source = new SourceBuilder()
+                .name("Spring Docs")
+                .url("https://docs.spring.io")
+                .status(SourceStatus.INDEXED)
+                .lastCrawledAt(Instant.parse("2026-02-20T14:30:00Z"))
+                .build();
+        given(sourceRepository.findById(uuid)).willReturn(Optional.of(source));
+        given(progressTracker.getProgress(uuid)).willReturn(Optional.empty());
+        List<Object[]> grouped = List.<Object[]>of(
+                new Object[]{"prose", 50L},
+                new Object[]{"code", 20L});
+        given(documentChunkRepository.countBySourceIdGroupedByContentType(any()))
+                .willReturn(grouped);
+
+        String output = mcpToolService.crawlStatus(uuid.toString());
+
+        assertThat(output).contains("Chunks: 70 (50 prose, 20 code)");
+    }
 }
