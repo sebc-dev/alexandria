@@ -27,6 +27,7 @@ spring-ai-mcp-server-webmvc = { module = "org.springframework.ai:spring-ai-start
 langchain4j-core = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
 langchain4j-embeddings-bge = { module = "dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q", version.ref = "langchain4j-beta" }
 langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }
+langchain4j-onnx-scoring = { module = "dev.langchain4j:langchain4j-onnx-scoring", version.ref = "langchain4j-beta" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 postgresql = { module = "org.postgresql:postgresql" }

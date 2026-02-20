@@ -17,6 +17,8 @@ import java.util.Objects;
  * @param contentType either {@link ContentType#PROSE} or {@link ContentType#CODE}
  * @param lastUpdated ISO-8601 timestamp of the source page
  * @param language    programming language for code chunks; null for prose
+ * @param version     documentation version label; null if not versioned
+ * @param sourceName  human-readable source name; null if not set
  */
 public record DocumentChunkData(
         String text,
@@ -24,7 +26,9 @@ public record DocumentChunkData(
         String sectionPath,
         ContentType contentType,
         String lastUpdated,
-        String language
+        String language,
+        String version,
+        String sourceName
 ) {
     public DocumentChunkData {
         Objects.requireNonNull(text, "text must not be null");
@@ -36,7 +40,7 @@ public record DocumentChunkData(
 
     /**
      * Converts chunk metadata to a langchain4j {@link Metadata} instance
-     * with the 5 standard snake_case keys used by the EmbeddingStore.
+     * with snake_case keys used by the EmbeddingStore.
      */
     public Metadata toMetadata() {
         Metadata metadata = Metadata.from("source_url", sourceUrl)
@@ -45,6 +49,12 @@ public record DocumentChunkData(
                 .put("last_updated", lastUpdated);
         if (language != null) {
             metadata.put("language", language);
+        }
+        if (version != null) {
+            metadata.put("version", version);
+        }
+        if (sourceName != null) {
+            metadata.put("source_name", sourceName);
         }
         return metadata;
     }
