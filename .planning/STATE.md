@@ -100,6 +100,8 @@ Recent decisions affecting current work:
 - [05-02]: Pre-existing SpotBugs VA_FORMAT_STRING_USES_NEWLINE in TokenBudgetTruncator is intentional -- MCP stdio output uses Unix \n, not platform-dependent %n
 - [07-01]: PathMatcher glob on URL paths: java.nio.file.FileSystems.getDefault().getPathMatcher for pattern matching on URL path segments
 - [07-01]: Block patterns take priority over allow patterns in UrlScopeFilter (per user decision from plan)
+- [07-02]: LlmsTxtParser link index threshold 0.3 ratio: >= 30% markdown link lines classifies content as llms.txt link index
+- [07-02]: LlmsTxtResult as nested record in LlmsTxtParser (self-contained API, not separate file)
 
 ### Pending Todos
 
@@ -119,6 +121,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 07-01-PLAN.md
-Resume file: .planning/phases/07-crawl-operations/07-01-SUMMARY.md
-Next: Execute 07-02-PLAN.md
+Stopped at: Completed 07-02-PLAN.md
+Resume file: .planning/phases/07-crawl-operations/07-02-SUMMARY.md
+Next: Execute 07-03-PLAN.md
