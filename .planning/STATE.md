@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 8 - Advanced Search & Quality (complete)
+**Current focus:** Phase 9 - Source Management Completion (in progress)
 
 ## Current Position
 
-Phase: 8 of 8 (Advanced Search & Quality)
-Plan: 4 of 4 in Phase 08
-Status: Phase 08 Complete
-Last activity: 2026-02-20 -- Completed 08-04 (MCP Search Tool Integration)
+Phase: 9 (Source Management Completion)
+Plan: 1 of 2 in Phase 09
+Status: Executing Phase 09
+Last activity: 2026-02-20 -- Completed 09-01 (source_id FK population + cancellation)
 
-Progress: [██████████] 100%
+Progress: [█████-----] 50% (Plan 1/2 of Phase 09)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 4.8min
-- Total execution time: 1.8 hours
+- Total plans completed: 23
+- Average duration: 4.9min
+- Total execution time: 1.9 hours
 
 **By Phase:**
 
@@ -34,10 +34,11 @@ Progress: [██████████] 100%
 | 05-mcp-server | 2 | 6min | 3.0min |
 | 07-crawl-operations | 5 | 33min | 6.6min |
 | 08-advanced-search-quality | 4 | 22min | 5.5min |
+| 09-source-management-completion | 1 | 8min | 8.0min |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 5min, 5min, 4min, 8min
-- Trend: stable (~5min for focused feature plans)
+- Last 5 plans: 5min, 5min, 4min, 8min, 8min
+- Trend: stable (~6min average)
 
 *Updated after each plan completion*
 | Phase 04.5 P03 | 5min | 2 tasks | 5 files |
@@ -54,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 08 P02 | 5min | 2 tasks | 9 files |
 | Phase 08 P03 | 4min | 1 task | 4 files |
 | Phase 08 P04 | 8min | 2 tasks | 6 files |
+| Phase 09 P01 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -135,6 +137,9 @@ Recent decisions affecting current work:
 - [08-04]: SourceRepository injected into CrawlService for version/sourceName lookup (loaded once per crawl)
 - [08-04]: rrfK accepted as search_docs parameter with debug log noting store-level-only application
 - [08-04]: Version batch-update on recrawl happens before crawl dispatch so new chunks inherit updated version
+- [09-01]: Best-effort source_id linking: updateSourceIdBatch runs as separate @Transactional after embeddingStore.addAll -- not atomic with LangChain4j insert
+- [09-01]: 6-arg ingestPage(UUID sourceId, String markdown, ...) overload; existing 3-arg and 5-arg delegate with null sourceId
+- [09-01]: ConcurrentHashMap.newKeySet() for thread-safe cancellation flags, cleaned up in completeCrawl/failCrawl/removeCrawl
 
 ### Pending Todos
 
@@ -154,6 +159,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-source-management-completion/09-CONTEXT.md
-Next: /gsd:plan-phase 9
+Stopped at: Completed 09-01-PLAN.md (source_id FK population + cancellation)
+Resume file: .planning/phases/09-source-management-completion/09-01-SUMMARY.md
+Next: Execute 09-02-PLAN.md
