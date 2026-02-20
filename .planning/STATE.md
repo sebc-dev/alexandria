@@ -115,6 +115,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 05-02-PLAN.md (Phase 05 complete)
-Resume file: .planning/phases/05-mcp-server/05-02-SUMMARY.md
-Next: Phase 6 planning (Source Management) or next available phase
+Stopped at: Phase 7 context gathered
+Resume file: .planning/phases/07-crawl-operations/07-CONTEXT.md
+Next: /gsd:plan-phase 7
