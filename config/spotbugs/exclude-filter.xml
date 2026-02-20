@@ -45,4 +45,10 @@
         <Class name="dev.alexandria.crawl.Crawl4AiPageResult"/>
         <Method name="links"/>
     </Match>
+    <!-- Markdown format strings require \n line endings regardless of platform -->
+    <Match>
+        <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
+        <Class name="dev.alexandria.mcp.TokenBudgetTruncator"/>
+        <Method name="formatResult"/>
+    </Match>
 </FindBugsFilter>
