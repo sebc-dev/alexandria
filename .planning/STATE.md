@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 5 - MCP Server (complete)
+**Current focus:** Phase 7 - Crawl Operations (in progress)
 
 ## Current Position
 
-Phase: 5 of 8 (MCP Server)
-Plan: 2 of 2 in Phase 05
-Status: Phase 05 complete
-Last activity: 2026-02-20 -- Completed 05-02 (MCP unit tests + .mcp.json)
+Phase: 7 of 8 (Crawl Operations)
+Plan: 2 of 5 in Phase 07
+Status: Executing Phase 07
+Last activity: 2026-02-20 -- Completed 07-02 (LlmsTxtParser TDD)
 
-Progress: [██████░░░░] 62%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 16
 - Average duration: 4.6min
-- Total execution time: 1.1 hours
+- Total execution time: 1.2 hours
 
 **By Phase:**
 
@@ -34,7 +34,7 @@ Progress: [██████░░░░] 62%
 | 05-mcp-server | 2 | 6min | 3.0min |
 
 **Recent Trend:**
-- Last 5 plans: 12min, 3min, 11min, 3min, 3min
+- Last 5 plans: 11min, 3min, 3min, 5min, 5min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -43,6 +43,8 @@ Progress: [██████░░░░] 62%
 | Phase 04.5 P05 | 11min | 2 tasks | 38 files |
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
+| Phase 07 P01 | 5min | 2 tasks | 6 files |
+| Phase 07 P02 | 5min | 1 task | 2 files |
 
 ## Accumulated Context
 
@@ -96,6 +98,8 @@ Recent decisions affecting current work:
 - [05-01]: Source management tools are functional stubs (add_source/remove_source interact with DB, others query status) with future-update messages for crawl orchestration
 - [05-01]: First search result always included even if exceeding token budget (truncated at char level) to guarantee non-empty responses
 - [05-02]: Pre-existing SpotBugs VA_FORMAT_STRING_USES_NEWLINE in TokenBudgetTruncator is intentional -- MCP stdio output uses Unix \n, not platform-dependent %n
+- [07-01]: PathMatcher glob on URL paths: java.nio.file.FileSystems.getDefault().getPathMatcher for pattern matching on URL path segments
+- [07-01]: Block patterns take priority over allow patterns in UrlScopeFilter (per user decision from plan)
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-crawl-operations/07-CONTEXT.md
-Next: /gsd:plan-phase 7
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-crawl-operations/07-01-SUMMARY.md
+Next: Execute 07-02-PLAN.md
