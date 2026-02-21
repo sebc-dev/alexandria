@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     java
     alias(libs.plugins.spring.boot)
@@ -6,6 +8,10 @@ plugins {
     alias(libs.plugins.pitest)
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.sonarqube)
+    alias(libs.plugins.errorprone)
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.owasp.depcheck)
+    alias(libs.plugins.cyclonedx)
 }
 
 java {
@@ -29,6 +35,7 @@ dependencies {
     implementation(libs.langchain4j.core)
     implementation(libs.langchain4j.embeddings.bge)
     implementation(libs.langchain4j.pgvector)
+    implementation(libs.langchain4j.onnx.scoring)
     implementation(libs.spring.ai.mcp.server.webmvc)
 
     // Markdown Parsing
@@ -46,6 +53,13 @@ dependencies {
     // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.archunit)
+
+    // Error Prone + NullAway
+    errorprone(libs.errorprone.core)
+    errorprone(libs.nullaway)
+
+    // Null-safety annotations (JSpecify)
+    implementation(libs.jspecify)
 }
 
 dependencyManagement {
@@ -87,6 +101,7 @@ testing {
 
 tasks.named("check") {
     dependsOn(testing.suites.named("integrationTest"))
+    dependsOn("dependencyCheckAnalyze")
 }
 
 // Disable plain jar — only produce the Spring Boot fat jar
@@ -170,4 +185,62 @@ sonar {
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
         )
     }
+}
+
+// ---------------------------------------------------------------------------
+// Error Prone - Compile-time Bug Detection
+// ---------------------------------------------------------------------------
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        isEnabled.set(true)
+        disableWarningsInGeneratedCode.set(true)
+        excludedPaths.set(".*/build/generated/.*")
+        option("NullAway:AnnotatedPackages", "dev.alexandria")
+        option("NullAway:JSpecifyMode", "true")
+        error("NullAway")
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Spotless - Code Formatting (google-java-format)
+// ---------------------------------------------------------------------------
+spotless {
+    // ratchetFrom only checks files changed since origin/master (optimization).
+    // JGit cannot resolve git worktree .git files, so skip ratchet in worktrees.
+    val dotGit = rootProject.file(".git")
+    if (dotGit.isDirectory) {
+        ratchetFrom("origin/master")
+    }
+    java {
+        target("src/**/*.java")
+        googleJavaFormat()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// OWASP Dependency-Check - Vulnerability Scanning
+// ---------------------------------------------------------------------------
+dependencyCheck {
+    failBuildOnCVSS = 7.0f
+    suppressionFile = "owasp-suppressions.xml"
+    analyzers {
+        assemblyEnabled = false        // .NET analyzer, not needed
+        nodeEnabled = false            // Node.js analyzer, not needed
+        ossIndexEnabled = false        // Requires Sonatype OSS Index API key; NVD is sufficient
+    }
+    nvd {
+        apiKey = System.getenv("NVD_API_KEY") ?: ""
+    }
+    data {
+        directory = System.getenv("DEPENDENCY_CHECK_DATA_DIR")
+            ?: "${System.getProperty("user.home")}/.gradle/dependency-check-data"
+    }
+    formats = listOf("HTML", "JSON")
+}
+
+// ---------------------------------------------------------------------------
+// CycloneDX - SBOM Generation
+// ---------------------------------------------------------------------------
+tasks.named("build") {
+    dependsOn("cyclonedxBom")
 }

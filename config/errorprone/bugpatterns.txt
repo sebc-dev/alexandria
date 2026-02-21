@@ -1,0 +1,5 @@
+# Centralized Error Prone suppressions.
+# Each entry disables a specific bug pattern with justification.
+# Per locked decision: no inline @SuppressWarnings, all suppressions go here.
+#
+# Format: BugPatternName  # justification

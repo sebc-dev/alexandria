@@ -1,156 +1,134 @@
 # Requirements: Alexandria
 
-**Defined:** 2026-02-14
+**Defined:** 2026-02-20
 **Core Value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
 
-## v1 Requirements
+## v0.2 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases.
 
-### Source Management
+### Chunking & Retrieval
 
-- [ ] **SRC-01**: User can add a documentation URL as a source via MCP tool `add_source`
-- [ ] **SRC-02**: User can list all configured sources with status, last crawl time, and chunk count via MCP tool `list_sources`
-- [ ] **SRC-03**: User can remove a source and all its indexed data (cascade delete) via MCP tool `remove_source`
-- [ ] **SRC-04**: User can see freshness status of each source (time since last crawl, staleness indicator)
-- [ ] **SRC-05**: User can view index statistics (total chunks, total sources, storage size, embedding dimensions) via MCP tool
+- [ ] **CHUNK-01**: Le systeme produit des parent chunks (section H2/H3 complete code+prose) et des child chunks (paragraphes/blocs individuels) avec lien parent-child en metadata
+- [ ] **CHUNK-02**: La recherche retourne les parent chunks complets quand un child chunk matche, reunissant code et prose dans le contexte
+- [ ] **CHUNK-03**: Le prefixe query BGE est applique sur les requetes de recherche (pas sur les documents a l'indexation)
 
-### Crawling & Ingestion
+### Search Fusion
 
-- [x] **CRWL-01**: System crawls a documentation site recursively from a root URL via Crawl4AI sidecar
-- [x] **CRWL-02**: System converts crawled HTML to Markdown preserving headings, code blocks with language tags, tables, and lists
-- [x] **CRWL-03**: User can control crawl scope (URL pattern allowlist/blocklist, max depth, max pages)
-- [x] **CRWL-04**: System handles JavaScript-rendered pages via Crawl4AI's Chromium headless browser
-- [x] **CRWL-05**: System removes boilerplate content (navigation, footers, sidebars) from crawled pages
-- [x] **CRWL-06**: System performs incremental/delta crawls — only re-processes pages whose content hash (SHA-256) has changed
-- [ ] **CRWL-07**: User can schedule periodic recrawls for a source (interval-based) *(deferred to manual recrawl_source)*
-- [x] **CRWL-08**: System discovers pages via sitemap.xml when available, falls back to recursive crawl
-- [x] **CRWL-09**: User can check crawl progress (pages crawled, pages remaining, errors) via MCP tool `crawl_status`
-- [x] **CRWL-10**: User can trigger a recrawl of an existing source via MCP tool `recrawl_source`
-- [x] **CRWL-11**: System can ingest llms.txt and llms-full.txt files as documentation sources and use them as page discovery mechanism (like sitemap.xml) for further crawling
+- [ ] **FUSE-01**: La fusion hybride utilise Convex Combination (score normalise) au lieu de RRF
+- [ ] **FUSE-02**: Le parametre alpha de Convex Combination est configurable via application properties
+- [ ] **FUSE-03**: Le nombre de candidats reranking est configurable (defaut: 30, testable 20/30/50)
 
-### Chunking & Embedding
+### Retrieval Evaluation
 
-- [x] **CHUNK-01**: System chunks Markdown at heading boundaries (H1/H2/H3), never splitting mid-code-block or mid-table
-- [x] **CHUNK-02**: System applies configurable chunk overlap (default 50-100 tokens)
-- [x] **CHUNK-03**: Each chunk carries metadata: source URL, section path (breadcrumb), heading hierarchy, content type, last updated timestamp
-- [x] **CHUNK-04**: System generates embeddings via ONNX in-process (bge-small-en-v1.5-q, 384 dimensions)
-- [x] **CHUNK-05**: System extracts code examples as separate chunks tagged with language and content_type="code"
-- [ ] **CHUNK-06**: User can tag each source with a version label (e.g., "React 19", "Spring Boot 3.5")
-- [x] **CHUNK-07**: User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) instead of relying on built-in automatic chunking
+- [ ] **EVAL-01**: Une classe RetrievalMetrics implemente Recall@k, Precision@k, MRR, NDCG@k, MAP, Hit Rate
+- [ ] **EVAL-02**: Un golden set de 100 requetes annotees couvre les 4 types (factuelle, conceptuelle, code lookup, troubleshooting)
+- [ ] **EVAL-03**: Un test JUnit 5 parametrise execute le golden set et asserte des seuils minimaux (Recall@10 >= 0.70, MRR >= 0.60)
+- [ ] **EVAL-04**: Une ablation study compare vector-only, FTS-only, hybride CC, hybride CC+reranking
+- [ ] **EVAL-05**: Les resultats d'evaluation sont exportes en CSV pour suivi de tendance
 
-### Search & Retrieval
+### Quality Tooling
 
-- [x] **SRCH-01**: User can search indexed documentation via semantic vector search (cosine similarity, pgvector HNSW)
-- [x] **SRCH-02**: User can search indexed documentation via keyword search (PostgreSQL tsvector/tsquery BM25)
-- [x] **SRCH-03**: System combines vector and keyword results via Reciprocal Rank Fusion (RRF) for hybrid search
-- [ ] **SRCH-04**: User can filter search results by source name
-- [x] **SRCH-05**: Every search result includes source URL and section path for citation
-- [x] **SRCH-06**: User can configure number of results returned (default 10)
-- [ ] **SRCH-07**: System re-ranks top candidates via cross-encoder model for improved precision
-- [ ] **SRCH-08**: User can filter search results by section path (e.g., "API Reference" only)
-- [ ] **SRCH-09**: User can filter search results by version tag
-- [ ] **SRCH-10**: User can filter search results by content type (code vs prose vs all)
+- [ ] **QUAL-01**: Error Prone 2.45+ est integre au build Gradle avec les checks ERROR actifs
+- [ ] **QUAL-02**: NullAway est integre et les packages annotes avec @NullMarked/@Nullable
+- [ ] **QUAL-03**: Spotless + google-java-format enforce le formatage sur le code modifie (ratchetFrom)
+- [ ] **QUAL-04**: jqwik teste les invariants structurels du MarkdownChunker (conservation contenu, bornes taille, code blocks equilibres, tables completes)
 
-### MCP Server
+### Security
 
-- [x] **MCP-01**: Server communicates via stdio transport for Claude Code integration
-- [x] **MCP-02**: Tools have clear, front-loaded descriptions optimized for LLM tool selection
-- [x] **MCP-03**: Tool errors return structured, actionable messages (not stack traces)
-- [x] **MCP-04**: Search results respect a configurable token budget (default 5000 tokens)
-- [x] **MCP-05**: Server exposes maximum 6 tools: `search_docs`, `list_sources`, `add_source`, `remove_source`, `crawl_status`, `recrawl_source`
+- [ ] **SECU-01**: Trivy scanne les 3 images Docker et le filesystem Java dans le CI
+- [ ] **SECU-02**: OWASP Dependency-Check est integre au build Gradle avec seuil CVSS 7.0
+- [ ] **SECU-03**: CycloneDX genere un SBOM a chaque build
 
-### Infrastructure
+### MCP Testing
 
-- [x] **INFRA-01**: System runs via single `docker compose up` command (Java app + Crawl4AI + PostgreSQL+pgvector)
-- [x] **INFRA-02**: System works with sensible defaults, zero mandatory configuration beyond Docker
-- [x] **INFRA-03**: Project includes Claude Code integration guide (.mcp.json configuration)
-- [x] **INFRA-04**: System fits within 14 GB RAM budget (on 24 GB machine)
+- [ ] **MCPT-01**: Un snapshot test verifie le schema de tools/list contre un fichier de reference versionne
+- [ ] **MCPT-02**: Des tests d'integration round-trip via McpAsyncClient couvrent les 7 outils MCP (happy path + cas d'erreur)
 
-## v2 Requirements
+### Performance Tuning
 
-Deferred to future release. Tracked but not in current roadmap.
+- [ ] **PERF-01**: Le thread spinning ONNX est desactive (allow_spinning=0) et les pools de threads ONNX sont configures globalement
+- [ ] **PERF-02**: PostgreSQL est tune pour le workload RAG (shared_buffers, ef_search=100, JIT off, maintenance_work_mem)
+- [ ] **PERF-03**: HikariCP est configure pour les virtual threads (pool 10-15, connection-timeout 5-10s)
 
-### Quality Enhancements
+### Monitoring
 
-- **QUAL-01**: System supports multiple embedding providers (Voyage, Cohere, local models)
-- **QUAL-02**: System supports upgrading embedding model with automated reindexation
+- [ ] **MONI-01**: Micrometer instrumente chaque etape du pipeline search avec timers et percentiles (p50/p95/p99)
+- [ ] **MONI-02**: VictoriaMetrics + Grafana + postgres_exporter sont deployes dans docker-compose
+- [ ] **MONI-03**: Un dashboard Grafana affiche les metriques RAG (latence par etape, empty rate, top score distribution, pool HikariCP)
+- [ ] **MONI-04**: Des alertes sont configurees sur les seuils critiques (p95 > 2s, cache hit < 90%, error rate > 5%)
 
-### Operational
+## Future Requirements
 
-- **OPS-01**: Cron-expression based scheduling for recrawls
-- **OPS-02**: Bulk source import via YAML/JSON config file
-- **OPS-03**: Source freshness alerting (proactive notifications)
+### Embedding Model Migration
+
+- **EMBD-01**: Benchmarker nomic-embed-text-v1.5 vs bge-small sur le golden set
+- **EMBD-02**: Migrer vers nomic-embed-text-v1.5 si benchmarks positifs (reindexation complete)
+- **EMBD-03**: Exploiter Matryoshka a 256d pour economie memoire
+
+### Advanced Reranking
+
+- **RANK-01**: Upgrader vers ms-marco-MiniLM-L-12-v2 ou bge-reranker-base
+- **RANK-02**: Fine-tuner le reranker sur le domaine documentation technique
+
+### Advanced Testing
+
+- **TEST-01**: Property-based testing etendu avec generateurs Markdown complexes
+- **TEST-02**: WireMock pour Crawl4AI (resilience client)
+- **TEST-03**: Tests delta crawl (idempotence, hash deterministe)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Built-in LLM answer generation | Alexandria is a retrieval system. Claude generates answers from retrieved context |
-| Multi-tenant user management | Single-tenant by design. One instance per developer/team |
-| Web UI dashboard | Claude Code via MCP tools IS the interface |
-| PDF/Office document ingestion | Fundamentally different parsing pipeline. Focus on web documentation |
-| Knowledge graph (GraphRAG) | Extreme complexity. Hierarchical metadata provides 80% of structural benefit |
-| Custom embedding model hosting | Adds GPU requirements. ONNX in-process suffices for v1 |
-| Real-time streaming of crawl output | Poll-based status via MCP tool is simpler and sufficient |
-| OpenAPI/Swagger spec parsing | General-purpose crawling handles API docs as regular pages |
-| Multi-langue support | English-only simplifies embedding model choice |
+| Migration modele d'embedding | Benchmarker d'abord dans un futur milestone, reindexation lourde |
+| Fine-tuning embeddings | Investissement disproportionne pour v0.2, gain incertain |
+| Contextual Retrieval avec LLM local | TinyLlama 5-15s/chunk sur CPU, impraticable |
+| ColBERT reranking (bge-m3) | Stockage ~128KB/passage, prohibitif a 500K chunks |
+| Checker Framework | Overhead compilation 2.8-5.1x, NullAway couvre 80% de la valeur |
+| Qodana | Redondant avec SpotBugs + SonarCloud |
+| Pact/Spring Cloud Contract pour MCP | JSON-RPC sur SSE, pas REST — effort disproportionne |
+| Semantic chunking | Contre-productif pour le code, le parent-child est superieur |
+| HyDE | 5-15s latence par requete sur CPU, impraticable en interactif |
+| Gradle Dependency Verification | Maintenance lourde, a activer apres stabilisation des deps |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRC-01 | Phase 6 | Pending |
-| SRC-02 | Phase 6 | Pending |
-| SRC-03 | Phase 6 | Pending |
-| SRC-04 | Phase 6 | Pending |
-| SRC-05 | Phase 6 | Pending |
-| CRWL-01 | Phase 3 | ✓ Complete |
-| CRWL-02 | Phase 3 | ✓ Complete |
-| CRWL-03 | Phase 7 | ✓ Complete |
-| CRWL-04 | Phase 3 | ✓ Complete |
-| CRWL-05 | Phase 3 | ✓ Complete |
-| CRWL-06 | Phase 7 | ✓ Complete |
-| CRWL-07 | Phase 7 | Deferred (manual recrawl_source) |
-| CRWL-08 | Phase 3 | ✓ Complete |
-| CRWL-09 | Phase 7 | ✓ Complete |
-| CRWL-10 | Phase 7 | ✓ Complete |
-| CRWL-11 | Phase 7 | ✓ Complete |
-| CHUNK-01 | Phase 4 | ✓ Complete |
-| CHUNK-02 | Phase 4 | ✓ Complete |
-| CHUNK-03 | Phase 4 | ✓ Complete |
-| CHUNK-04 | Phase 1 | ✓ Complete |
-| CHUNK-05 | Phase 4 | ✓ Complete |
-| CHUNK-06 | Phase 8 | Pending |
-| CHUNK-07 | Phase 4 | ✓ Complete |
-| SRCH-01 | Phase 2 | ✓ Complete |
-| SRCH-02 | Phase 2 | ✓ Complete |
-| SRCH-03 | Phase 2 | ✓ Complete |
-| SRCH-04 | Phase 8 | Pending |
-| SRCH-05 | Phase 2 | ✓ Complete |
-| SRCH-06 | Phase 2 | ✓ Complete |
-| SRCH-07 | Phase 8 | Pending |
-| SRCH-08 | Phase 8 | Pending |
-| SRCH-09 | Phase 8 | Pending |
-| SRCH-10 | Phase 8 | Pending |
-| MCP-01 | Phase 5 | ✓ Complete |
-| MCP-02 | Phase 5 | ✓ Complete |
-| MCP-03 | Phase 5 | ✓ Complete |
-| MCP-04 | Phase 5 | ✓ Complete |
-| MCP-05 | Phase 5 | ✓ Complete |
-| INFRA-01 | Phase 1 | ✓ Complete |
-| INFRA-02 | Phase 1 | ✓ Complete |
-| INFRA-03 | Phase 5 | ✓ Complete |
-| INFRA-04 | Phase 1 | ✓ Complete |
+| QUAL-01 | Phase 11 | Pending |
+| QUAL-02 | Phase 11 | Pending |
+| QUAL-03 | Phase 11 | Pending |
+| SECU-01 | Phase 11 | Pending |
+| SECU-02 | Phase 11 | Pending |
+| SECU-03 | Phase 11 | Pending |
+| PERF-01 | Phase 12 | Pending |
+| PERF-02 | Phase 12 | Pending |
+| PERF-03 | Phase 12 | Pending |
+| CHUNK-03 | Phase 12 | Pending |
+| EVAL-01 | Phase 13 | Pending |
+| EVAL-02 | Phase 13 | Pending |
+| EVAL-03 | Phase 13 | Pending |
+| EVAL-05 | Phase 13 | Pending |
+| CHUNK-01 | Phase 14 | Pending |
+| CHUNK-02 | Phase 14 | Pending |
+| QUAL-04 | Phase 14 | Pending |
+| FUSE-01 | Phase 15 | Pending |
+| FUSE-02 | Phase 15 | Pending |
+| FUSE-03 | Phase 15 | Pending |
+| MCPT-01 | Phase 16 | Pending |
+| MCPT-02 | Phase 16 | Pending |
+| MONI-01 | Phase 17 | Pending |
+| MONI-02 | Phase 17 | Pending |
+| MONI-03 | Phase 17 | Pending |
+| MONI-04 | Phase 17 | Pending |
+| EVAL-04 | Phase 18 | Pending |
 
 **Coverage:**
-- v1 requirements: 42 total
-- Mapped to phases: 42
+- v0.2 requirements: 27 total
+- Mapped to phases: 27
 - Unmapped: 0
-- Complete: 30/42 (71%)
-- Pending: 11 (SRC-01..05, CHUNK-06, SRCH-04, SRCH-07..10)
-- Deferred: 1 (CRWL-07)
 
 ---
-*Requirements defined: 2026-02-14*
-*Last updated: 2026-02-20 after phase 7 completion*
+*Requirements defined: 2026-02-20*
+*Last updated: 2026-02-20 after roadmap creation*

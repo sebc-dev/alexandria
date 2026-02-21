@@ -1,218 +1,153 @@
 # Roadmap: Alexandria
 
-## Overview
+## Milestones
 
-Alexandria delivers a self-hosted RAG system that crawls, indexes, and exposes technical documentation to Claude Code via MCP. The build order follows component dependencies: database and search infrastructure first (verifiable with test data), then crawling, then the ingestion pipeline that connects them, then MCP exposure to Claude Code, then source management CRUD, then operational crawl features, and finally advanced search quality enhancements. Phases 1-5 form the critical path to a working end-to-end system; Phases 6-8 add operational completeness and search precision.
+- ✅ **v0.1 Full RAG System** — Phases 0-9 (shipped 2026-02-20) — [Archive](milestones/v1.5-ROADMAP.md)
+- 🚧 **v0.2 Audit & Optimisation** — Phases 11-18 (in progress)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v0.1 Full RAG System (Phases 0-9) — SHIPPED 2026-02-20</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] Phase 0: CI & Quality Gate (2/2 plans) — completed 2026-02-14
+- [x] Phase 1: Foundation & Infrastructure (2/2 plans) — completed 2026-02-14
+- [x] Phase 2: Core Search (2/2 plans) — completed 2026-02-15
+- [x] Phase 3: Web Crawling (2/2 plans) — completed 2026-02-15
+- [x] Phase 4: Ingestion Pipeline (2/2 plans) — completed 2026-02-18
+- [x] Phase 4.5: Code Quality & Test Consolidation (5/5 plans) — completed 2026-02-19
+- [x] Phase 5: MCP Server (2/2 plans) — completed 2026-02-20
+- [x] ~~Phase 6: Source Management~~ — Superseded by Phase 9
+- [x] Phase 7: Crawl Operations (5/5 plans) — completed 2026-02-20
+- [x] Phase 8: Advanced Search & Quality (4/4 plans) — completed 2026-02-20
+- [x] Phase 9: Source Management Completion (2/2 plans) — completed 2026-02-20
 
-- [x] **Phase 0: CI & Quality Gate** - Local and GitHub CI with unit tests, integration tests, mutation testing, dead code detection, and architecture tests (completed 2026-02-14)
-- [x] **Phase 1: Foundation & Infrastructure** - PostgreSQL+pgvector schema, Spring Boot skeleton, ONNX embeddings, Docker Compose (completed 2026-02-14)
-- [x] **Phase 2: Core Search** - Hybrid search (vector + keyword + RRF) verifiable with test data
-- [x] **Phase 3: Web Crawling** - Crawl4AI sidecar integration for recursive JS-capable crawling
-- [x] **Phase 4: Ingestion Pipeline** - Markdown-aware chunking, metadata enrichment, code extraction (completed 2026-02-18)
-- [x] **Phase 4.5: Code Quality & Test Consolidation** *(INSERTED)* - Consolidate tests, increase coverage, refactor long methods, codebase cleanup (completed 2026-02-19)
-- [x] **Phase 5: MCP Server** - stdio transport exposing search and management tools to Claude Code
-- [ ] **Phase 6: Source Management** - CRUD operations for documentation sources with status tracking
-- [x] **Phase 7: Crawl Operations** - Incremental crawls, scope controls, scheduling, progress monitoring (completed 2026-02-20)
-- [ ] **Phase 8: Advanced Search & Quality** - Cross-encoder reranking, filtering by section/version/content-type
+</details>
+
+### 🚧 v0.2 Audit & Optimisation (In Progress)
+
+**Milestone Goal:** Auditer et optimiser la qualite RAG, la robustesse du code, la performance et l'observabilite du systeme. Build evaluation before changing the pipeline, measure before/after.
+
+- [x] **Phase 11: Quality & Security Tooling** — Safety net before refactoring (completed 2026-02-20)
+- [ ] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact
+- [ ] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes
+- [ ] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose
+- [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
+- [ ] **Phase 16: MCP Testing** — Snapshot and round-trip test coverage
+- [ ] **Phase 17: Monitoring Stack** — Observability for the production pipeline
+- [ ] **Phase 18: Ablation Study & Validation** — Measure the optimised pipeline end-to-end
 
 ## Phase Details
 
-### Phase 0: CI & Quality Gate
-**Goal**: A CI pipeline running locally and on GitHub that enforces quality gates -- unit tests, integration tests, mutation testing, dead code detection, and architecture tests -- so every subsequent phase is built with automated quality assurance from the start
-**Depends on**: Nothing (first phase)
-**Requirements**: None (cross-cutting concern)
+### Phase 11: Quality & Security Tooling
+**Goal**: The build catches bugs, null safety violations, formatting drift, and vulnerable dependencies automatically
+**Depends on**: Nothing (independent of RAG pipeline)
+**Requirements**: QUAL-01, QUAL-02, QUAL-03, SECU-01, SECU-02, SECU-03
 **Success Criteria** (what must be TRUE):
-  1. `./gradlew check` (or equivalent) runs all quality gates locally: unit tests, integration tests, mutation tests, dead code detection, and architecture tests
-  2. GitHub Actions workflow runs the same quality gates on every push and PR, blocking merge on failure
-  3. Mutation testing (via PIT or equivalent) runs on the codebase and reports a mutation coverage score
-  4. Dead code detection (via detekt/UnusedDeclarations or equivalent) flags unused code as build warnings or errors
-  5. Architecture tests (via ArchUnit) enforce package dependency rules and architectural constraints
-  6. CI pipeline completes in under 5 minutes for an empty/skeleton project
-**Plans:** 2/2 plans complete
+  1. `./gradlew build` fails if Error Prone detects an ERROR-level bug pattern in any Java file
+  2. NullAway reports null safety violations at compile time for all annotated packages
+  3. `./gradlew spotlessCheck` fails on code that does not match google-java-format (ratcheted to changed files only)
+  4. Trivy scans all 3 Docker images and the Java filesystem in CI, failing on HIGH/CRITICAL CVEs
+  5. OWASP Dependency-Check runs in the Gradle build and fails on CVSS >= 7.0; CycloneDX generates an SBOM artifact
+**Plans**: 3 plans
+- [x] 11-01-PLAN.md — Error Prone + Spotless configuration and big-bang format (completed 2026-02-20)
+- [x] 11-02-PLAN.md — NullAway + JSpecify annotations for null safety (completed 2026-02-20)
+- [x] 11-03-PLAN.md — OWASP Dependency-Check, CycloneDX SBOM, and Trivy CI scanning (completed 2026-02-20)
 
-Plans:
-- [x] 00-01-PLAN.md -- Gradle project skeleton with all quality gate plugins configured and verified
-- [x] 00-02-PLAN.md -- Local quality.sh script and GitHub Actions CI workflow with SonarCloud
-
-### Phase 1: Foundation & Infrastructure
-**Goal**: A running Docker Compose stack with PostgreSQL+pgvector, Spring Boot application, and in-process ONNX embedding generation -- the base layer everything else builds on
-**Depends on**: Phase 0
-**Requirements**: INFRA-01, INFRA-02, INFRA-04, CHUNK-04
+### Phase 12: Performance Quick Wins
+**Goal**: Latency and resource usage improve through configuration-only changes with no code refactoring
+**Depends on**: Nothing (independent config changes)
+**Requirements**: PERF-01, PERF-02, PERF-03, CHUNK-03
 **Success Criteria** (what must be TRUE):
-  1. `docker compose up` starts all services (Java app, PostgreSQL+pgvector) and they reach healthy status without manual intervention
-  2. Application can generate a 384-dimension embedding vector from arbitrary text input using the in-process ONNX model (bge-small-en-v1.5-q)
-  3. Application can store an embedding with metadata in pgvector and retrieve it by ID
-  4. Total memory usage of the running stack stays under 14 GB on a 24 GB machine
-  5. Database schema is managed by Flyway migrations (no manual SQL execution required)
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 01-01-PLAN.md -- Gradle dependencies, Spring Boot dual-profile config, Docker Compose stack with pgvector/Crawl4AI/app
-- [x] 01-02-PLAN.md -- Flyway migrations, LangChain4j ONNX embedding beans, integration test proving embed-store-retrieve
-
-### Phase 2: Core Search
-**Goal**: Users can perform hybrid semantic+keyword search over indexed documentation and get relevant, cited results -- verifiable with manually inserted test data before any crawling exists
-**Depends on**: Phase 1
-**Requirements**: SRCH-01, SRCH-02, SRCH-03, SRCH-05, SRCH-06
-**Success Criteria** (what must be TRUE):
-  1. User can search by meaning (semantic query like "how to configure routing") and get relevant chunks ranked by cosine similarity via pgvector HNSW index
-  2. User can search by exact terms (keyword query like "RouterModule") and get relevant chunks via PostgreSQL full-text search (tsvector/tsquery)
-  3. Hybrid search combines vector and keyword results via Reciprocal Rank Fusion and returns better results than either method alone
-  4. Every search result includes a source URL and section path suitable for citation
-  5. User can configure the number of results returned (defaulting to 10)
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 02-01-PLAN.md -- V2 Flyway migration (GIN index fix), hybrid EmbeddingStore config, SearchService + domain DTOs
-- [x] 02-02-PLAN.md -- Unit tests (SearchRequest, SearchService) + HybridSearchIT integration tests proving all 5 success criteria
-
-### Phase 3: Web Crawling
-**Goal**: The system can crawl a documentation site from a root URL, handle JavaScript-rendered pages, and produce clean Markdown output -- the raw material for the ingestion pipeline
-**Depends on**: Phase 1
-**Requirements**: CRWL-01, CRWL-02, CRWL-04, CRWL-05, CRWL-08
-**Success Criteria** (what must be TRUE):
-  1. System recursively crawls a documentation site from a root URL via the Crawl4AI sidecar, following internal links to discover pages
-  2. Crawled HTML is converted to Markdown that preserves headings, code blocks with language tags, tables, and lists
-  3. JavaScript-rendered pages (e.g., React/Vue doc sites) produce the same quality Markdown as static HTML pages
-  4. Boilerplate content (navigation bars, footers, sidebars) is stripped from crawled output
-  5. System checks for sitemap.xml and uses it for page discovery when available, falling back to recursive link crawling
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 03-01-PLAN.md -- Crawl4AI REST client, Spring RestClient config, request/response DTOs, Docker Compose shm_size fix, integration test
-- [x] 03-02-PLAN.md -- SitemapParser, UrlNormalizer, PageDiscoveryService, CrawlService orchestrator, integration test
-
-### Phase 4: Ingestion Pipeline
-**Goal**: Crawled Markdown is transformed into richly-annotated, searchable chunks that preserve code block integrity and heading hierarchy -- the quality-critical transformation layer
-**Depends on**: Phase 1, Phase 2, Phase 3
-**Requirements**: CHUNK-01, CHUNK-02, CHUNK-03, CHUNK-05, CHUNK-07
-**Success Criteria** (what must be TRUE):
-  1. System chunks Markdown at heading boundaries (H1/H2/H3) and never splits mid-code-block or mid-table
-  2. Chunks carry configurable overlap (default 50-100 tokens) so context is not lost at boundaries
-  3. Every chunk carries metadata: source URL, section path (breadcrumb from heading hierarchy), content type, and last updated timestamp
-  4. Code examples are extracted as separate chunks tagged with language and content_type="code"
-  5. User can optionally provide pre-chunked content (from external tooling or LLM-assisted chunking) bypassing automatic chunking
-  6. End-to-end pipeline works: crawl a real documentation site and produce searchable results via hybrid search
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 04-01-PLAN.md -- MarkdownChunker (CommonMark AST), DocumentChunkData record, LanguageDetector, TDD
-- [x] 04-02-PLAN.md -- IngestionService orchestrator, PreChunkedImporter, integration tests proving ingest-search roundtrip
-
-### Phase 4.5: Code Quality & Test Consolidation *(INSERTED)*
-**Goal**: Consolidate and strengthen the test suite built over Phases 0-4, increase test coverage where it adds value, refactor overly long methods, and perform targeted codebase cleanup -- ensuring a solid, maintainable foundation before building the MCP integration layer
-**Depends on**: Phase 4
-**Requirements**: None (cross-cutting quality concern)
-**Success Criteria** (what must be TRUE):
-  1. Test coverage increased to meaningful levels on under-tested service classes and critical paths
-  2. Methods exceeding ~30 lines refactored into smaller, well-named units
-  3. Dead code, unused imports, and stale TODOs removed across the codebase
-  4. Existing tests consolidated: no duplicate test setups, shared fixtures extracted where appropriate
-  5. All quality gates pass (`./quality.sh all`) with no regressions
-**Plans:** 5/5 plans complete
-
-Plans:
-- [x] 04.5-01-PLAN.md -- SpotBugs fixes (23 findings), unused Gradle deps removal, test fixture builders
-- [x] 04.5-02-PLAN.md -- Kill PIT mutations (20 surviving) and refactor MarkdownChunker long methods
-- [x] 04.5-03-PLAN.md -- Add unit tests for crawl package (CrawlService, Crawl4AiClient, PageDiscoveryService, SitemapParser) + refactor CrawlService
-- [x] 04.5-04-PLAN.md -- Add unit tests for IngestionService and PreChunkedImporter
-- [x] 04.5-05-PLAN.md -- Javadoc on 18 classes, test name harmonization (46 renames), IT consolidation, dead code/import cleanup
-
-### Phase 5: MCP Server
-**Goal**: Claude Code can connect to Alexandria via MCP stdio transport and search indexed documentation -- the integration layer that makes everything usable
-**Depends on**: Phase 2, Phase 4
-**Requirements**: MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, INFRA-03
-**Success Criteria** (what must be TRUE):
-  1. Claude Code connects to Alexandria via stdio transport using a documented .mcp.json configuration
-  2. `search_docs` tool returns relevant documentation excerpts with source citations, respecting a configurable token budget (default 5000 tokens)
-  3. Tool descriptions are clear and front-loaded so Claude Code's LLM can reliably select the right tool
-  4. Tool errors return structured, actionable messages (not Java stack traces or raw exceptions)
-  5. Server exposes maximum 6 tools as specified: `search_docs`, `list_sources`, `add_source`, `remove_source`, `crawl_status`, `recrawl_source`
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 05-01-PLAN.md -- MCP adapter package: TokenBudgetTruncator, McpToolService (6 tools), McpToolConfig, token budget property
-- [x] 05-02-PLAN.md -- Unit tests for MCP adapter layer + .mcp.json Claude Code integration config
-
-### Phase 6: Source Management
-**Goal**: Users can manage documentation sources through MCP tools -- add, remove, list, and inspect the health of their indexed documentation
-**Depends on**: Phase 5, Phase 3
-**Requirements**: SRC-01, SRC-02, SRC-03, SRC-04, SRC-05
-**Success Criteria** (what must be TRUE):
-  1. User can add a documentation URL as a source via `add_source` MCP tool and it triggers crawling and indexing
-  2. User can list all configured sources with status, last crawl time, and chunk count via `list_sources`
-  3. User can remove a source via `remove_source` and all its indexed data (chunks, embeddings) is cascade-deleted
-  4. User can see freshness status of each source (time since last crawl, staleness indicator)
-  5. User can view index statistics (total chunks, total sources, storage size, embedding dimensions) via MCP tool
+  1. ONNX Runtime thread spinning is disabled (allow_spinning=0) and thread pools are configured, reducing idle CPU consumption
+  2. PostgreSQL is tuned for RAG workload (shared_buffers, ef_search=100, JIT off, maintenance_work_mem) via docker-compose config or init script
+  3. HikariCP pool is sized for virtual threads (10-15 connections, connection-timeout 5-10s) in application properties
+  4. Search queries prepend the BGE query prefix to embedding requests, improving retrieval relevance without reindexing
 **Plans**: TBD
 
-Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-
-### Phase 7: Crawl Operations
-**Goal**: Users have full operational control over crawling -- scope limits, incremental updates, scheduled recrawls, progress monitoring, and llms.txt support
-**Depends on**: Phase 6
-**Requirements**: CRWL-03, CRWL-06, CRWL-07, CRWL-09, CRWL-10, CRWL-11
+### Phase 13: Retrieval Evaluation Framework
+**Goal**: Retrieval quality is measurable and tracked with a golden set and standard IR metrics before any pipeline changes
+**Depends on**: Phase 12 (BGE prefix applied; baseline measurements should include it)
+**Requirements**: EVAL-01, EVAL-02, EVAL-03, EVAL-05
 **Success Criteria** (what must be TRUE):
-  1. User can control crawl scope via URL pattern allowlist/blocklist, max depth, and max pages when adding or recrawling a source
-  2. System performs incremental/delta crawls -- only re-processes pages whose content hash (SHA-256) has changed since last crawl
-  3. User can schedule periodic recrawls for a source at a configurable interval
-  4. User can check crawl progress (pages crawled, pages remaining, errors) via `crawl_status` MCP tool
-  5. User can trigger a manual recrawl of an existing source via `recrawl_source` MCP tool
-  6. System can ingest llms.txt and llms-full.txt files as documentation sources and use them for page discovery
-**Plans:** 5/5 plans complete
-
-Plans:
-- [x] 07-01-PLAN.md -- TDD pure crawl utilities: CrawlScope, UrlScopeFilter, ContentHasher
-- [x] 07-02-PLAN.md -- TDD LlmsTxtParser for llms.txt/llms-full.txt URL extraction
-- [x] 07-03-PLAN.md -- Schema migration, Source scope fields, IngestionStateRepository, CrawlProgressTracker, PageDiscoveryService llms.txt cascade
-- [x] 07-04-PLAN.md -- CrawlService evolution (scope, depth, incremental, progress, llms-full.txt hybrid)
-- [x] 07-05-PLAN.md -- MCP tool wiring (add_source, crawl_status, recrawl_source real implementations)
-
-### Phase 8: Advanced Search & Quality
-**Goal**: Search results are more precise through cross-encoder reranking and richer filtering options -- the quality multiplier layer
-**Depends on**: Phase 4, Phase 6
-**Requirements**: SRCH-07, SRCH-08, SRCH-09, SRCH-10, SRCH-04, CHUNK-06
-**Success Criteria** (what must be TRUE):
-  1. System re-ranks top candidates via cross-encoder model, measurably improving precision over RRF-only results
-  2. User can filter search results by section path (e.g., search only within "API Reference")
-  3. User can filter search results by version tag (e.g., "Spring Boot 3.5" only)
-  4. User can filter search results by content type (code examples vs prose vs all)
-  5. User can filter search results by source name
-  6. User can tag each source with a version label that persists and is filterable in search
+  1. A RetrievalMetrics class computes Recall@k, Precision@k, MRR, NDCG@k, MAP, and Hit Rate from search results and relevance judgments
+  2. A golden set of 100 annotated queries exists covering factual, conceptual, code lookup, and troubleshooting query types
+  3. A JUnit 5 parameterised test executes the full golden set against the live index and asserts Recall@10 >= 0.70 and MRR >= 0.60
+  4. Evaluation results are exported to CSV files with timestamped filenames for trend tracking across runs
 **Plans**: TBD
 
-Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+### Phase 14: Parent-Child Chunking
+**Goal**: Search returns complete context (code + surrounding prose) by linking child chunks to their parent sections
+**Depends on**: Phase 13 (evaluation framework measures impact of chunking changes)
+**Requirements**: CHUNK-01, CHUNK-02, QUAL-04
+**Success Criteria** (what must be TRUE):
+  1. The chunker produces parent chunks (full H2/H3 sections with code+prose) and child chunks (individual paragraphs/blocks) with parent-child links in metadata
+  2. When a child chunk matches a search query, the search service returns the parent chunk's full content, reuniting code and prose in context
+  3. jqwik property-based tests verify chunker invariants: content conservation (no data loss), size bounds respected, code blocks balanced, tables complete
+**Plans**: TBD
+
+### Phase 15: Search Fusion Overhaul
+**Goal**: Hybrid search uses Convex Combination with configurable parameters, replacing RRF for better score utilisation
+**Depends on**: Phase 14 (parent-child chunks indexed; evaluation framework captures before/after)
+**Requirements**: FUSE-01, FUSE-02, FUSE-03
+**Success Criteria** (what must be TRUE):
+  1. Hybrid search fuses vector and FTS scores using Convex Combination (normalised score weighting) instead of RRF
+  2. The alpha parameter controlling vector vs FTS weight is configurable via application.properties and can be changed without rebuild
+  3. The number of candidates sent to the reranker is configurable (default 30, supports 20/30/50) via application.properties
+**Plans**: TBD
+
+### Phase 16: MCP Testing
+**Goal**: MCP tool contracts are verified by snapshot tests and round-trip integration tests
+**Depends on**: Nothing (independent testing layer; can run after Phase 11 quality tooling is in place)
+**Requirements**: MCPT-01, MCPT-02
+**Success Criteria** (what must be TRUE):
+  1. A snapshot test compares the current tools/list MCP schema against a versioned reference file and fails if the schema changes unexpectedly
+  2. Round-trip integration tests via McpAsyncClient exercise all 7 MCP tools (happy path and error cases), verifying end-to-end JSON-RPC communication
+**Plans**: TBD
+
+### Phase 17: Monitoring Stack
+**Goal**: Every stage of the search pipeline is instrumented and observable via dashboards with alerting on critical thresholds
+**Depends on**: Phase 15 (search pipeline finalised; Micrometer instruments the current pipeline, not a pipeline that will change)
+**Requirements**: MONI-01, MONI-02, MONI-03, MONI-04
+**Success Criteria** (what must be TRUE):
+  1. Micrometer timers with p50/p95/p99 percentiles instrument each search pipeline stage (embedding, vector search, FTS, fusion, reranking)
+  2. VictoriaMetrics, Grafana, and postgres_exporter are deployed via docker-compose and scraping application + database metrics
+  3. A Grafana dashboard displays RAG-specific metrics: latency per stage, empty result rate, top score distribution, HikariCP pool usage
+  4. Alerts fire when p95 latency exceeds 2s, cache hit rate drops below 90%, or error rate exceeds 5%
+**Plans**: TBD
+
+### Phase 18: Ablation Study & Validation
+**Goal**: The optimised pipeline is validated end-to-end with a controlled ablation study comparing all fusion strategies
+**Depends on**: Phase 15 (Convex Combination implemented), Phase 13 (evaluation framework ready)
+**Requirements**: EVAL-04
+**Success Criteria** (what must be TRUE):
+  1. An ablation study compares vector-only, FTS-only, hybrid CC, and hybrid CC+reranking on the golden set, with results exported to CSV
+  2. The final pipeline configuration (alpha, candidate count) is justified by ablation results showing improvement over the v0.1 RRF baseline
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 0 -> 1 -> 2 -> 3 -> 4 -> 4.5 -> 5 -> 6 -> 7 -> 8
-Note: Phases 2 and 3 can execute in parallel (both depend only on Phase 1).
-Note: Phase 4.5 is an urgent insertion for code quality consolidation before MCP integration.
+Phases execute in numeric order: 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18
+Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14-15 if desired.
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 0. CI & Quality Gate | 2/2 | ✓ Complete | 2026-02-14 |
-| 1. Foundation & Infrastructure | 2/2 | ✓ Complete | 2026-02-14 |
-| 2. Core Search | 2/2 | ✓ Complete | 2026-02-15 |
-| 3. Web Crawling | 2/2 | ✓ Complete | 2026-02-15 |
-| 4. Ingestion Pipeline | 2/2 | ✓ Complete | 2026-02-18 |
-| 4.5. Code Quality & Test Consolidation | 5/5 | ✓ Complete | 2026-02-19 |
-| 5. MCP Server | 2/2 | ✓ Complete | 2026-02-20 |
-| 6. Source Management | 0/TBD | Not started | - |
-| 7. Crawl Operations | 5/5 | ✓ Complete | 2026-02-20 |
-| 8. Advanced Search & Quality | 0/TBD | Not started | - |
-
-
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 0. CI & Quality Gate | v0.1 | 2/2 | Complete | 2026-02-14 |
+| 1. Foundation & Infrastructure | v0.1 | 2/2 | Complete | 2026-02-14 |
+| 2. Core Search | v0.1 | 2/2 | Complete | 2026-02-15 |
+| 3. Web Crawling | v0.1 | 2/2 | Complete | 2026-02-15 |
+| 4. Ingestion Pipeline | v0.1 | 2/2 | Complete | 2026-02-18 |
+| 4.5. Code Quality | v0.1 | 5/5 | Complete | 2026-02-19 |
+| 5. MCP Server | v0.1 | 2/2 | Complete | 2026-02-20 |
+| 7. Crawl Operations | v0.1 | 5/5 | Complete | 2026-02-20 |
+| 8. Advanced Search & Quality | v0.1 | 4/4 | Complete | 2026-02-20 |
+| 9. Source Management | v0.1 | 2/2 | Complete | 2026-02-20 |
+| 11. Quality & Security Tooling | v0.2 | Complete    | 2026-02-20 | 2026-02-20 |
+| 12. Performance Quick Wins | v0.2 | 0/TBD | Not started | - |
+| 13. Retrieval Evaluation Framework | v0.2 | 0/TBD | Not started | - |
+| 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
+| 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
+| 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
+| 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |
+| 18. Ablation Study & Validation | v0.2 | 0/TBD | Not started | - |

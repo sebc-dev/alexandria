@@ -15,6 +15,13 @@ sonarqube = "7.1.0.6387"
 testcontainers = "1.21.1"
 commonmark = "0.27.1"
 crawler-commons = "1.6"
+errorprone-core = "2.36.0"
+errorprone-plugin = "4.2.0"
+nullaway = "0.12.6"
+jspecify = "1.0.0"
+spotless = "7.0.3"
+owasp-depcheck = "12.1.1"
+cyclonedx = "2.4.1"
 
 [libraries]
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -27,6 +34,7 @@ spring-ai-mcp-server-webmvc = { module = "org.springframework.ai:spring-ai-start
 langchain4j-core = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
 langchain4j-embeddings-bge = { module = "dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q", version.ref = "langchain4j-beta" }
 langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }
+langchain4j-onnx-scoring = { module = "dev.langchain4j:langchain4j-onnx-scoring", version.ref = "langchain4j-beta" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 postgresql = { module = "org.postgresql:postgresql" }
@@ -37,6 +45,9 @@ commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" 
 commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 crawler-commons = { module = "com.github.crawler-commons:crawler-commons", version.ref = "crawler-commons" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone-core" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
@@ -44,4 +55,8 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitest-plugin" }
 spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone-plugin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+owasp-depcheck = { id = "org.owasp.dependencycheck", version.ref = "owasp-depcheck" }
+cyclonedx = { id = "org.cyclonedx.bom", version.ref = "cyclonedx" }
 

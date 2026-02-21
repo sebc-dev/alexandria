@@ -5,136 +5,136 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class that normalizes URLs for deduplication during crawling.
- * Removes fragments, tracking query params, normalizes trailing slashes and host casing.
+ * Utility class that normalizes URLs for deduplication during crawling. Removes fragments, tracking
+ * query params, normalizes trailing slashes and host casing.
  */
 public final class UrlNormalizer {
 
-    private static final Logger log = LoggerFactory.getLogger(UrlNormalizer.class);
+  private static final Logger log = LoggerFactory.getLogger(UrlNormalizer.class);
 
-    private static final Set<String> TRACKING_PARAMS = Set.of(
-            "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
-            "ref", "source"
-    );
+  private static final Set<String> TRACKING_PARAMS =
+      Set.of(
+          "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "ref", "source");
 
-    private UrlNormalizer() {
-        // utility class
+  private UrlNormalizer() {
+    // utility class
+  }
+
+  /**
+   * Normalize a URL for deduplication: - Remove fragments (#section) - Remove common tracking query
+   * params (utm_*, ref, source) - Remove trailing slash unless URL is just the domain root -
+   * Lowercase scheme and host (path is case-sensitive)
+   *
+   * @param url the URL to normalize
+   * @return normalized URL string, or the input unchanged if malformed
+   */
+  public static String normalize(String url) {
+    if (url == null || url.isBlank()) {
+      return url;
     }
 
-    /**
-     * Normalize a URL for deduplication:
-     * - Remove fragments (#section)
-     * - Remove common tracking query params (utm_*, ref, source)
-     * - Remove trailing slash unless URL is just the domain root
-     * - Lowercase scheme and host (path is case-sensitive)
-     *
-     * @param url the URL to normalize
-     * @return normalized URL string, or the input unchanged if malformed
-     */
-    public static String normalize(String url) {
-        if (url == null || url.isBlank()) {
-            return url;
-        }
-
-        URI uri;
-        try {
-            uri = new URI(url);
-        } catch (URISyntaxException e) {
-            log.warn("Malformed URL, returning unchanged: {}", url);
-            return url;
-        }
-
-        // Must have a scheme to normalize
-        if (uri.getScheme() == null || uri.getHost() == null) {
-            log.warn("URL missing scheme or host, returning unchanged: {}", url);
-            return url;
-        }
-
-        String scheme = uri.getScheme().toLowerCase();
-        String host = uri.getHost().toLowerCase();
-        int port = uri.getPort();
-        String path = uri.getRawPath();
-        String query = uri.getRawQuery();
-
-        // Normalize path: remove trailing slash unless it's the root path
-        if (path == null || path.isEmpty()) {
-            path = "/";
-        }
-        if (path.length() > 1 && path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-
-        // Filter out tracking query params
-        String filteredQuery = filterQueryParams(query);
-
-        // Rebuild URL without fragment
-        StringBuilder sb = new StringBuilder();
-        sb.append(scheme).append("://").append(host);
-        if (port != -1 && !isDefaultPort(scheme, port)) {
-            sb.append(':').append(port);
-        }
-        sb.append(path);
-        if (filteredQuery != null && !filteredQuery.isEmpty()) {
-            sb.append('?').append(filteredQuery);
-        }
-
-        return sb.toString();
+    URI uri;
+    try {
+      uri = new URI(url);
+    } catch (URISyntaxException e) {
+      log.warn("Malformed URL, returning unchanged: {}", url);
+      return url;
     }
 
-    /**
-     * Check if a candidate URL has the same scheme+host+port as the root URL.
-     * Used to filter out external links during crawling.
-     *
-     * @param rootUrl the root URL defining the site boundary
-     * @param candidateUrl the URL to check
-     * @return true if the candidate is on the same site
-     */
-    public static boolean isSameSite(String rootUrl, String candidateUrl) {
-        try {
-            URI root = new URI(rootUrl);
-            URI candidate = new URI(candidateUrl);
-
-            if (root.getScheme() == null || candidate.getScheme() == null
-                    || root.getHost() == null || candidate.getHost() == null) {
-                return false;
-            }
-
-            return root.getScheme().equalsIgnoreCase(candidate.getScheme())
-                    && root.getHost().equalsIgnoreCase(candidate.getHost())
-                    && effectivePort(root) == effectivePort(candidate);
-        } catch (URISyntaxException e) {
-            return false;
-        }
+    // Must have a scheme to normalize
+    if (uri.getScheme() == null || uri.getHost() == null) {
+      log.warn("URL missing scheme or host, returning unchanged: {}", url);
+      return url;
     }
 
-    private static String filterQueryParams(String query) {
-        if (query == null || query.isEmpty()) {
-            return null;
-        }
-        String filtered = Arrays.stream(query.split("&"))
-                .filter(param -> {
-                    String key = param.contains("=") ? param.substring(0, param.indexOf('=')) : param;
-                    return !TRACKING_PARAMS.contains(key.toLowerCase());
+    String scheme = uri.getScheme().toLowerCase();
+    String host = uri.getHost().toLowerCase();
+    int port = uri.getPort();
+    String path = uri.getRawPath();
+    String query = uri.getRawQuery();
+
+    // Normalize path: remove trailing slash unless it's the root path
+    if (path == null || path.isEmpty()) {
+      path = "/";
+    }
+    if (path.length() > 1 && path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
+
+    // Filter out tracking query params
+    String filteredQuery = filterQueryParams(query);
+
+    // Rebuild URL without fragment
+    StringBuilder sb = new StringBuilder();
+    sb.append(scheme).append("://").append(host);
+    if (port != -1 && !isDefaultPort(scheme, port)) {
+      sb.append(':').append(port);
+    }
+    sb.append(path);
+    if (filteredQuery != null && !filteredQuery.isEmpty()) {
+      sb.append('?').append(filteredQuery);
+    }
+
+    return sb.toString();
+  }
+
+  /**
+   * Check if a candidate URL has the same scheme+host+port as the root URL. Used to filter out
+   * external links during crawling.
+   *
+   * @param rootUrl the root URL defining the site boundary
+   * @param candidateUrl the URL to check
+   * @return true if the candidate is on the same site
+   */
+  public static boolean isSameSite(String rootUrl, String candidateUrl) {
+    try {
+      URI root = new URI(rootUrl);
+      URI candidate = new URI(candidateUrl);
+
+      if (root.getScheme() == null
+          || candidate.getScheme() == null
+          || root.getHost() == null
+          || candidate.getHost() == null) {
+        return false;
+      }
+
+      return root.getScheme().equalsIgnoreCase(candidate.getScheme())
+          && root.getHost().equalsIgnoreCase(candidate.getHost())
+          && effectivePort(root) == effectivePort(candidate);
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
+
+  private static @Nullable String filterQueryParams(@Nullable String query) {
+    if (query == null || query.isEmpty()) {
+      return null;
+    }
+    String filtered =
+        Arrays.stream(query.split("&"))
+            .filter(
+                param -> {
+                  String key = param.contains("=") ? param.substring(0, param.indexOf('=')) : param;
+                  return !TRACKING_PARAMS.contains(key.toLowerCase());
                 })
-                .collect(Collectors.joining("&"));
-        return filtered.isEmpty() ? null : filtered;
-    }
+            .collect(Collectors.joining("&"));
+    return filtered.isEmpty() ? null : filtered;
+  }
 
-    private static boolean isDefaultPort(String scheme, int port) {
-        return ("http".equals(scheme) && port == 80)
-                || ("https".equals(scheme) && port == 443);
-    }
+  private static boolean isDefaultPort(String scheme, int port) {
+    return ("http".equals(scheme) && port == 80) || ("https".equals(scheme) && port == 443);
+  }
 
-    private static int effectivePort(URI uri) {
-        int port = uri.getPort();
-        if (port != -1) {
-            return port;
-        }
-        return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
+  private static int effectivePort(URI uri) {
+    int port = uri.getPort();
+    if (port != -1) {
+      return port;
     }
+    return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
+  }
 }

@@ -12,31 +12,30 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Shared base class for all integration tests.
  *
- * <p>Provides a Testcontainers-managed PostgreSQL instance with pgvector and
- * automatically cleans the embedding store before each test. The {@code @Autowired(required = false)}
- * on {@link EmbeddingStore} ensures subclasses that do not inject the store (e.g.
- * {@code SmokeIntegrationTest}, {@code Crawl4AiClientIT}) are unaffected.
+ * <p>Provides a Testcontainers-managed PostgreSQL instance with pgvector and automatically cleans
+ * the embedding store before each test. The {@code @Autowired(required = false)} on {@link
+ * EmbeddingStore} ensures subclasses that do not inject the store (e.g. {@code
+ * SmokeIntegrationTest}, {@code Crawl4AiClientIT}) are unaffected.
  */
 @SpringBootTest
 public abstract class BaseIntegrationTest {
 
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            DockerImageName.parse("pgvector/pgvector:pg16")
-                    .asCompatibleSubstituteFor("postgres")
-    );
+  @ServiceConnection
+  static PostgreSQLContainer<?> postgres =
+      new PostgreSQLContainer<>(
+          DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
-    static {
-        postgres.start();
+  static {
+    postgres.start();
+  }
+
+  @Autowired(required = false)
+  protected EmbeddingStore<TextSegment> embeddingStore;
+
+  @BeforeEach
+  void cleanStore() {
+    if (embeddingStore != null) {
+      embeddingStore.removeAll();
     }
-
-    @Autowired(required = false)
-    protected EmbeddingStore<TextSegment> embeddingStore;
-
-    @BeforeEach
-    void cleanStore() {
-        if (embeddingStore != null) {
-            embeddingStore.removeAll();
-        }
-    }
+  }
 }

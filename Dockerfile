@@ -19,6 +19,13 @@ COPY config/ config/
 # Build the fat JAR (skip tests -- they run in CI)
 RUN ./gradlew bootJar -x test -x integrationTest --no-daemon
 
+# Download cross-encoder reranking model (ms-marco-MiniLM-L-6-v2)
+RUN mkdir -p /app/models/ms-marco-MiniLM-L-6-v2 && \
+    curl -L -o /app/models/ms-marco-MiniLM-L-6-v2/model.onnx \
+      https://huggingface.co/Xenova/ms-marco-MiniLM-L-6-v2/resolve/main/onnx/model.onnx && \
+    curl -L -o /app/models/ms-marco-MiniLM-L-6-v2/tokenizer.json \
+      https://huggingface.co/Xenova/ms-marco-MiniLM-L-6-v2/resolve/main/tokenizer.json
+
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre
 
@@ -29,6 +36,9 @@ WORKDIR /app
 
 # Copy the fat JAR from builder
 COPY --from=builder /app/build/libs/alexandria-*.jar app.jar
+
+# Copy cross-encoder model files from builder
+COPY --from=builder /app/models /app/models
 
 EXPOSE 8080
 
