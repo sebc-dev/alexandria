@@ -121,46 +121,32 @@ public final class RetrievalMetrics {
     Set<String> relevantIds = relevantIds(gradeMap);
     List<String> topK = truncate(retrievedIds, k);
 
-    // Recall@k
-    double recall =
-        relevantIds.isEmpty()
-            ? 0.0
-            : (double) topK.stream().filter(relevantIds::contains).count() / relevantIds.size();
-
-    // Precision@k
-    double precision =
-        topK.isEmpty()
-            ? 0.0
-            : (double) topK.stream().filter(relevantIds::contains).count() / topK.size();
-
-    // MRR
+    // Single pass: compute MRR, AP, hit rate, and count relevant hits
     double mrrValue = 0.0;
-    for (int i = 0; i < topK.size(); i++) {
-      if (relevantIds.contains(topK.get(i))) {
-        mrrValue = 1.0 / (i + 1);
-        break;
-      }
-    }
-
-    // NDCG@k
-    double dcg = computeDcg(topK, gradeMap);
-    double idcg = computeIdcg(gradeMap, topK.size());
-    double ndcg = idcg == 0.0 ? 0.0 : dcg / idcg;
-
-    // Average Precision
     double sumPrecision = 0.0;
     int relevantFound = 0;
+    double dcg = 0.0;
     for (int i = 0; i < topK.size(); i++) {
-      if (relevantIds.contains(topK.get(i))) {
+      String id = topK.get(i);
+      int grade = gradeMap.getOrDefault(id, 0);
+      dcg += grade / log2(i + 2);
+
+      if (relevantIds.contains(id)) {
         relevantFound++;
+        if (mrrValue == 0.0) {
+          mrrValue = 1.0 / (i + 1);
+        }
         sumPrecision += (double) relevantFound / (i + 1);
       }
     }
+
+    double recall = relevantIds.isEmpty() ? 0.0 : (double) relevantFound / relevantIds.size();
+    double precision = topK.isEmpty() ? 0.0 : (double) relevantFound / topK.size();
+    double idcg = computeIdcg(gradeMap, topK.size());
+    double ndcg = idcg == 0.0 ? 0.0 : dcg / idcg;
     double ap =
         (relevantIds.isEmpty() || relevantFound == 0) ? 0.0 : sumPrecision / relevantIds.size();
-
-    // Hit Rate
-    double hit = topK.stream().anyMatch(relevantIds::contains) ? 1.0 : 0.0;
+    double hit = relevantFound > 0 ? 1.0 : 0.0;
 
     return new MetricsResult(recall, precision, mrrValue, ndcg, ap, hit);
   }
