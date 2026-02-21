@@ -164,7 +164,7 @@ jobs:
         run: ./gradlew dependencyCheckAnalyze --console=plain
 
       - name: Trivy filesystem scan (Java dependencies)
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
         with:
           scan-type: fs
           scan-ref: .
@@ -174,7 +174,7 @@ jobs:
           format: table
 
       - name: Scan PostgreSQL image
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
         with:
           image-ref: pgvector/pgvector:pg16
           severity: HIGH,CRITICAL
@@ -183,7 +183,7 @@ jobs:
           format: table
 
       - name: Scan Crawl4AI image
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
         with:
           image-ref: unclecode/crawl4ai:0.8.0
           severity: HIGH,CRITICAL
@@ -195,7 +195,7 @@ jobs:
         run: docker build -t alexandria:scan .
 
       - name: Scan Alexandria app image
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f25f6758cce1c6 # v0.30.0
+        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
         with:
           image-ref: alexandria:scan
           severity: HIGH,CRITICAL
