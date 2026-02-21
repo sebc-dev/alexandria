@@ -35,6 +35,11 @@ alexandria:
   reranker:
     model-path: ${RERANKER_MODEL_PATH:models/ms-marco-MiniLM-L-6-v2/model.onnx}
     tokenizer-path: ${RERANKER_TOKENIZER_PATH:models/ms-marco-MiniLM-L-6-v2/tokenizer.json}
+  eval:
+    output-dir: ${ALEXANDRIA_EVAL_DIR:${user.home}/.alexandria/eval}
+    thresholds:
+      recall-at-10: 0.70
+      mrr: 0.60
 
 management:
   endpoints:
