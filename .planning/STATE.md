@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 11 — Quality & Security Tooling
+**Current focus:** Phase 12 — Performance Quick Wins
 
 ## Current Position
 
-Phase: 11 of 18 (Quality & Security Tooling)
-Plan: 04 (next)
-Status: Plan 03 complete
-Last activity: 2026-02-20 — Plan 11-03 (OWASP + CycloneDX + Trivy) completed
+Phase: 12 of 18 (Performance Quick Wins)
+Plan: 00 (not yet planned)
+Status: Phase 11 complete, Phase 12 not started
+Last activity: 2026-02-21 — Phase 11 finalized, moved to Phase 12
 
 Progress: [██░░░░░░░░] ~15% (3/~20 plans)
 
@@ -59,7 +59,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Stopped at: Completed 11-03-PLAN.md
-Resume file: .planning/phases/11-quality-security-tooling/11-03-SUMMARY.md
-Next: Execute 11-04-PLAN.md (if exists) or next phase plan
+Last session: 2026-02-21
+Stopped at: Phase 12 context gathered
+Resume file: .planning/phases/12-performance-quick-wins/12-CONTEXT.md
+Next: /gsd:plan-phase 12
