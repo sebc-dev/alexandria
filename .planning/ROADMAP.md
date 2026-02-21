@@ -76,7 +76,10 @@
   2. A golden set of 100 annotated queries exists covering factual, conceptual, code lookup, and troubleshooting query types
   3. A JUnit 5 parameterised test executes the full golden set against the live index and asserts Recall@10 >= 0.70 and MRR >= 0.60
   4. Evaluation results are exported to CSV files with timestamped filenames for trend tracking across runs
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 13-01-PLAN.md — RetrievalMetrics TDD: Recall@k, Precision@k, MRR, NDCG@k, MAP, Hit Rate
+- [ ] 13-02-PLAN.md — Golden set (100 queries) + CSV export service + application config
+- [ ] 13-03-PLAN.md — RetrievalEvaluationService + JUnit 5 integration test + build config
 
 ### Phase 14: Parent-Child Chunking
 **Goal**: Search returns complete context (code + surrounding prose) by linking child chunks to their parent sections
@@ -147,7 +150,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 9. Source Management | v0.1 | 2/2 | Complete | 2026-02-20 |
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
-| 13. Retrieval Evaluation Framework | v0.2 | 0/TBD | Not started | - |
+| 13. Retrieval Evaluation Framework | v0.2 | 0/3 | Planned | - |
 | 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
