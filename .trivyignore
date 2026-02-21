@@ -1,4 +1,17 @@
 # Trivy CVE suppressions for Alexandria
 # Each entry: CVE-ID followed by justification comment
-# Example:
-# CVE-XXXX-XXXXX  # Not exploitable: library used only for X
+
+# --- pgvector/pgvector:pg16 upstream image (debian 12) ---
+CVE-2026-0861   # glibc memalign overflow: no fix available, upstream debian issue
+CVE-2023-2953   # openldap null pointer deref: LDAP not used by Alexandria
+CVE-2025-7458   # sqlite integer overflow: sqlite not used directly by PostgreSQL server
+CVE-2025-7425   # libxslt use-after-free: XSLT not used by Alexandria
+CVE-2023-45853  # zlib minizip buffer overflow: will_not_fix by debian, minizip not used
+
+# --- gosu binary in pgvector image ---
+CVE-2025-68121  # Go stdlib TLS session resumption: gosu is entrypoint only, no TLS
+CVE-2025-58183  # Go archive/tar unbounded alloc: gosu does not process tar files
+CVE-2025-61726  # Go net/url memory exhaustion: gosu does not parse URLs
+CVE-2025-61728  # Go archive/zip CPU exhaustion: gosu does not process zip files
+CVE-2025-61729  # Go crypto/x509 DoS: gosu does not validate certificates
+CVE-2025-61730  # Go TLS 1.3 handshake: gosu does not use TLS
