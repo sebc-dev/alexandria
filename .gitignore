@@ -27,6 +27,9 @@ hs_err_pid*
 # Maven (legacy)
 target/
 
+# Models (downloaded via ./setup-models.sh)
+models/
+
 # Environment
 .env
 .env.local
