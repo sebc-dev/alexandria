@@ -34,6 +34,13 @@ public class SearchService {
   /** Number of candidates to over-fetch for reranking. */
   static final int RERANK_CANDIDATES = 50;
 
+  /**
+   * BGE query prefix recommended by the bge-small-en-v1.5 model documentation. Prepended to search
+   * queries (NOT to documents at ingestion time) to improve retrieval relevance.
+   */
+  static final String BGE_QUERY_PREFIX =
+      "Represent this sentence for searching relevant passages: ";
+
   private final EmbeddingStore<TextSegment> embeddingStore;
   private final EmbeddingModel embeddingModel;
   private final RerankerService rerankerService;
@@ -62,7 +69,7 @@ public class SearchService {
           request.rrfK());
     }
 
-    Embedding queryEmbedding = embeddingModel.embed(request.query()).content();
+    Embedding queryEmbedding = embeddingModel.embed(BGE_QUERY_PREFIX + request.query()).content();
     Filter filter = buildFilter(request);
 
     EmbeddingSearchRequest.EmbeddingSearchRequestBuilder builder =
