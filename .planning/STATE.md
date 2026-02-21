@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 12 of 18 (Performance Quick Wins)
-Plan: 02 complete, ready for plan 03
-Status: Executing Phase 12
-Last activity: 2026-02-21 — Completed 12-02 (ONNX threading + BGE query prefix)
+Plan: All plans complete (01 + 02)
+Status: Phase 12 complete
+Last activity: 2026-02-21 — Completed 12-01 (PostgreSQL tuning + HikariCP)
 
 Progress: [██░░░░░░░░] ~25% (5/~20 plans)
 
@@ -29,6 +29,7 @@ Progress: [██░░░░░░░░] ~25% (5/~20 plans)
 | 11-01 | 1 | 7min | 7min |
 | 11-02 | 1 | 21min | 21min |
 | 11-03 | 1 | 38min | 38min |
+| 12-01 | 1 | 4min | 4min |
 | 12-02 | 1 | 3min | 3min |
 
 ## Accumulated Context
@@ -49,6 +50,9 @@ v0.2 decisions:
 - OSS Index analyzer disabled in OWASP (requires API key); NVD database sufficient — Phase 11-03
 - CycloneDX version 2.4.1 (plan specified non-existent 2.2.1) — Phase 11-03
 - VMware CPE false positives suppressed on Spring AI MCP libs; Guava/ONNX CVEs suppressed with justification — Phase 11-03
+- shared_preload_libraries='vector' required for hnsw.ef_search GUC registration at PostgreSQL startup — Phase 12-01
+- effective_cache_size=4GB and work_mem=64MB for ~6GB PG allocation in low-concurrency system — Phase 12-01
+- HikariCP max-lifetime and idle-timeout left at defaults (30min/10min) — Phase 12-01
 - OnnxRuntimeConfig uses BeanFactoryPostProcessor to initialize OrtEnvironment before any ONNX model bean loads — Phase 12-02
 - BGE query prefix applied only to search queries, not to documents at ingestion time — Phase 12-02
 
@@ -63,6 +67,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 12-02-PLAN.md
-Resume file: .planning/phases/12-performance-quick-wins/12-02-SUMMARY.md
-Next: Execute 12-03-PLAN.md (if exists) or next plan
+Stopped at: Completed 12-01-PLAN.md (12-02 already done)
+Resume file: .planning/phases/12-performance-quick-wins/12-01-SUMMARY.md
+Next: Phase 12 complete — proceed to Phase 13

@@ -29,7 +29,7 @@
 **Milestone Goal:** Auditer et optimiser la qualite RAG, la robustesse du code, la performance et l'observabilite du systeme. Build evaluation before changing the pipeline, measure before/after.
 
 - [x] **Phase 11: Quality & Security Tooling** — Safety net before refactoring (completed 2026-02-20)
-- [ ] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact
+- [x] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact (completed 2026-02-21)
 - [ ] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes
 - [ ] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose
 - [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
@@ -64,7 +64,7 @@
   3. HikariCP pool is sized for virtual threads (10-15 connections, connection-timeout 5-10s) in application properties
   4. Search queries prepend the BGE query prefix to embedding requests, improving retrieval relevance without reindexing
 **Plans**: 2 plans
-- [ ] 12-01-PLAN.md — PostgreSQL RAG tuning and HikariCP pool configuration
+- [x] 12-01-PLAN.md — PostgreSQL RAG tuning and HikariCP pool configuration (completed 2026-02-21)
 - [x] 12-02-PLAN.md — ONNX Runtime thread tuning and BGE query prefix (completed 2026-02-21)
 
 ### Phase 13: Retrieval Evaluation Framework
@@ -146,7 +146,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 8. Advanced Search & Quality | v0.1 | 4/4 | Complete | 2026-02-20 |
 | 9. Source Management | v0.1 | 2/2 | Complete | 2026-02-20 |
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
-| 12. Performance Quick Wins | v0.2 | 1/2 | In Progress | - |
+| 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
 | 13. Retrieval Evaluation Framework | v0.2 | 0/TBD | Not started | - |
 | 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
