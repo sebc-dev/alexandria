@@ -165,6 +165,8 @@ jobs:
 
       - name: OWASP Dependency-Check
         run: ./gradlew dependencyCheckAnalyze --console=plain
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Trivy filesystem scan (Java dependencies)
         uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1

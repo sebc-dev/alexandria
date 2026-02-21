@@ -228,6 +228,9 @@ dependencyCheck {
         nodeEnabled = false            // Node.js analyzer, not needed
         ossIndexEnabled = false        // Requires Sonatype OSS Index API key; NVD is sufficient
     }
+    nvd {
+        apiKey = System.getenv("NVD_API_KEY") ?: ""
+    }
     formats = listOf("HTML", "JSON")
 }
 
