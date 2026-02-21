@@ -58,6 +58,12 @@ jobs:
           name: build-output
           path: build/
 
+      - name: Cache ONNX reranker model
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: models/
+          key: onnx-models-${{ hashFiles('setup-models.sh') }}
+
       - name: Download ONNX reranker model
         run: ./setup-models.sh
 
@@ -147,6 +153,7 @@ jobs:
     name: Security Scanning
     needs: [build]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
