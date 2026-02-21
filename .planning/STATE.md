@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 11 — Quality & Security Tooling
+**Current focus:** Phase 12 — Performance Quick Wins
 
 ## Current Position
 
-Phase: 11 of 18 (Quality & Security Tooling)
-Plan: 04 (next)
-Status: Plan 03 complete
-Last activity: 2026-02-20 — Plan 11-03 (OWASP + CycloneDX + Trivy) completed
+Phase: 12 of 18 (Performance Quick Wins)
+Plan: All plans complete (01 + 02)
+Status: Phase 12 complete
+Last activity: 2026-02-21 — Completed 12-01 (PostgreSQL tuning + HikariCP)
 
-Progress: [██░░░░░░░░] ~15% (3/~20 plans)
+Progress: [██░░░░░░░░] ~25% (5/~20 plans)
 
 ## Performance Metrics
 
@@ -29,6 +29,8 @@ Progress: [██░░░░░░░░] ~15% (3/~20 plans)
 | 11-01 | 1 | 7min | 7min |
 | 11-02 | 1 | 21min | 21min |
 | 11-03 | 1 | 38min | 38min |
+| 12-01 | 1 | 4min | 4min |
+| 12-02 | 1 | 3min | 3min |
 
 ## Accumulated Context
 
@@ -48,6 +50,11 @@ v0.2 decisions:
 - OSS Index analyzer disabled in OWASP (requires API key); NVD database sufficient — Phase 11-03
 - CycloneDX version 2.4.1 (plan specified non-existent 2.2.1) — Phase 11-03
 - VMware CPE false positives suppressed on Spring AI MCP libs; Guava/ONNX CVEs suppressed with justification — Phase 11-03
+- shared_preload_libraries='vector' required for hnsw.ef_search GUC registration at PostgreSQL startup — Phase 12-01
+- effective_cache_size=4GB and work_mem=64MB for ~6GB PG allocation in low-concurrency system — Phase 12-01
+- HikariCP max-lifetime and idle-timeout left at defaults (30min/10min) — Phase 12-01
+- OnnxRuntimeConfig uses BeanFactoryPostProcessor to initialize OrtEnvironment before any ONNX model bean loads — Phase 12-02
+- BGE query prefix applied only to search queries, not to documents at ingestion time — Phase 12-02
 
 ### Pending Todos
 
@@ -59,7 +66,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Stopped at: Completed 11-03-PLAN.md
-Resume file: .planning/phases/11-quality-security-tooling/11-03-SUMMARY.md
-Next: Execute 11-04-PLAN.md (if exists) or next phase plan
+Last session: 2026-02-21
+Stopped at: Completed 12-01-PLAN.md (12-02 already done)
+Resume file: .planning/phases/12-performance-quick-wins/12-01-SUMMARY.md
+Next: Phase 12 complete — proceed to Phase 13

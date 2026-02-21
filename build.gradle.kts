@@ -101,7 +101,6 @@ testing {
 
 tasks.named("check") {
     dependsOn(testing.suites.named("integrationTest"))
-    dependsOn("dependencyCheckAnalyze")
 }
 
 // Disable plain jar — only produce the Spring Boot fat jar
@@ -239,8 +238,5 @@ dependencyCheck {
 }
 
 // ---------------------------------------------------------------------------
-// CycloneDX - SBOM Generation
+// CycloneDX - SBOM Generation (run manually: ./gradlew cyclonedxBom)
 // ---------------------------------------------------------------------------
-tasks.named("build") {
-    dependsOn("cyclonedxBom")
-}

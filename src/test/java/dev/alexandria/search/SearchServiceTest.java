@@ -46,7 +46,8 @@ class SearchServiceTest {
   private static final Embedding DUMMY_EMBEDDING = Embedding.from(new float[] {0.1f, 0.2f, 0.3f});
 
   private void stubEmbeddingModel(String query) {
-    when(embeddingModel.embed(query)).thenReturn(Response.from(DUMMY_EMBEDDING));
+    when(embeddingModel.embed(SearchService.BGE_QUERY_PREFIX + query))
+        .thenReturn(Response.from(DUMMY_EMBEDDING));
   }
 
   private void stubRerankerReturnsEmpty() {
@@ -219,6 +220,17 @@ class SearchServiceTest {
     searchService.search(request);
 
     verify(rerankerService).rerank("test query", matches, 5, 0.7);
+  }
+
+  @Test
+  void searchPrependsQueryPrefixBeforeEmbedding() {
+    stubEmbeddingModel("my search");
+    stubStoreWithOneMatch();
+    stubRerankerReturnsEmpty();
+
+    searchService.search(new SearchRequest("my search"));
+
+    verify(embeddingModel).embed(SearchService.BGE_QUERY_PREFIX + "my search");
   }
 
   @Test
