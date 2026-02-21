@@ -30,7 +30,7 @@
 
 - [x] **Phase 11: Quality & Security Tooling** — Safety net before refactoring (completed 2026-02-20)
 - [x] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact (completed 2026-02-21)
-- [ ] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes
+- [x] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes (completed 2026-02-21)
 - [ ] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose
 - [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
 - [ ] **Phase 16: MCP Testing** — Snapshot and round-trip test coverage
@@ -79,7 +79,7 @@
 **Plans**: 3 plans
 - [x] 13-01-PLAN.md — RetrievalMetrics TDD: Recall@k, Precision@k, MRR, NDCG@k, MAP, Hit Rate (completed 2026-02-21)
 - [x] 13-02-PLAN.md — Golden set (100 queries) + CSV export service + application config (completed 2026-02-21)
-- [ ] 13-03-PLAN.md — RetrievalEvaluationService + JUnit 5 integration test + build config
+- [x] 13-03-PLAN.md — RetrievalEvaluationService + JUnit 5 integration test + build config (completed 2026-02-21)
 
 ### Phase 14: Parent-Child Chunking
 **Goal**: Search returns complete context (code + surrounding prose) by linking child chunks to their parent sections
@@ -150,7 +150,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 9. Source Management | v0.1 | 2/2 | Complete | 2026-02-20 |
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
-| 13. Retrieval Evaluation Framework | v0.2 | 2/3 | In Progress | - |
+| 13. Retrieval Evaluation Framework | v0.2 | 3/3 | Complete | 2026-02-21 |
 | 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |

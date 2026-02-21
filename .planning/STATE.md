@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 13 of 18 (Retrieval Evaluation Framework)
-Plan: 02 complete, advancing to 03
-Status: In progress
-Last activity: 2026-02-21 — Plan 13-02 complete (Golden set & CSV export)
+Plan: 03 complete — Phase 13 complete
+Status: Phase complete
+Last activity: 2026-02-21 — Plan 13-03 complete (Evaluation orchestration & integration test)
 
-Progress: [████░░░░░░] ~37% (9/~20 plans)
+Progress: [████░░░░░░] ~40% (10/~20 plans)
 
 ## Performance Metrics
 
@@ -33,6 +33,7 @@ Progress: [████░░░░░░] ~37% (9/~20 plans)
 | 12-02 | 1 | 3min | 3min |
 | 13-01 | 1 | 5min | 5min |
 | 13-02 | 1 | 8min | 8min |
+| 13-03 | 1 | 4min | 4min |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ v0.2 decisions:
 - Clock bean in ClockConfig with @ConditionalOnMissingBean for testable timestamps — Phase 13-02
 - CSV values formatted with Locale.US for deterministic output; per-query metrics on first chunk row only — Phase 13-02
 - Detailed CSV includes per-query metrics only on first chunk row to avoid redundancy — Phase 13-02
+- Chunk ID matching uses sourceUrl + '#' + sectionPath with exact-then-substring fallback for golden set alignment — Phase 13-03
+- useJUnitPlatform excludeTags("eval") conditional on -PincludeEvalTag property for on-demand evaluation — Phase 13-03
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 13-02-PLAN.md (Golden set & CSV export)
-Resume file: .planning/phases/13-retrieval-evaluation-framework/13-02-SUMMARY.md
-Next: Execute 13-03-PLAN.md
+Stopped at: Completed 13-03-PLAN.md (Evaluation orchestration & integration test) — Phase 13 complete
+Resume file: .planning/phases/13-retrieval-evaluation-framework/13-03-SUMMARY.md
+Next: Phase 14 planning
