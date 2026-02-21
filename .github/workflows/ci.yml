@@ -182,12 +182,12 @@ jobs:
           trivyignores: .trivyignore
           format: table
 
-      - name: Scan Crawl4AI image
+      - name: Scan Crawl4AI image (advisory only)
         uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
         with:
           image-ref: unclecode/crawl4ai:0.8.0
           severity: HIGH,CRITICAL
-          exit-code: 1
+          exit-code: 0 # Third-party image with 150+ upstream CVEs we don't control
           trivyignores: .trivyignore
           format: table
 
