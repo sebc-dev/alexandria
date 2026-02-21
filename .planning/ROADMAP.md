@@ -63,7 +63,9 @@
   2. PostgreSQL is tuned for RAG workload (shared_buffers, ef_search=100, JIT off, maintenance_work_mem) via docker-compose config or init script
   3. HikariCP pool is sized for virtual threads (10-15 connections, connection-timeout 5-10s) in application properties
   4. Search queries prepend the BGE query prefix to embedding requests, improving retrieval relevance without reindexing
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 12-01-PLAN.md — PostgreSQL RAG tuning and HikariCP pool configuration
+- [ ] 12-02-PLAN.md — ONNX Runtime thread tuning and BGE query prefix
 
 ### Phase 13: Retrieval Evaluation Framework
 **Goal**: Retrieval quality is measurable and tracked with a golden set and standard IR metrics before any pipeline changes
@@ -143,8 +145,8 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 7. Crawl Operations | v0.1 | 5/5 | Complete | 2026-02-20 |
 | 8. Advanced Search & Quality | v0.1 | 4/4 | Complete | 2026-02-20 |
 | 9. Source Management | v0.1 | 2/2 | Complete | 2026-02-20 |
-| 11. Quality & Security Tooling | v0.2 | Complete    | 2026-02-20 | 2026-02-20 |
-| 12. Performance Quick Wins | v0.2 | 0/TBD | Not started | - |
+| 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
+| 12. Performance Quick Wins | v0.2 | 0/2 | Planned | - |
 | 13. Retrieval Evaluation Framework | v0.2 | 0/TBD | Not started | - |
 | 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
