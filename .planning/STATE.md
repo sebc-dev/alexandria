@@ -69,6 +69,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Phase 12 merged to master (PR #17)
-Resume file: .planning/ROADMAP.md
-Next: Begin Phase 13 — Retrieval Evaluation Framework
+Stopped at: Phase 13 context gathered
+Resume file: .planning/phases/13-retrieval-evaluation-framework/13-CONTEXT.md
+Next: Plan Phase 13 — Retrieval Evaluation Framework
