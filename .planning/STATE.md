@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 12 of 18 (Performance Quick Wins)
-Plan: 00 (not yet planned)
-Status: Phase 11 complete, Phase 12 not started
-Last activity: 2026-02-21 — Phase 11 finalized, moved to Phase 12
+Plan: 02 complete, ready for plan 03
+Status: Executing Phase 12
+Last activity: 2026-02-21 — Completed 12-02 (ONNX threading + BGE query prefix)
 
-Progress: [██░░░░░░░░] ~15% (3/~20 plans)
+Progress: [██░░░░░░░░] ~25% (5/~20 plans)
 
 ## Performance Metrics
 
@@ -29,6 +29,7 @@ Progress: [██░░░░░░░░] ~15% (3/~20 plans)
 | 11-01 | 1 | 7min | 7min |
 | 11-02 | 1 | 21min | 21min |
 | 11-03 | 1 | 38min | 38min |
+| 12-02 | 1 | 3min | 3min |
 
 ## Accumulated Context
 
@@ -48,6 +49,8 @@ v0.2 decisions:
 - OSS Index analyzer disabled in OWASP (requires API key); NVD database sufficient — Phase 11-03
 - CycloneDX version 2.4.1 (plan specified non-existent 2.2.1) — Phase 11-03
 - VMware CPE false positives suppressed on Spring AI MCP libs; Guava/ONNX CVEs suppressed with justification — Phase 11-03
+- OnnxRuntimeConfig uses BeanFactoryPostProcessor to initialize OrtEnvironment before any ONNX model bean loads — Phase 12-02
+- BGE query prefix applied only to search queries, not to documents at ingestion time — Phase 12-02
 
 ### Pending Todos
 
@@ -60,6 +63,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-performance-quick-wins/12-CONTEXT.md
-Next: /gsd:plan-phase 12
+Stopped at: Completed 12-02-PLAN.md
+Resume file: .planning/phases/12-performance-quick-wins/12-02-SUMMARY.md
+Next: Execute 12-03-PLAN.md (if exists) or next plan
