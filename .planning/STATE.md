@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 13 of 18 (Retrieval Evaluation Framework)
-Plan: Not started
-Status: Ready to begin
-Last activity: 2026-02-21 — Phase 12 merged (PR #17)
+Plan: 01 complete, advancing to 02
+Status: In progress
+Last activity: 2026-02-21 — Plan 13-01 complete (IR metrics TDD)
 
-Progress: [███░░░░░░░] ~30% (7/~20 plans)
+Progress: [████░░░░░░] ~33% (8/~20 plans)
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [███░░░░░░░] ~30% (7/~20 plans)
 | 11-03 | 1 | 38min | 38min |
 | 12-01 | 1 | 4min | 4min |
 | 12-02 | 1 | 3min | 3min |
+| 13-01 | 1 | 5min | 5min |
 
 ## Accumulated Context
 
@@ -57,6 +58,8 @@ v0.2 decisions:
 - BGE query prefix applied only to search queries, not to documents at ingestion time — Phase 12-02
 - OWASP dependencyCheckAnalyze and CycloneDX cyclonedxBom removed from default build/check tasks; available manually — Phase 12 review
 - CI ONNX model cached with actions/cache; security job has timeout-minutes: 15 — Phase 12 review
+- NDCG uses log2(rank+1) discount; relevance threshold >= 1 for binary classification from graded judgments — Phase 13-01
+- computeAll uses single-pass loop for efficiency; Precision@k divides by actual retrieved count, not k — Phase 13-01
 
 ### Pending Todos
 
@@ -69,6 +72,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-retrieval-evaluation-framework/13-CONTEXT.md
-Next: Plan Phase 13 — Retrieval Evaluation Framework
+Stopped at: Completed 13-01-PLAN.md (RetrievalMetrics TDD)
+Resume file: .planning/phases/13-retrieval-evaluation-framework/13-01-SUMMARY.md
+Next: Execute 13-02-PLAN.md
