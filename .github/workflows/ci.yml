@@ -163,6 +163,13 @@ jobs:
           name: build-output
           path: build/
 
+      - name: Cache NVD database
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.gradle/dependency-check-data
+          key: nvd-db-${{ hashFiles('build.gradle.kts') }}
+          restore-keys: nvd-db-
+
       - name: OWASP Dependency-Check
         run: ./gradlew dependencyCheckAnalyze --console=plain
         env:

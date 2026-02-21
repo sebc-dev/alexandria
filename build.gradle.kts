@@ -231,6 +231,10 @@ dependencyCheck {
     nvd {
         apiKey = System.getenv("NVD_API_KEY") ?: ""
     }
+    data {
+        directory = System.getenv("DEPENDENCY_CHECK_DATA_DIR")
+            ?: "${System.getProperty("user.home")}/.gradle/dependency-check-data"
+    }
     formats = listOf("HTML", "JSON")
 }
 
