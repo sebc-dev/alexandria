@@ -58,6 +58,9 @@ jobs:
           name: build-output
           path: build/
 
+      - name: Download ONNX reranker model
+        run: ./setup-models.sh
+
       - name: Run unit tests with coverage
         run: ./gradlew test jacocoTestReport --continue --console=plain
 
