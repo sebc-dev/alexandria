@@ -310,6 +310,139 @@ class IngestionServiceTest {
         .updateSourceIdBatch(eq(sourceId), eq(new String[] {"id1", "id2"}));
   }
 
+  // --- Parent-child ingestion ---
+
+  @Test
+  void ingestionStoresParentAndChildChunks() {
+    var parentChunk =
+        new DocumentChunkData(
+            "## Setup\nInstall the framework.\n```java\nSystem.out.println();\n```",
+            "https://docs.example.com/guide",
+            "setup",
+            ContentType.PROSE,
+            "2026-01-01T00:00:00Z",
+            null,
+            null,
+            null,
+            "parent",
+            null);
+    var child1 =
+        new DocumentChunkData(
+            "Install the framework.",
+            "https://docs.example.com/guide",
+            "setup",
+            ContentType.PROSE,
+            "2026-01-01T00:00:00Z",
+            null,
+            null,
+            null,
+            "child",
+            "https://docs.example.com/guide#setup");
+    var child2 =
+        new DocumentChunkData(
+            "System.out.println();",
+            "https://docs.example.com/guide",
+            "setup",
+            ContentType.CODE,
+            "2026-01-01T00:00:00Z",
+            "java",
+            null,
+            null,
+            "child",
+            "https://docs.example.com/guide#setup");
+    when(chunker.chunk(anyString(), anyString(), anyString()))
+        .thenReturn(List.of(parentChunk, child1, child2));
+    when(embeddingModel.embedAll(any()))
+        .thenAnswer(
+            invocation -> {
+              List<TextSegment> segments = invocation.getArgument(0);
+              List<Embedding> embeddings =
+                  segments.stream().map(s -> Embedding.from(new float[] {0.1f})).toList();
+              return Response.from(embeddings);
+            });
+
+    int result =
+        ingestionService.ingestPage(
+            "## Setup\nInstall.\n```java\nSystem.out.println();\n```",
+            "https://docs.example.com/guide",
+            "2026-01-01T00:00:00Z");
+
+    assertThat(result).isEqualTo(3);
+    verify(embeddingStore).addAll(embeddingsCaptor.capture(), segmentsCaptor.capture());
+    assertThat(embeddingsCaptor.getValue()).hasSize(3);
+    List<TextSegment> stored = segmentsCaptor.getValue();
+    assertThat(stored).hasSize(3);
+    assertThat(stored.get(0).metadata().getString("chunk_type")).isEqualTo("parent");
+    assertThat(stored.get(0).metadata().containsKey("parent_id")).isFalse();
+    assertThat(stored.get(1).metadata().getString("chunk_type")).isEqualTo("child");
+    assertThat(stored.get(1).metadata().getString("parent_id"))
+        .isEqualTo("https://docs.example.com/guide#setup");
+    assertThat(stored.get(2).metadata().getString("chunk_type")).isEqualTo("child");
+    assertThat(stored.get(2).metadata().getString("parent_id"))
+        .isEqualTo("https://docs.example.com/guide#setup");
+  }
+
+  @Test
+  void enrichChunksPreservesChunkTypeAndParentId() {
+    var parentChunk =
+        new DocumentChunkData(
+            "Full section content",
+            "https://docs.example.com/guide",
+            "setup",
+            ContentType.PROSE,
+            "2026-01-01T00:00:00Z",
+            null,
+            null,
+            null,
+            "parent",
+            null);
+    var childChunk =
+        new DocumentChunkData(
+            "Child text",
+            "https://docs.example.com/guide",
+            "setup",
+            ContentType.PROSE,
+            "2026-01-01T00:00:00Z",
+            null,
+            null,
+            null,
+            "child",
+            "https://docs.example.com/guide#setup");
+    when(chunker.chunk(anyString(), anyString(), anyString()))
+        .thenReturn(List.of(parentChunk, childChunk));
+    when(embeddingModel.embedAll(any()))
+        .thenAnswer(
+            invocation -> {
+              List<TextSegment> segments = invocation.getArgument(0);
+              List<Embedding> embeddings =
+                  segments.stream().map(s -> Embedding.from(new float[] {0.1f})).toList();
+              return Response.from(embeddings);
+            });
+
+    ingestionService.ingestPage(
+        "## Setup\nChild text",
+        "https://docs.example.com/guide",
+        "2026-01-01T00:00:00Z",
+        "3.5",
+        "Spring Docs");
+
+    verify(embeddingStore).addAll(any(), segmentsCaptor.capture());
+    List<TextSegment> stored = segmentsCaptor.getValue();
+    // Parent: version/sourceName added, chunkType preserved, no parentId
+    TextSegment parent = stored.get(0);
+    assertThat(parent.metadata().getString("chunk_type")).isEqualTo("parent");
+    assertThat(parent.metadata().containsKey("parent_id")).isFalse();
+    assertThat(parent.metadata().getString("version")).isEqualTo("3.5");
+    assertThat(parent.metadata().getString("source_name")).isEqualTo("Spring Docs");
+    // Child: version/sourceName added, chunkType and parentId preserved
+    TextSegment child = stored.get(1);
+    assertThat(child.metadata().getString("chunk_type")).isEqualTo("child");
+    assertThat(child.metadata().getString("parent_id"))
+        .isEqualTo("https://docs.example.com/guide#setup");
+    assertThat(child.metadata().getString("version")).isEqualTo("3.5");
+    assertThat(child.metadata().getString("source_name")).isEqualTo("Spring Docs");
+  }
+
   @Test
   void storeChunksSkipsSourceIdUpdateWhenSourceIdNull() {
     var chunkData =
