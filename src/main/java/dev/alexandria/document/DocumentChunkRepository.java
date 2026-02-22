@@ -145,4 +145,22 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, UU
    */
   @Query(value = "SELECT pg_total_relation_size('document_chunks')", nativeQuery = true)
   long getStorageSizeBytes();
+
+  /**
+   * Batch-fetches parent chunk texts by their composite key ({@code source_url#section_path}).
+   * Returns rows of {@code [parent_key, text]} for parent chunks matching any of the given keys.
+   *
+   * @param parentKeys array of parent keys in {@code {sourceUrl}#{sectionPath}} format
+   * @return list of {@code [parent_key, text]} pairs
+   */
+  @Query(
+      value =
+          """
+            SELECT metadata->>'source_url' || '#' || metadata->>'section_path' AS parent_key, text
+            FROM document_chunks
+            WHERE metadata->>'chunk_type' = 'parent'
+              AND metadata->>'source_url' || '#' || metadata->>'section_path' = ANY(:parentKeys)
+            """,
+      nativeQuery = true)
+  List<Object[]> findParentTextsByKeys(@Param("parentKeys") String[] parentKeys);
 }
