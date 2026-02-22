@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 15 of 18 (Search Fusion Overhaul)
-Plan: 01 of 02 complete
-Status: Executing phase
-Last activity: 2026-02-22 — Plan 15-01 complete (ConvexCombinationFusion TDD)
+Plan: 02 of 02 complete
+Status: Phase complete
+Last activity: 2026-02-22 — Plan 15-02 complete (SearchService CC fusion pipeline wiring)
 
-Progress: [███████░░░] ~60% (14/~22 plans)
+Progress: [████████░░] ~68% (15/~22 plans)
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [███████░░░] ~60% (14/~22 plans)
 | 14-02 | 1 | 14min | 14min |
 | 14-03 | 1 | 7min | 7min |
 | 15-01 | 1 | 5min | 5min |
+| 15-02 | 1 | 10min | 10min |
 
 ## Accumulated Context
 
@@ -80,6 +81,10 @@ v0.2 decisions:
 - Parent text batch-fetched via native query using source_url#section_path composite key — Phase 14-02
 - DoubleSummaryStatistics for single-pass min/max in fusion normalisation — Phase 15-01
 - EMPTY_EMBEDDING (float[0]) placeholder for FTS-only results in fusion pipeline — Phase 15-01
+- CompletableFuture.supplyAsync() for parallel vector+FTS queries; virtual threads via Spring Boot — Phase 15-02
+- FTS query extracts individual metadata fields to avoid ObjectMapper dependency — Phase 15-02
+- SearchProperties @Configuration + @ConfigurationProperties with @PostConstruct validation — Phase 15-02
+- FTS without metadata filtering; fusion+dedup+rerank naturally filters irrelevant candidates — Phase 15-02
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 15-01-PLAN.md (ConvexCombinationFusion TDD)
-Resume file: .planning/phases/15-search-fusion-overhaul/15-01-SUMMARY.md
-Next: Plan 15-02 (SearchService pipeline wiring)
+Stopped at: Completed 15-02-PLAN.md (SearchService CC fusion pipeline wiring)
+Resume file: .planning/phases/15-search-fusion-overhaul/15-02-SUMMARY.md
+Next: Phase 16 (next phase in roadmap)

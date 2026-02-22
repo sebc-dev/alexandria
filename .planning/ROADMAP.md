@@ -32,7 +32,7 @@
 - [x] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact (completed 2026-02-21)
 - [x] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes (completed 2026-02-21)
 - [x] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose (completed 2026-02-22)
-- [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
+- [x] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF (completed 2026-02-22)
 - [ ] **Phase 16: MCP Testing** — Snapshot and round-trip test coverage
 - [ ] **Phase 17: Monitoring Stack** — Observability for the production pipeline
 - [ ] **Phase 18: Ablation Study & Validation** — Measure the optimised pipeline end-to-end
@@ -159,7 +159,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
 | 13. Retrieval Evaluation Framework | v0.2 | Complete    | 2026-02-21 | 2026-02-21 |
 | 14. Parent-Child Chunking | v0.2 | Complete    | 2026-02-22 | 2026-02-22 |
-| 15. Search Fusion Overhaul | 1/2 | In Progress|  | - |
+| 15. Search Fusion Overhaul | 2/2 | Complete   | 2026-02-22 | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
 | 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |
 | 18. Ablation Study & Validation | v0.2 | 0/TBD | Not started | - |
