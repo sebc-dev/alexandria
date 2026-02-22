@@ -9,7 +9,7 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 
 ### Chunking & Retrieval
 
-- [ ] **CHUNK-01**: Le systeme produit des parent chunks (section H2/H3 complete code+prose) et des child chunks (paragraphes/blocs individuels) avec lien parent-child en metadata
+- [x] **CHUNK-01**: Le systeme produit des parent chunks (section H2/H3 complete code+prose) et des child chunks (paragraphes/blocs individuels) avec lien parent-child en metadata
 - [ ] **CHUNK-02**: La recherche retourne les parent chunks complets quand un child chunk matche, reunissant code et prose dans le contexte
 - [ ] **CHUNK-03**: Le prefixe query BGE est applique sur les requetes de recherche (pas sur les documents a l'indexation)
 
@@ -110,7 +110,7 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 | EVAL-02 | Phase 13 | Pending |
 | EVAL-03 | Phase 13 | Pending |
 | EVAL-05 | Phase 13 | Pending |
-| CHUNK-01 | Phase 14 | Pending |
+| CHUNK-01 | Phase 14 | Complete |
 | CHUNK-02 | Phase 14 | Pending |
 | QUAL-04 | Phase 14 | Pending |
 | FUSE-01 | Phase 15 | Pending |
