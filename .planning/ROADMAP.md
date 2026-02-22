@@ -89,7 +89,11 @@
   1. The chunker produces parent chunks (full H2/H3 sections with code+prose) and child chunks (individual paragraphs/blocks) with parent-child links in metadata
   2. When a child chunk matches a search query, the search service returns the parent chunk's full content, reuniting code and prose in context
   3. jqwik property-based tests verify chunker invariants: content conservation (no data loss), size bounds respected, code blocks balanced, tables complete
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 14-01-PLAN.md — TDD refactor MarkdownChunker for parent-child chunk hierarchy
+- [ ] 14-02-PLAN.md — Wire parent-child into ingestion and search pipeline
+- [ ] 14-03-PLAN.md — jqwik property-based tests for chunker invariants
 
 ### Phase 15: Search Fusion Overhaul
 **Goal**: Hybrid search uses Convex Combination with configurable parameters, replacing RRF for better score utilisation
@@ -151,7 +155,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
 | 13. Retrieval Evaluation Framework | v0.2 | Complete    | 2026-02-21 | 2026-02-21 |
-| 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
+| 14. Parent-Child Chunking | v0.2 | 0/3 | Not started | - |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
 | 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |
