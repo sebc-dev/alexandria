@@ -32,7 +32,7 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 - [ ] **QUAL-01**: Error Prone 2.45+ est integre au build Gradle avec les checks ERROR actifs
 - [ ] **QUAL-02**: NullAway est integre et les packages annotes avec @NullMarked/@Nullable
 - [ ] **QUAL-03**: Spotless + google-java-format enforce le formatage sur le code modifie (ratchetFrom)
-- [ ] **QUAL-04**: jqwik teste les invariants structurels du MarkdownChunker (conservation contenu, bornes taille, code blocks equilibres, tables completes)
+- [x] **QUAL-04**: jqwik teste les invariants structurels du MarkdownChunker (conservation contenu, bornes taille, code blocks equilibres, tables completes)
 
 ### Security
 
@@ -112,7 +112,7 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 | EVAL-05 | Phase 13 | Pending |
 | CHUNK-01 | Phase 14 | Complete |
 | CHUNK-02 | Phase 14 | Pending |
-| QUAL-04 | Phase 14 | Pending |
+| QUAL-04 | Phase 14 | Complete |
 | FUSE-01 | Phase 15 | Pending |
 | FUSE-02 | Phase 15 | Pending |
 | FUSE-03 | Phase 15 | Pending |

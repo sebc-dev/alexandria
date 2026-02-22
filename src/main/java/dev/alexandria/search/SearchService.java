@@ -14,6 +14,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.filter.Filter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,13 +99,16 @@ public class SearchService {
     // Deduplicate: group child matches by parent_id, keep highest-scoring child per parent
     List<EmbeddingMatch<TextSegment>> deduplicated = deduplicateByParent(candidates);
 
+    // Resolve parent texts before reranking (batch DB query), building childText -> parentText map
+    Map<String, String> childToParentText = resolveParentTexts(deduplicated);
+
     // Rerank on child text (the matched text) for precision scoring
     List<SearchResult> reranked =
         rerankerService.rerank(
             request.query(), deduplicated, request.maxResults(), request.minScore());
 
     // Substitute parent text for child results
-    return resolveParentText(reranked);
+    return substituteParentText(reranked, childToParentText);
   }
 
   /**
@@ -144,51 +148,89 @@ public class SearchService {
   }
 
   /**
-   * Resolves parent text for child search results. Child results (those with chunk_type="child" in
-   * their original match) get their text replaced with the parent's full section content. Parent
-   * matches and legacy chunks are returned as-is.
+   * Batch-fetches parent texts for all child matches in the candidate list. Builds a mapping from
+   * child text to parent text, used for post-reranking substitution. Uses a single database query
+   * for efficiency.
    *
-   * @param results the reranked search results
-   * @return results with parent text substituted for child matches
+   * @param candidates the deduplicated candidate list
+   * @return map of child text to parent text; empty if no children in candidates
    */
-  List<SearchResult> resolveParentText(List<SearchResult> results) {
-    // Collect unique parent_ids that need resolution
-    // parentId format: {sourceUrl}#{sectionPath} — same as the parent's composite key
+  Map<String, String> resolveParentTexts(List<EmbeddingMatch<TextSegment>> candidates) {
+    // Collect unique parent_ids and map child text -> parent_id
+    Map<String, String> childTextToParentId = new HashMap<>();
     List<String> parentIds = new ArrayList<>();
-    for (SearchResult r : results) {
-      // A result is a child if it has a non-empty sourceUrl and sectionPath,
-      // and we can check if the parent exists. But we need to know which results
-      // are children. Since RerankerService's toSearchResult doesn't carry chunk_type,
-      // we need another approach: look up all potential parent keys and see if they exist.
-      // Actually, the simplest approach: look up parent text for ALL results'
-      // source_url#section_path
-      // combinations, and substitute only where a parent is found AND the result's text differs
-      // from the parent (meaning it's a child result, not the parent itself).
-      //
-      // However, this approach is incorrect because parent chunks also have
-      // source_url#section_path.
-      // We need chunk_type metadata to distinguish children from parents.
-      //
-      // Since SearchResult doesn't carry chunk_type, we need to either:
-      // a) Add chunk_type to SearchResult
-      // b) Carry parentId through to SearchResult
-      // c) Do the resolution before building SearchResult
-      //
-      // Option (b) is cleanest: add parentId to SearchResult.
-      // But actually, we can do the resolution BEFORE building final SearchResults.
-      // Wait, the reranker builds SearchResult objects. We need to modify the flow.
-      //
-      // Best approach: pass parentId through SearchResult (add optional field),
-      // then resolve here.
+
+    for (EmbeddingMatch<TextSegment> match : candidates) {
+      String chunkType = match.embedded().metadata().getString("chunk_type");
+      String parentId = match.embedded().metadata().getString("parent_id");
+      if ("child".equals(chunkType) && parentId != null) {
+        childTextToParentId.put(match.embedded().text(), parentId);
+        if (!parentIds.contains(parentId)) {
+          parentIds.add(parentId);
+        }
+      }
     }
 
-    // We need parentId on SearchResult. Let me reconsider the approach.
-    // Instead of resolving after reranking, we can resolve by looking at the SearchResult
-    // metadata. But SearchResult is a simple record without chunk metadata.
-    //
-    // Simplest fix: we already know which results are children because we deduplicated them.
-    // We should carry the parentId through. Let me modify SearchResult to include parentId.
-    return results;
+    if (parentIds.isEmpty()) {
+      return Map.of();
+    }
+
+    // Batch-fetch parent texts from DB
+    Map<String, String> parentIdToText = new HashMap<>();
+    List<Object[]> rows =
+        documentChunkRepository.findParentTextsByKeys(parentIds.toArray(String[]::new));
+    for (Object[] row : rows) {
+      String parentKey = (String) row[0];
+      String text = (String) row[1];
+      parentIdToText.put(parentKey, text);
+    }
+
+    if (parentIdToText.size() < parentIds.size()) {
+      log.warn(
+          "Could not resolve all parent texts: requested={}, found={}",
+          parentIds.size(),
+          parentIdToText.size());
+    }
+
+    // Build final childText -> parentText map
+    Map<String, String> childToParentText = new HashMap<>();
+    for (Map.Entry<String, String> entry : childTextToParentId.entrySet()) {
+      String parentText = parentIdToText.get(entry.getValue());
+      if (parentText != null) {
+        childToParentText.put(entry.getKey(), parentText);
+      }
+    }
+
+    return childToParentText;
+  }
+
+  /**
+   * Substitutes parent text for child search results. For each result whose text matches a known
+   * child text, the text is replaced with the parent's full section content. Parent matches and
+   * legacy chunks are returned as-is.
+   *
+   * @param results the reranked search results
+   * @param childToParentText map of child text to parent text
+   * @return results with parent text substituted for child matches
+   */
+  List<SearchResult> substituteParentText(
+      List<SearchResult> results, Map<String, String> childToParentText) {
+    if (childToParentText.isEmpty()) {
+      return results;
+    }
+
+    List<SearchResult> resolved = new ArrayList<>(results.size());
+    for (SearchResult r : results) {
+      String parentText = childToParentText.get(r.text());
+      if (parentText != null) {
+        resolved.add(
+            new SearchResult(
+                parentText, r.score(), r.sourceUrl(), r.sectionPath(), r.rerankScore()));
+      } else {
+        resolved.add(r);
+      }
+    }
+    return resolved;
   }
 
   /**

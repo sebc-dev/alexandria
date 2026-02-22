@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import dev.alexandria.document.DocumentChunkRepository;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -38,6 +39,8 @@ class SearchServiceTest {
   @Mock EmbeddingModel embeddingModel;
 
   @Mock RerankerService rerankerService;
+
+  @Mock DocumentChunkRepository documentChunkRepository;
 
   @InjectMocks SearchService searchService;
 
