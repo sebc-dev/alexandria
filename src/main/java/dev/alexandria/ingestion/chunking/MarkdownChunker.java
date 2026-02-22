@@ -224,7 +224,7 @@ public class MarkdownChunker {
 
     StringBuilder sb = new StringBuilder();
     for (Node node : allNodes) {
-      appendRawNodeText(node, lines, sb);
+      appendNodeText(node, lines, sb);
     }
     return sb.toString().trim();
   }
@@ -239,37 +239,6 @@ public class MarkdownChunker {
       }
     }
     return Integer.MAX_VALUE;
-  }
-
-  /**
-   * Appends raw markdown text for a node (including code fences for FencedCodeBlock) using source
-   * spans.
-   */
-  private void appendRawNodeText(Node node, String[] lines, StringBuilder sb) {
-    var sourceSpans = node.getSourceSpans();
-    if (sourceSpans != null && !sourceSpans.isEmpty()) {
-      for (SourceSpan span : sourceSpans) {
-        if (span == null) {
-          continue;
-        }
-        int lineIndex = span.getLineIndex();
-        if (lineIndex >= 0 && lineIndex < lines.length) {
-          if (!sb.isEmpty()) {
-            sb.append("\n");
-          }
-          sb.append(lines[lineIndex]);
-        }
-      }
-    } else {
-      // Fallback for nodes without source spans
-      String rendered = textRenderer.render(node).trim();
-      if (!rendered.isEmpty()) {
-        if (!sb.isEmpty()) {
-          sb.append("\n");
-        }
-        sb.append(rendered);
-      }
-    }
   }
 
   /**
