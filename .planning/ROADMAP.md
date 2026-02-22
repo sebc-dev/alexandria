@@ -103,7 +103,10 @@ Plans:
   1. Hybrid search fuses vector and FTS scores using Convex Combination (normalised score weighting) instead of RRF
   2. The alpha parameter controlling vector vs FTS weight is configurable via application.properties and can be changed without rebuild
   3. The number of candidates sent to the reranker is configurable (default 30, supports 20/30/50) via application.properties
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 15-01-PLAN.md — TDD Convex Combination fusion engine (pure computation)
+- [ ] 15-02-PLAN.md — Wire CC fusion into SearchService, configure properties, remove RRF
 
 ### Phase 16: MCP Testing
 **Goal**: MCP tool contracts are verified by snapshot tests and round-trip integration tests
