@@ -248,4 +248,169 @@ class SearchServiceTest {
 
     assertThat(results).isEmpty();
   }
+
+  // --- Parent-child context resolution ---
+
+  @Test
+  void searchSubstitutesParentTextForChildMatch() {
+    stubEmbeddingModel("spring config");
+    TextSegment childSegment =
+        TextSegment.from(
+            "Use @Value to inject properties.",
+            Metadata.from("source_url", "https://docs.spring.io/config")
+                .put("section_path", "configuration/properties")
+                .put("chunk_type", "child")
+                .put("parent_id", "https://docs.spring.io/config#configuration/properties"));
+    EmbeddingMatch<TextSegment> childMatch =
+        new EmbeddingMatch<>(0.90, "id-child", DUMMY_EMBEDDING, childSegment);
+    when(embeddingStore.search(any(EmbeddingSearchRequest.class)))
+        .thenReturn(new EmbeddingSearchResult<>(List.of(childMatch)));
+    Object[] parentRow =
+        new Object[] {
+          "https://docs.spring.io/config#configuration/properties",
+          "## Properties\nUse @Value to inject properties.\n```java\n@Value(\"${key}\")\n```"
+        };
+    List<Object[]> parentRows = List.<Object[]>of(parentRow);
+    when(documentChunkRepository.findParentTextsByKeys(
+            eq(new String[] {"https://docs.spring.io/config#configuration/properties"})))
+        .thenReturn(parentRows);
+    when(rerankerService.rerank(any(), any(), anyInt(), any()))
+        .thenReturn(
+            List.of(
+                new SearchResult(
+                    "Use @Value to inject properties.",
+                    0.90,
+                    "https://docs.spring.io/config",
+                    "configuration/properties",
+                    0.85)));
+
+    List<SearchResult> results = searchService.search(new SearchRequest("spring config"));
+
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().text())
+        .isEqualTo(
+            "## Properties\nUse @Value to inject properties.\n```java\n@Value(\"${key}\")\n```");
+    assertThat(results.getFirst().sourceUrl()).isEqualTo("https://docs.spring.io/config");
+    assertThat(results.getFirst().sectionPath()).isEqualTo("configuration/properties");
+  }
+
+  @Test
+  void searchDeduplicatesMultipleChildrenOfSameParent() {
+    String parentId = "https://docs.example.com/guide#setup";
+    EmbeddingMatch<TextSegment> child1 =
+        new EmbeddingMatch<>(
+            0.85,
+            "id-c1",
+            DUMMY_EMBEDDING,
+            TextSegment.from(
+                "Child text one",
+                Metadata.from("source_url", "https://docs.example.com/guide")
+                    .put("section_path", "setup")
+                    .put("chunk_type", "child")
+                    .put("parent_id", parentId)));
+    EmbeddingMatch<TextSegment> child2 =
+        new EmbeddingMatch<>(
+            0.90,
+            "id-c2",
+            DUMMY_EMBEDDING,
+            TextSegment.from(
+                "Child text two",
+                Metadata.from("source_url", "https://docs.example.com/guide")
+                    .put("section_path", "setup")
+                    .put("chunk_type", "child")
+                    .put("parent_id", parentId)));
+    EmbeddingMatch<TextSegment> child3 =
+        new EmbeddingMatch<>(
+            0.70,
+            "id-c3",
+            DUMMY_EMBEDDING,
+            TextSegment.from(
+                "Child text three",
+                Metadata.from("source_url", "https://docs.example.com/guide")
+                    .put("section_path", "setup")
+                    .put("chunk_type", "child")
+                    .put("parent_id", parentId)));
+
+    List<EmbeddingMatch<TextSegment>> deduplicated =
+        searchService.deduplicateByParent(List.of(child1, child2, child3));
+
+    assertThat(deduplicated).hasSize(1);
+    assertThat(deduplicated.getFirst().embedded().text()).isEqualTo("Child text two");
+    assertThat(deduplicated.getFirst().score()).isEqualTo(0.90);
+  }
+
+  @Test
+  void searchPassesThroughParentMatchDirectly() {
+    TextSegment parentSegment =
+        TextSegment.from(
+            "## Setup\nFull section content with code and prose.",
+            Metadata.from("source_url", "https://docs.example.com/guide")
+                .put("section_path", "setup")
+                .put("chunk_type", "parent"));
+    EmbeddingMatch<TextSegment> parentMatch =
+        new EmbeddingMatch<>(0.80, "id-parent", DUMMY_EMBEDDING, parentSegment);
+
+    List<EmbeddingMatch<TextSegment>> deduplicated =
+        searchService.deduplicateByParent(List.of(parentMatch));
+
+    assertThat(deduplicated).hasSize(1);
+    assertThat(deduplicated.getFirst().embedded().text())
+        .isEqualTo("## Setup\nFull section content with code and prose.");
+  }
+
+  @Test
+  void searchHandlesLegacyChunksWithoutChunkType() {
+    TextSegment legacySegment =
+        TextSegment.from(
+            "Legacy chunk without parent-child metadata",
+            Metadata.from("source_url", "https://old-docs.example.com/page")
+                .put("section_path", "intro"));
+    EmbeddingMatch<TextSegment> legacyMatch =
+        new EmbeddingMatch<>(0.75, "id-legacy", DUMMY_EMBEDDING, legacySegment);
+
+    List<EmbeddingMatch<TextSegment>> deduplicated =
+        searchService.deduplicateByParent(List.of(legacyMatch));
+
+    assertThat(deduplicated).hasSize(1);
+    assertThat(deduplicated.getFirst().embedded().text())
+        .isEqualTo("Legacy chunk without parent-child metadata");
+
+    // Also verify that resolveParentTexts returns empty map for legacy chunks
+    var parentTexts = searchService.resolveParentTexts(List.of(legacyMatch));
+    assertThat(parentTexts).isEmpty();
+  }
+
+  @Test
+  void searchKeepsHighestScoringChildPerParent() {
+    String parentId = "https://docs.example.com/guide#setup";
+    EmbeddingMatch<TextSegment> lowScoreChild =
+        new EmbeddingMatch<>(
+            0.60,
+            "id-low",
+            DUMMY_EMBEDDING,
+            TextSegment.from(
+                "Low score child",
+                Metadata.from("source_url", "https://docs.example.com/guide")
+                    .put("section_path", "setup")
+                    .put("chunk_type", "child")
+                    .put("parent_id", parentId)));
+    EmbeddingMatch<TextSegment> highScoreChild =
+        new EmbeddingMatch<>(
+            0.95,
+            "id-high",
+            DUMMY_EMBEDDING,
+            TextSegment.from(
+                "High score child",
+                Metadata.from("source_url", "https://docs.example.com/guide")
+                    .put("section_path", "setup")
+                    .put("chunk_type", "child")
+                    .put("parent_id", parentId)));
+
+    List<EmbeddingMatch<TextSegment>> deduplicated =
+        searchService.deduplicateByParent(List.of(lowScoreChild, highScoreChild));
+
+    assertThat(deduplicated).hasSize(1);
+    assertThat(deduplicated.getFirst().score()).isEqualTo(0.95);
+    assertThat(deduplicated.getFirst().embedded().text()).isEqualTo("High score child");
+  }
 }
