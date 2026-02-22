@@ -4,6 +4,7 @@ import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metad
 
 import dev.alexandria.document.DocumentChunkRepository;
 import dev.alexandria.ingestion.chunking.ContentType;
+import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -18,28 +19,29 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Search orchestration layer implementing two-stage retrieval with parent-child context resolution:
- * over-fetch with metadata filters, deduplicate child matches by parent, cross-encoder reranking,
- * then substitute parent text for child matches.
+ * Search orchestration layer implementing dual-query parallel retrieval with Convex Combination
+ * fusion and parent-child context resolution.
  *
- * <p>Pipeline: embed query -> build metadata filter from SearchRequest -> over-fetch 50 candidates
- * from EmbeddingStore (hybrid vector + keyword) -> deduplicate children by parent_id (keep
- * best-scoring child per parent) -> delegate to RerankerService for cross-encoder scoring on child
- * text -> resolve parent text for child results -> return top maxResults with parent context.
+ * <p>Pipeline: embed query -> build metadata filter -> parallel fetch (vector + FTS) -> CC fusion
+ * -> deduplicate children by parent_id -> cross-encoder reranking on child text -> resolve parent
+ * text -> return top maxResults with parent context.
+ *
+ * <p>Vector and FTS queries execute in parallel using {@link CompletableFuture}. Results are fused
+ * via {@link ConvexCombinationFusion} with a configurable alpha weight (default 0.7 = vector
+ * favoured).
  */
 @Service
 public class SearchService {
 
   private static final Logger log = LoggerFactory.getLogger(SearchService.class);
-
-  /** Number of candidates to over-fetch for reranking. */
-  static final int RERANK_CANDIDATES = 50;
 
   /**
    * BGE query prefix recommended by the bge-small-en-v1.5 model documentation. Prepended to search
@@ -52,22 +54,29 @@ public class SearchService {
   private final EmbeddingModel embeddingModel;
   private final RerankerService rerankerService;
   private final DocumentChunkRepository documentChunkRepository;
+  private final SearchProperties searchProperties;
 
   public SearchService(
       EmbeddingStore<TextSegment> embeddingStore,
       EmbeddingModel embeddingModel,
       RerankerService rerankerService,
-      DocumentChunkRepository documentChunkRepository) {
+      DocumentChunkRepository documentChunkRepository,
+      SearchProperties searchProperties) {
     this.embeddingStore = embeddingStore;
     this.embeddingModel = embeddingModel;
     this.rerankerService = rerankerService;
     this.documentChunkRepository = documentChunkRepository;
+    this.searchProperties = searchProperties;
   }
 
   /**
-   * Performs two-stage hybrid search with parent-child context resolution: over-fetch candidates
-   * with metadata filters, deduplicate children by parent, rerank with cross-encoder on child text,
-   * then substitute parent text for context richness.
+   * Performs dual-query parallel hybrid search with Convex Combination fusion and parent-child
+   * context resolution.
+   *
+   * <p>Executes vector search (via EmbeddingStore) and full-text search (via native SQL) in
+   * parallel, fuses results using alpha-weighted convex combination, deduplicates children by
+   * parent, reranks with cross-encoder on child text, then substitutes parent text for context
+   * richness.
    *
    * @param request the search request containing query, filters, and result limits
    * @return list of search results ordered by reranking score descending
@@ -75,22 +84,33 @@ public class SearchService {
   public List<SearchResult> search(SearchRequest request) {
     Embedding queryEmbedding = embeddingModel.embed(BGE_QUERY_PREFIX + request.query()).content();
     Filter filter = buildFilter(request);
+    int candidates = searchProperties.getRerankCandidates();
+    double alpha = searchProperties.getAlpha();
 
-    EmbeddingSearchRequest.EmbeddingSearchRequestBuilder builder =
-        EmbeddingSearchRequest.builder()
-            .queryEmbedding(queryEmbedding)
-            .query(request.query())
-            .maxResults(RERANK_CANDIDATES);
+    // Execute vector and FTS queries in parallel
+    var vectorFuture =
+        CompletableFuture.supplyAsync(
+            () -> executeVectorSearch(queryEmbedding, filter, candidates));
+    var ftsFuture =
+        CompletableFuture.supplyAsync(() -> executeFullTextSearch(request.query(), candidates));
+    CompletableFuture.allOf(vectorFuture, ftsFuture).join();
 
-    if (filter != null) {
-      builder.filter(filter);
+    List<ScoredCandidate> vectorResults = vectorFuture.join();
+    List<ScoredCandidate> ftsResults = ftsFuture.join();
+
+    if (vectorResults.isEmpty()) {
+      log.debug("Vector search returned no results for query: {}", request.query());
+    }
+    if (ftsResults.isEmpty()) {
+      log.debug("FTS search returned no results for query: {}", request.query());
     }
 
-    EmbeddingSearchResult<TextSegment> result = embeddingStore.search(builder.build());
-    List<EmbeddingMatch<TextSegment>> candidates = result.matches();
+    // Fuse results via Convex Combination
+    List<EmbeddingMatch<TextSegment>> fused =
+        ConvexCombinationFusion.fuse(vectorResults, ftsResults, alpha, candidates);
 
     // Deduplicate: group child matches by parent_id, keep highest-scoring child per parent
-    List<EmbeddingMatch<TextSegment>> deduplicated = deduplicateByParent(candidates);
+    List<EmbeddingMatch<TextSegment>> deduplicated = deduplicateByParent(fused);
 
     // Resolve parent texts before reranking (batch DB query), building childText -> parentText map
     Map<String, String> childToParentText = resolveParentTexts(deduplicated);
@@ -102,6 +122,79 @@ public class SearchService {
 
     // Substitute parent text for child results
     return substituteParentText(reranked, childToParentText);
+  }
+
+  /**
+   * Executes vector search via the EmbeddingStore. Converts results to {@link ScoredCandidate} for
+   * fusion.
+   *
+   * @param queryEmbedding the query embedding vector
+   * @param filter metadata filter (may be null)
+   * @param maxResults maximum candidates to fetch
+   * @return list of scored candidates from vector search
+   */
+  List<ScoredCandidate> executeVectorSearch(
+      Embedding queryEmbedding, @Nullable Filter filter, int maxResults) {
+    EmbeddingSearchRequest.EmbeddingSearchRequestBuilder builder =
+        EmbeddingSearchRequest.builder().queryEmbedding(queryEmbedding).maxResults(maxResults);
+
+    if (filter != null) {
+      builder.filter(filter);
+    }
+
+    EmbeddingSearchResult<TextSegment> result = embeddingStore.search(builder.build());
+    return result.matches().stream()
+        .map(
+            match ->
+                new ScoredCandidate(
+                    match.embeddingId(), match.embedded(), match.embedding(), match.score()))
+        .toList();
+  }
+
+  /**
+   * Executes full-text search via native SQL query. Converts raw result rows to {@link
+   * ScoredCandidate} for fusion.
+   *
+   * @param query the search query text
+   * @param maxResults maximum candidates to fetch
+   * @return list of scored candidates from FTS
+   */
+  List<ScoredCandidate> executeFullTextSearch(String query, int maxResults) {
+    List<Object[]> rows = documentChunkRepository.fullTextSearch(query, maxResults);
+    List<ScoredCandidate> candidates = new ArrayList<>(rows.size());
+
+    for (Object[] row : rows) {
+      String embeddingId = (String) row[0];
+      String text = (String) row[1];
+      String sourceUrl = (String) row[2];
+      String sectionPath = (String) row[3];
+      String chunkType = (String) row[4];
+      String parentId = (String) row[5];
+      String contentType = (String) row[6];
+      String version = (String) row[7];
+      String sourceName = (String) row[8];
+      double score = ((Number) row[9]).doubleValue();
+
+      Metadata metadata = new Metadata();
+      putIfNotNull(metadata, "source_url", sourceUrl);
+      putIfNotNull(metadata, "section_path", sectionPath);
+      putIfNotNull(metadata, "chunk_type", chunkType);
+      putIfNotNull(metadata, "parent_id", parentId);
+      putIfNotNull(metadata, "content_type", contentType);
+      putIfNotNull(metadata, "version", version);
+      putIfNotNull(metadata, "source_name", sourceName);
+
+      TextSegment segment = TextSegment.from(Objects.requireNonNullElse(text, ""), metadata);
+      candidates.add(new ScoredCandidate(embeddingId, segment, null, score));
+    }
+
+    return candidates;
+  }
+
+  private static void putIfNotNull(Metadata metadata, String key, @Nullable String value) {
+    if (value != null) {
+      metadata.put(key, value);
+    }
   }
 
   /**
