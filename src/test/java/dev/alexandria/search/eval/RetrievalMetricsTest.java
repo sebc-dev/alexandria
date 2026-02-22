@@ -359,6 +359,43 @@ class RetrievalMetricsTest {
       assertThat(result.averagePrecision()).isCloseTo(0.0, within(TOLERANCE));
       assertThat(result.hitRate()).isCloseTo(0.0, within(TOLERANCE));
     }
+
+    @Test
+    void matches_individual_methods() {
+      var retrieved = List.of("a", "x", "b", "y");
+      int k = 4;
+
+      RetrievalMetrics.MetricsResult all = RetrievalMetrics.computeAll(retrieved, JUDGMENTS_AB, k);
+
+      assertThat(all.recallAtK())
+          .isCloseTo(RetrievalMetrics.recallAtK(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+      assertThat(all.precisionAtK())
+          .isCloseTo(RetrievalMetrics.precisionAtK(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+      assertThat(all.mrr())
+          .isCloseTo(RetrievalMetrics.mrr(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+      assertThat(all.ndcgAtK())
+          .isCloseTo(RetrievalMetrics.ndcgAtK(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+      assertThat(all.averagePrecision())
+          .isCloseTo(
+              RetrievalMetrics.averagePrecision(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+      assertThat(all.hitRate())
+          .isCloseTo(RetrievalMetrics.hitRate(retrieved, JUDGMENTS_AB, k), within(TOLERANCE));
+    }
+
+    @Test
+    void k_zero_returns_zero_for_all_metrics() {
+      var retrieved = List.of("a", "b");
+
+      RetrievalMetrics.MetricsResult result =
+          RetrievalMetrics.computeAll(retrieved, JUDGMENTS_AB, 0);
+
+      assertThat(result.recallAtK()).isCloseTo(0.0, within(TOLERANCE));
+      assertThat(result.precisionAtK()).isCloseTo(0.0, within(TOLERANCE));
+      assertThat(result.mrr()).isCloseTo(0.0, within(TOLERANCE));
+      assertThat(result.ndcgAtK()).isCloseTo(0.0, within(TOLERANCE));
+      assertThat(result.averagePrecision()).isCloseTo(0.0, within(TOLERANCE));
+      assertThat(result.hitRate()).isCloseTo(0.0, within(TOLERANCE));
+    }
   }
 
   @Nested

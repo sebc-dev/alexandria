@@ -164,6 +164,20 @@ class EvaluationExporterTest {
     assertThat(lines.get(1)).startsWith("\"Spring Boot, the framework\"");
   }
 
+  @Test
+  void export_handles_empty_results_list() throws IOException {
+    EvaluationExporter exporter = new EvaluationExporter(tempDir.toString(), FIXED_CLOCK);
+
+    List<Path> paths = exporter.export(List.of(), "empty-test");
+
+    List<String> aggregateLines = Files.readAllLines(paths.get(0));
+    assertThat(aggregateLines).hasSize(2); // header + GLOBAL
+    assertThat(aggregateLines.get(1)).startsWith("GLOBAL,0,");
+
+    List<String> detailedLines = Files.readAllLines(paths.get(1));
+    assertThat(detailedLines).hasSize(1); // header only
+  }
+
   private static EvaluationResult sampleFactualResult() {
     return new EvaluationResult(
         "What is the default server in Spring Boot",

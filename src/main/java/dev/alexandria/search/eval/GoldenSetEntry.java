@@ -9,5 +9,8 @@ import java.util.List;
  * @param queryType the classification of the query intent
  * @param judgments the list of relevance judgments (only grade 1 and 2; absence means grade 0)
  */
-public record GoldenSetEntry(
-    String query, QueryType queryType, List<RelevanceJudgment> judgments) {}
+public record GoldenSetEntry(String query, QueryType queryType, List<RelevanceJudgment> judgments) {
+  public GoldenSetEntry {
+    judgments = List.copyOf(judgments);
+  }
+}

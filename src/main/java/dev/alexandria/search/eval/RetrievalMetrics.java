@@ -155,7 +155,7 @@ public final class RetrievalMetrics {
 
   private static Map<String, Integer> toGradeMap(List<RelevanceJudgment> judgments) {
     return judgments.stream()
-        .collect(Collectors.toMap(RelevanceJudgment::chunkId, RelevanceJudgment::grade));
+        .collect(Collectors.toMap(RelevanceJudgment::chunkId, RelevanceJudgment::grade, Math::max));
   }
 
   private static Set<String> relevantIds(Map<String, Integer> gradeMap) {

@@ -125,7 +125,7 @@ public class EvaluationExporter {
                   "%s,%s,%s,%.4f,%d,%d,%s,%s,%s",
                   escapeCsv(result.query()),
                   result.queryType().name(),
-                  chunk.chunkId(),
+                  escapeCsv(chunk.chunkId()),
                   chunk.score(),
                   chunk.rank(),
                   chunk.relevanceGrade(),

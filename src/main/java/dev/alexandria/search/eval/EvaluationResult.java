@@ -41,6 +41,9 @@ public record EvaluationResult(
     double hitRateAt5,
     double hitRateAt10,
     double hitRateAt20) {
+  public EvaluationResult {
+    chunkResults = List.copyOf(chunkResults);
+  }
 
   /**
    * A single retrieved chunk with its search score, rank position, and ground-truth relevance.

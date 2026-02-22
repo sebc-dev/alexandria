@@ -152,6 +152,10 @@ public class RetrievalEvaluationService {
     for (RelevanceJudgment judgment : judgments) {
       if (retrievedChunkId.contains(judgment.chunkId())
           || judgment.chunkId().contains(retrievedChunkId)) {
+        log.debug(
+            "Substring match: retrieved='{}' matched golden='{}'",
+            retrievedChunkId,
+            judgment.chunkId());
         return judgment.grade();
       }
     }

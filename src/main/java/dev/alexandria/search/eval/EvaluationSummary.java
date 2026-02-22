@@ -24,6 +24,10 @@ public record EvaluationSummary(
     Map<QueryType, TypeMetrics> byType,
     boolean passed,
     List<String> failedQueries) {
+  public EvaluationSummary {
+    byType = Map.copyOf(byType);
+    failedQueries = List.copyOf(failedQueries);
+  }
 
   /**
    * Per-type metric averages for a subset of evaluation queries.
