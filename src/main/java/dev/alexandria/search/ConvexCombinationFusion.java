@@ -4,6 +4,7 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,17 +53,15 @@ public final class ConvexCombinationFusion {
       return List.of();
     }
 
-    // Step 1-2: Compute min-max normalisation bounds
-    double vectorMin = minScore(vectorResults);
-    double vectorMax = maxScore(vectorResults);
-    double ftsMin = minScore(ftsResults);
-    double ftsMax = maxScore(ftsResults);
+    // Step 1-2: Compute min-max normalisation bounds (single pass per source)
+    DoubleSummaryStatistics vectorStats = scoreStats(vectorResults);
+    DoubleSummaryStatistics ftsStats = scoreStats(ftsResults);
 
     // Step 3: Build combined map by embeddingId (preserves insertion order for determinism)
     Map<String, FusedEntry> fusedMap = new LinkedHashMap<>();
 
     for (ScoredCandidate vc : vectorResults) {
-      double normScore = normalise(vc.score(), vectorMin, vectorMax);
+      double normScore = normalise(vc.score(), vectorStats);
       Embedding vectorEmb = vc.embedding() != null ? vc.embedding() : EMPTY_EMBEDDING;
       fusedMap.put(
           vc.embeddingId(),
@@ -70,7 +69,7 @@ public final class ConvexCombinationFusion {
     }
 
     for (ScoredCandidate fc : ftsResults) {
-      double normScore = normalise(fc.score(), ftsMin, ftsMax);
+      double normScore = normalise(fc.score(), ftsStats);
       double ftsContribution = (1.0 - alpha) * normScore;
 
       FusedEntry existing = fusedMap.get(fc.embeddingId());
@@ -104,23 +103,19 @@ public final class ConvexCombinationFusion {
    * Min-max normalises a score to [0, 1]. If max == min (all scores identical), returns 1.0.
    *
    * @param score the raw score to normalise
-   * @param min the minimum score in the source
-   * @param max the maximum score in the source
+   * @param stats summary statistics containing min and max for the source
    * @return normalised score in [0, 1]
    */
-  private static double normalise(double score, double min, double max) {
-    if (max == min) {
+  private static double normalise(double score, DoubleSummaryStatistics stats) {
+    if (stats.getMax() == stats.getMin()) {
       return 1.0;
     }
-    return (score - min) / (max - min);
+    return (score - stats.getMin()) / (stats.getMax() - stats.getMin());
   }
 
-  private static double minScore(List<ScoredCandidate> candidates) {
-    return candidates.stream().mapToDouble(ScoredCandidate::score).min().orElse(0.0);
-  }
-
-  private static double maxScore(List<ScoredCandidate> candidates) {
-    return candidates.stream().mapToDouble(ScoredCandidate::score).max().orElse(0.0);
+  /** Computes min/max/count statistics for a list of candidates in a single pass. */
+  private static DoubleSummaryStatistics scoreStats(List<ScoredCandidate> candidates) {
+    return candidates.stream().mapToDouble(ScoredCandidate::score).summaryStatistics();
   }
 
   /** Internal holder for a fused result during combination. */
