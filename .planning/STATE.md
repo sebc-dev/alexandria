@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 14 — Parent-Child Chunking
+**Current focus:** Phase 15 — Search Fusion Overhaul
 
 ## Current Position
 
-Phase: 14 of 18 (Parent-Child Chunking) -- COMPLETE
-Plan: 03 of 03 complete
-Status: Phase complete
-Last activity: 2026-02-22 — Plan 14-02 complete (parent-child ingestion + search pipeline wiring)
+Phase: 15 of 18 (Search Fusion Overhaul)
+Plan: 01 of 02 complete
+Status: Executing phase
+Last activity: 2026-02-22 — Plan 15-01 complete (ConvexCombinationFusion TDD)
 
-Progress: [██████░░░░] ~55% (13/~20 plans)
+Progress: [███████░░░] ~60% (14/~22 plans)
 
 ## Performance Metrics
 
@@ -37,6 +37,7 @@ Progress: [██████░░░░] ~55% (13/~20 plans)
 | 14-01 | 1 | 11min | 11min |
 | 14-02 | 1 | 14min | 14min |
 | 14-03 | 1 | 7min | 7min |
+| 15-01 | 1 | 5min | 5min |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ v0.2 decisions:
 - Both parent+child chunks embedded for search; no separate context-only storage mechanism — Phase 14-02
 - Reranker scores child text for precision, SearchService substitutes parent text for context richness — Phase 14-02
 - Parent text batch-fetched via native query using source_url#section_path composite key — Phase 14-02
+- DoubleSummaryStatistics for single-pass min/max in fusion normalisation — Phase 15-01
+- EMPTY_EMBEDDING (float[0]) placeholder for FTS-only results in fusion pipeline — Phase 15-01
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 14-02-PLAN.md (parent-child ingestion + search pipeline wiring)
-Resume file: .planning/phases/14-parent-child-chunking/14-02-SUMMARY.md
-Next: Phase 15 (Search Fusion Overhaul)
+Stopped at: Completed 15-01-PLAN.md (ConvexCombinationFusion TDD)
+Resume file: .planning/phases/15-search-fusion-overhaul/15-01-SUMMARY.md
+Next: Plan 15-02 (SearchService pipeline wiring)

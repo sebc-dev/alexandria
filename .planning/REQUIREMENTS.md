@@ -15,8 +15,8 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 
 ### Search Fusion
 
-- [ ] **FUSE-01**: La fusion hybride utilise Convex Combination (score normalise) au lieu de RRF
-- [ ] **FUSE-02**: Le parametre alpha de Convex Combination est configurable via application properties
+- [x] **FUSE-01**: La fusion hybride utilise Convex Combination (score normalise) au lieu de RRF
+- [x] **FUSE-02**: Le parametre alpha de Convex Combination est configurable via application properties
 - [ ] **FUSE-03**: Le nombre de candidats reranking est configurable (defaut: 30, testable 20/30/50)
 
 ### Retrieval Evaluation
@@ -113,8 +113,8 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 | CHUNK-01 | Phase 14 | Complete |
 | CHUNK-02 | Phase 14 | Pending |
 | QUAL-04 | Phase 14 | Complete |
-| FUSE-01 | Phase 15 | Pending |
-| FUSE-02 | Phase 15 | Pending |
+| FUSE-01 | Phase 15 | Complete |
+| FUSE-02 | Phase 15 | Complete |
 | FUSE-03 | Phase 15 | Pending |
 | MCPT-01 | Phase 16 | Pending |
 | MCPT-02 | Phase 16 | Pending |
