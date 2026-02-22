@@ -19,6 +19,10 @@ import org.jspecify.annotations.Nullable;
  * @param language programming language for code chunks; null for prose
  * @param version documentation version label; null if not versioned
  * @param sourceName human-readable source name; null if not set
+ * @param chunkType "parent" for parent chunks, "child" for child chunks; null for backward
+ *     compatibility with legacy callers
+ * @param parentId deterministic parent identifier for child chunks (format: {@code
+ *     {sourceUrl}#{sectionPath}}); null for parent chunks and legacy callers
  */
 public record DocumentChunkData(
     String text,
@@ -28,13 +32,18 @@ public record DocumentChunkData(
     String lastUpdated,
     @Nullable String language,
     @Nullable String version,
-    @Nullable String sourceName) {
+    @Nullable String sourceName,
+    @Nullable String chunkType,
+    @Nullable String parentId) {
   public DocumentChunkData {
     Objects.requireNonNull(text, "text must not be null");
     Objects.requireNonNull(sourceUrl, "sourceUrl must not be null");
     Objects.requireNonNull(sectionPath, "sectionPath must not be null");
     Objects.requireNonNull(contentType, "contentType must not be null");
     Objects.requireNonNull(lastUpdated, "lastUpdated must not be null");
+    if ("parent".equals(chunkType) && parentId != null) {
+      throw new IllegalArgumentException("Parent chunks must not have a parentId");
+    }
   }
 
   /**
@@ -55,6 +64,12 @@ public record DocumentChunkData(
     }
     if (sourceName != null) {
       metadata.put("source_name", sourceName);
+    }
+    if (chunkType != null) {
+      metadata.put("chunk_type", chunkType);
+    }
+    if (parentId != null) {
+      metadata.put("parent_id", parentId);
     }
     return metadata;
   }

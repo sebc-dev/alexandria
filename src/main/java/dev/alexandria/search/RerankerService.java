@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
  * Cross-encoder reranking service that re-scores search candidates using an ONNX-based scoring
  * model (ms-marco-MiniLM-L-6-v2).
  *
- * <p>Takes RRF hybrid search candidates and a query, scores each query-passage pair via the
+ * <p>Takes fused search candidates and a query, scores each query-passage pair via the
  * cross-encoder, then returns results sorted by reranking score descending. Respects {@code
  * maxResults} and optional {@code minScore} threshold.
  *
@@ -36,7 +36,7 @@ public class RerankerService {
    * Reranks search candidates using the cross-encoder scoring model.
    *
    * @param query the original search query text
-   * @param candidates RRF hybrid search candidates to rerank
+   * @param candidates fused search candidates to rerank
    * @param maxResults maximum number of results to return after reranking
    * @param minScore minimum reranking score threshold (nullable; null means no threshold)
    * @return search results sorted by reranking score descending, limited to maxResults

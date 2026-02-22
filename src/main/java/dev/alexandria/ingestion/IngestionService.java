@@ -124,7 +124,9 @@ public class IngestionService {
                     c.lastUpdated(),
                     c.language(),
                     version,
-                    sourceName))
+                    sourceName,
+                    c.chunkType(),
+                    c.parentId()))
         .toList();
   }
 

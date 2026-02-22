@@ -145,4 +145,55 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, UU
    */
   @Query(value = "SELECT pg_total_relation_size('document_chunks')", nativeQuery = true)
   long getStorageSizeBytes();
+
+  /**
+   * Performs standalone full-text search on document chunks using PostgreSQL tsvector/tsquery.
+   *
+   * <p>Returns individual metadata fields to avoid JSONB parsing in the service layer. Results are
+   * ranked by {@code ts_rank} and limited to {@code limit} rows.
+   *
+   * @param query the search query text (converted to a tsquery via {@code plainto_tsquery})
+   * @param limit maximum number of results to return
+   * @return list of {@code [embedding_id, text, source_url, section_path, chunk_type, parent_id,
+   *     content_type, version, source_name, score]} rows
+   */
+  @Query(
+      value =
+          """
+            SELECT embedding_id::text,
+                   text,
+                   metadata->>'source_url' AS source_url,
+                   metadata->>'section_path' AS section_path,
+                   metadata->>'chunk_type' AS chunk_type,
+                   metadata->>'parent_id' AS parent_id,
+                   metadata->>'content_type' AS content_type,
+                   metadata->>'version' AS version,
+                   metadata->>'source_name' AS source_name,
+                   ts_rank(to_tsvector('english', coalesce(text, '')),
+                           plainto_tsquery('english', :query)) AS score
+            FROM document_chunks
+            WHERE to_tsvector('english', coalesce(text, '')) @@ plainto_tsquery('english', :query)
+            ORDER BY score DESC
+            LIMIT :limit
+            """,
+      nativeQuery = true)
+  List<Object[]> fullTextSearch(@Param("query") String query, @Param("limit") int limit);
+
+  /**
+   * Batch-fetches parent chunk texts by their composite key ({@code source_url#section_path}).
+   * Returns rows of {@code [parent_key, text]} for parent chunks matching any of the given keys.
+   *
+   * @param parentKeys array of parent keys in {@code {sourceUrl}#{sectionPath}} format
+   * @return list of {@code [parent_key, text]} pairs
+   */
+  @Query(
+      value =
+          """
+            SELECT metadata->>'source_url' || '#' || metadata->>'section_path' AS parent_key, text
+            FROM document_chunks
+            WHERE metadata->>'chunk_type' = 'parent'
+              AND metadata->>'source_url' || '#' || metadata->>'section_path' = ANY(:parentKeys)
+            """,
+      nativeQuery = true)
+  List<Object[]> findParentTextsByKeys(@Param("parentKeys") String[] parentKeys);
 }
