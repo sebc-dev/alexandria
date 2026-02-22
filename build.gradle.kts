@@ -92,6 +92,15 @@ testing {
                         shouldRunAfter(test)
                         // Docker 29+ requires API version >= 1.44; Testcontainers defaults to 1.32
                         systemProperty("api.version", "1.44")
+                        // Exclude evaluation tests from normal CI runs.
+                        // Run them explicitly: ./gradlew integrationTest -PincludeEvalTag
+                        if (project.hasProperty("includeEvalTag")) {
+                            useJUnitPlatform()
+                        } else {
+                            useJUnitPlatform {
+                                excludeTags("eval")
+                            }
+                        }
                     }
                 }
             }

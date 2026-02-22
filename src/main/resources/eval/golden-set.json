@@ -1,0 +1,880 @@
+[
+  {
+    "query": "How to create a REST controller in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/rest-controllers#creating-rest-controller", "grade": 2 },
+      { "chunkId": "spring-boot/web/rest-controllers#request-mapping", "grade": 1 },
+      { "chunkId": "spring-boot/web/rest-controllers#response-body", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Transactional annotation example",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/data/transactions#transactional-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/data/transactions#transaction-management", "grade": 1 },
+      { "chunkId": "spring-boot/data/transactions#rollback-rules", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to define a Spring Boot bean with @Bean annotation",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/configuration#bean-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/core/configuration#configuration-classes", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @RequestMapping with path variables",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/rest-controllers#path-variables", "grade": 2 },
+      { "chunkId": "spring-boot/web/rest-controllers#request-mapping", "grade": 1 },
+      { "chunkId": "spring-boot/web/rest-controllers#uri-patterns", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to write a JPA repository query method in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/data/jpa#query-methods", "grade": 2 },
+      { "chunkId": "spring-boot/data/jpa#repository-interface", "grade": 1 },
+      { "chunkId": "spring-boot/data/jpa#derived-queries", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot scheduled task with @Scheduled annotation",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/features/scheduling#scheduled-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/features/scheduling#enable-scheduling", "grade": 1 },
+      { "chunkId": "spring-boot/features/scheduling#cron-expressions", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to create a custom exception handler in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/error-handling#controller-advice", "grade": 2 },
+      { "chunkId": "spring-boot/web/error-handling#exception-handler", "grade": 2 },
+      { "chunkId": "spring-boot/web/error-handling#response-status", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Value annotation for injecting properties",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#value-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#property-sources", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to configure Spring Security with HTTP basic authentication",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/security/http-security#http-basic", "grade": 2 },
+      { "chunkId": "spring-boot/security/http-security#security-filter-chain", "grade": 1 },
+      { "chunkId": "spring-boot/security/authentication#authentication-manager", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @ConfigurationProperties binding example",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#configuration-properties", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#relaxed-binding", "grade": 1 },
+      { "chunkId": "spring-boot/core/externalized-config#validation", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to upload a file with Spring Boot multipart",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/multipart#file-upload", "grade": 2 },
+      { "chunkId": "spring-boot/web/multipart#multipart-config", "grade": 1 },
+      { "chunkId": "spring-boot/web/multipart#max-file-size", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot WebClient example for making HTTP requests",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/webclient#creating-webclient", "grade": 2 },
+      { "chunkId": "spring-boot/web/webclient#retrieve-exchange", "grade": 1 },
+      { "chunkId": "spring-boot/web/webclient#error-handling", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to define a custom validator with @Valid in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/validation#custom-validator", "grade": 2 },
+      { "chunkId": "spring-boot/web/validation#constraint-annotation", "grade": 1 },
+      { "chunkId": "spring-boot/web/validation#valid-annotation", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Async annotation for asynchronous methods",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/features/async#async-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/features/async#enable-async", "grade": 1 },
+      { "chunkId": "spring-boot/features/async#executor-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to write a Spring Boot test with @SpringBootTest",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/spring-boot-test#spring-boot-test-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#web-environment", "grade": 1 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#mock-bean", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @EventListener for application events",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/events#event-listener", "grade": 2 },
+      { "chunkId": "spring-boot/core/events#application-events", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to configure a DataSource with Spring Boot JDBC",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/data/datasource#datasource-configuration", "grade": 2 },
+      { "chunkId": "spring-boot/data/datasource#connection-pool", "grade": 1 },
+      { "chunkId": "spring-boot/data/datasource#hikari-config", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Cacheable annotation usage",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/features/caching#cacheable-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/features/caching#enable-caching", "grade": 1 },
+      { "chunkId": "spring-boot/features/caching#cache-manager", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to create a Spring Boot CommandLineRunner",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/runners#command-line-runner", "grade": 2 },
+      { "chunkId": "spring-boot/core/runners#application-runner", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @ConditionalOnProperty annotation syntax",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-on-property", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-annotations", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to implement a message listener with Spring Boot and RabbitMQ",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/messaging/rabbitmq#rabbit-listener", "grade": 2 },
+      { "chunkId": "spring-boot/messaging/rabbitmq#connection-factory", "grade": 1 },
+      { "chunkId": "spring-boot/messaging/rabbitmq#message-converter", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Profile annotation for environment-specific beans",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/profiles#profile-annotation", "grade": 2 },
+      { "chunkId": "spring-boot/core/profiles#active-profiles", "grade": 1 },
+      { "chunkId": "spring-boot/core/profiles#profile-groups", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to use Flyway migrations in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/data/flyway#flyway-migration", "grade": 2 },
+      { "chunkId": "spring-boot/data/flyway#migration-scripts", "grade": 1 },
+      { "chunkId": "spring-boot/data/flyway#auto-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot RestClient example with error handling",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/rest-client#creating-rest-client", "grade": 2 },
+      { "chunkId": "spring-boot/web/rest-client#error-handling", "grade": 2 },
+      { "chunkId": "spring-boot/web/rest-client#request-methods", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to create a custom auto-configuration in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#creating-auto-configuration", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#auto-configuration-imports", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#ordering", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot actuator custom health indicator example",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/actuator/health#custom-health-indicator", "grade": 2 },
+      { "chunkId": "spring-boot/actuator/health#health-endpoint", "grade": 1 },
+      { "chunkId": "spring-boot/actuator/health#health-groups", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to configure CORS in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/cors#cors-configuration", "grade": 2 },
+      { "chunkId": "spring-boot/web/cors#cross-origin-annotation", "grade": 1 },
+      { "chunkId": "spring-boot/web/cors#global-cors-config", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @EntityScan and @EnableJpaRepositories usage",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/data/jpa#entity-scan", "grade": 2 },
+      { "chunkId": "spring-boot/data/jpa#enable-jpa-repositories", "grade": 2 },
+      { "chunkId": "spring-boot/data/jpa#auto-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to register a servlet filter in Spring Boot",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/web/servlet#filter-registration", "grade": 2 },
+      { "chunkId": "spring-boot/web/servlet#filter-ordering", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @MockBean usage in tests",
+    "queryType": "CODE_LOOKUP",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/spring-boot-test#mock-bean", "grade": 2 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#spy-bean", "grade": 1 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#bean-overrides", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is the default embedded server in Spring Boot",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/embedded-servers#default-server", "grade": 2 },
+      { "chunkId": "spring-boot/web/embedded-servers#tomcat", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot auto-configuration order and priority",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#ordering", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#auto-configure-before-after", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#auto-configuration-imports", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What Java versions does Spring Boot 3 support",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/getting-started/system-requirements#java-versions", "grade": 2 },
+      { "chunkId": "spring-boot/getting-started/system-requirements#prerequisites", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Default port number for Spring Boot application",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/embedded-servers#server-port", "grade": 2 },
+      { "chunkId": "spring-boot/web/embedded-servers#customizing-server", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What logging framework does Spring Boot use by default",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/features/logging#default-logging", "grade": 2 },
+      { "chunkId": "spring-boot/features/logging#logback-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot application.properties vs application.yml",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#property-files", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#yaml-files", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#property-source-order", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is the default connection pool in Spring Boot",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/data/datasource#connection-pool", "grade": 2 },
+      { "chunkId": "spring-boot/data/datasource#hikari-config", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot starter dependencies naming convention",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/using/starters#naming-convention", "grade": 2 },
+      { "chunkId": "spring-boot/using/starters#official-starters", "grade": 1 },
+      { "chunkId": "spring-boot/using/starters#custom-starters", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Where does Spring Boot look for configuration files",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#config-file-locations", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#property-source-order", "grade": 1 },
+      { "chunkId": "spring-boot/core/externalized-config#config-data-imports", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot actuator default endpoints list",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/actuator/endpoints#available-endpoints", "grade": 2 },
+      { "chunkId": "spring-boot/actuator/endpoints#enabling-endpoints", "grade": 1 },
+      { "chunkId": "spring-boot/actuator/endpoints#exposing-endpoints", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What build tools does Spring Boot support",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/getting-started/system-requirements#build-tools", "grade": 2 },
+      { "chunkId": "spring-boot/using/build-systems#maven", "grade": 1 },
+      { "chunkId": "spring-boot/using/build-systems#gradle", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot banner customization options",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/features/banner#custom-banner", "grade": 2 },
+      { "chunkId": "spring-boot/features/banner#banner-variables", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is the spring-boot-devtools module",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/using/devtools#devtools-overview", "grade": 2 },
+      { "chunkId": "spring-boot/using/devtools#automatic-restart", "grade": 1 },
+      { "chunkId": "spring-boot/using/devtools#live-reload", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot property binding relaxed rules",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#relaxed-binding", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#configuration-properties", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What databases does Spring Boot auto-configure",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/data/sql-databases#supported-databases", "grade": 2 },
+      { "chunkId": "spring-boot/data/datasource#embedded-databases", "grade": 1 },
+      { "chunkId": "spring-boot/data/datasource#production-databases", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot fat jar structure and layout",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/deployment/executable-jar#jar-structure", "grade": 2 },
+      { "chunkId": "spring-boot/deployment/executable-jar#nested-jars", "grade": 1 },
+      { "chunkId": "spring-boot/deployment/executable-jar#launcher", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is the purpose of @SpringBootApplication annotation",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/using/spring-boot-application#spring-boot-application", "grade": 2 },
+      { "chunkId": "spring-boot/using/spring-boot-application#component-scan", "grade": 1 },
+      { "chunkId": "spring-boot/using/spring-boot-application#enable-auto-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot externalized configuration property source order",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#property-source-order", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#command-line-args", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Default health endpoint behavior in Spring Boot actuator",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/actuator/health#health-endpoint", "grade": 2 },
+      { "chunkId": "spring-boot/actuator/health#auto-configured-indicators", "grade": 1 },
+      { "chunkId": "spring-boot/actuator/health#health-status", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot GraalVM native image support",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/native-image/overview#graalvm-support", "grade": 2 },
+      { "chunkId": "spring-boot/native-image/overview#aot-processing", "grade": 1 },
+      { "chunkId": "spring-boot/native-image/overview#limitations", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What servlet containers can Spring Boot use",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/embedded-servers#supported-servers", "grade": 2 },
+      { "chunkId": "spring-boot/web/embedded-servers#tomcat", "grade": 1 },
+      { "chunkId": "spring-boot/web/embedded-servers#jetty", "grade": 1 },
+      { "chunkId": "spring-boot/web/embedded-servers#undertow", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot conditional annotations reference",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-annotations", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-on-class", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-on-bean", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot test slice annotations list",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/test-slices#test-slice-annotations", "grade": 2 },
+      { "chunkId": "spring-boot/testing/test-slices#web-mvc-test", "grade": 1 },
+      { "chunkId": "spring-boot/testing/test-slices#data-jpa-test", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot virtual threads support in version 3",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/features/virtual-threads#virtual-threads-support", "grade": 2 },
+      { "chunkId": "spring-boot/features/virtual-threads#enabling-virtual-threads", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is Spring Boot auto-configuration report",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#conditions-report", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#debug-flag", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot SSL bundle configuration",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/features/ssl#ssl-bundles", "grade": 2 },
+      { "chunkId": "spring-boot/features/ssl#jks-pem", "grade": 1 },
+      { "chunkId": "spring-boot/features/ssl#applying-ssl", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot structured logging support",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/features/logging#structured-logging", "grade": 2 },
+      { "chunkId": "spring-boot/features/logging#json-logging", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot Testcontainers support",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/testcontainers#testcontainers-support", "grade": 2 },
+      { "chunkId": "spring-boot/testing/testcontainers#service-connection", "grade": 1 },
+      { "chunkId": "spring-boot/testing/testcontainers#dynamic-properties", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot auto-configuration work",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#how-it-works", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-annotations", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#auto-configuration-imports", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Difference between @Component and @Service in Spring Boot",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#stereotype-annotations", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#component-scanning", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot dependency injection explained",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#dependency-injection", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#constructor-injection", "grade": 1 },
+      { "chunkId": "spring-boot/core/spring-framework#autowired", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot profile activation work",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/profiles#profile-activation", "grade": 2 },
+      { "chunkId": "spring-boot/core/profiles#active-profiles", "grade": 1 },
+      { "chunkId": "spring-boot/core/profiles#profile-groups", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot bean lifecycle and initialization order",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#bean-lifecycle", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#init-destroy", "grade": 1 },
+      { "chunkId": "spring-boot/core/spring-framework#post-construct", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is the purpose of Spring Boot starters",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/using/starters#purpose-of-starters", "grade": 2 },
+      { "chunkId": "spring-boot/using/starters#official-starters", "grade": 1 },
+      { "chunkId": "spring-boot/using/starters#transitive-dependencies", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot application context hierarchy explained",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#application-context", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#context-hierarchy", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot handle externalized configuration precedence",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#property-source-order", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#config-file-locations", "grade": 1 },
+      { "chunkId": "spring-boot/core/externalized-config#command-line-args", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Difference between @RestController and @Controller in Spring Boot",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/rest-controllers#rest-controller-vs-controller", "grade": 2 },
+      { "chunkId": "spring-boot/web/rest-controllers#response-body", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot reactive vs servlet stack comparison",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/reactive#reactive-vs-servlet", "grade": 2 },
+      { "chunkId": "spring-boot/web/reactive#webflux-overview", "grade": 1 },
+      { "chunkId": "spring-boot/web/embedded-servers#netty", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot AOT processing work for native images",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/native-image/overview#aot-processing", "grade": 2 },
+      { "chunkId": "spring-boot/native-image/overview#build-time-optimizations", "grade": 1 },
+      { "chunkId": "spring-boot/native-image/overview#limitations", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot transaction management concepts",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/data/transactions#transaction-management", "grade": 2 },
+      { "chunkId": "spring-boot/data/transactions#propagation", "grade": 1 },
+      { "chunkId": "spring-boot/data/transactions#isolation-levels", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot DevTools automatic restart work",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/using/devtools#automatic-restart", "grade": 2 },
+      { "chunkId": "spring-boot/using/devtools#classloader-restart", "grade": 1 },
+      { "chunkId": "spring-boot/using/devtools#restart-triggers", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot security filter chain architecture",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/security/http-security#security-filter-chain", "grade": 2 },
+      { "chunkId": "spring-boot/security/http-security#filter-ordering", "grade": 1 },
+      { "chunkId": "spring-boot/security/http-security#multiple-chains", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot embedded vs external servlet container trade-offs",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/embedded-servers#embedded-vs-external", "grade": 2 },
+      { "chunkId": "spring-boot/deployment/war-deployment#war-packaging", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot handle JSON serialization and deserialization",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/json#jackson-auto-configuration", "grade": 2 },
+      { "chunkId": "spring-boot/web/json#custom-serializers", "grade": 1 },
+      { "chunkId": "spring-boot/web/json#object-mapper-customization", "grade": 1 }
+    ]
+  },
+  {
+    "query": "What is Spring Boot configuration metadata and how is it used by IDEs",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#configuration-metadata", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#metadata-annotations", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot graceful shutdown mechanism explained",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/web/graceful-shutdown#graceful-shutdown", "grade": 2 },
+      { "chunkId": "spring-boot/web/graceful-shutdown#shutdown-phase", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot test slicing reduce context loading",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/test-slices#test-slice-concept", "grade": 2 },
+      { "chunkId": "spring-boot/testing/test-slices#auto-configuration-filtering", "grade": 1 },
+      { "chunkId": "spring-boot/testing/test-slices#context-caching", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot observability with Micrometer",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/actuator/observability#micrometer-integration", "grade": 2 },
+      { "chunkId": "spring-boot/actuator/observability#metrics-tracing", "grade": 1 },
+      { "chunkId": "spring-boot/actuator/observability#observation-api", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Difference between JPA and Spring Data JPA in Spring Boot",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/data/jpa#spring-data-jpa-overview", "grade": 2 },
+      { "chunkId": "spring-boot/data/jpa#repository-interface", "grade": 1 },
+      { "chunkId": "spring-boot/data/jpa#entity-manager", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How Spring Boot handles multiple data sources",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/data/datasource#multiple-datasources", "grade": 2 },
+      { "chunkId": "spring-boot/data/datasource#primary-datasource", "grade": 1 },
+      { "chunkId": "spring-boot/data/datasource#datasource-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot application fails to start with port already in use",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/web/embedded-servers#server-port", "grade": 2 },
+      { "chunkId": "spring-boot/web/embedded-servers#customizing-server", "grade": 1 },
+      { "chunkId": "spring-boot/howto/embedded-servers#change-port", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to fix circular dependency in Spring Boot",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#circular-references", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#lazy-initialization", "grade": 1 },
+      { "chunkId": "spring-boot/core/spring-framework#dependency-injection", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot NoSuchBeanDefinitionException troubleshooting",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#component-scanning", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#bean-registration", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditions-report", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot auto-configuration not working for custom starter",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#auto-configuration-imports", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditions-report", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#creating-auto-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot Hibernate LazyInitializationException outside transaction",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/data/jpa#open-in-view", "grade": 2 },
+      { "chunkId": "spring-boot/data/jpa#fetch-strategies", "grade": 1 },
+      { "chunkId": "spring-boot/data/transactions#transactional-annotation", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot application context fails to load in tests",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/spring-boot-test#context-loading-errors", "grade": 2 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#test-configuration", "grade": 1 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#mock-bean", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to debug Spring Boot auto-configuration conditions",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#conditions-report", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#debug-flag", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-annotations", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot Jackson ObjectMapper date serialization issues",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/web/json#date-serialization", "grade": 2 },
+      { "chunkId": "spring-boot/web/json#jackson-auto-configuration", "grade": 1 },
+      { "chunkId": "spring-boot/web/json#object-mapper-customization", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot Flyway migration fails with checksum mismatch",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/data/flyway#migration-repair", "grade": 2 },
+      { "chunkId": "spring-boot/data/flyway#migration-scripts", "grade": 1 },
+      { "chunkId": "spring-boot/data/flyway#flyway-migration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot @Autowired field is null at runtime",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#dependency-injection", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#component-scanning", "grade": 1 },
+      { "chunkId": "spring-boot/core/spring-framework#constructor-injection", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How to fix Spring Boot CORS errors with preflight requests",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/web/cors#cors-configuration", "grade": 2 },
+      { "chunkId": "spring-boot/web/cors#global-cors-config", "grade": 1 },
+      { "chunkId": "spring-boot/security/http-security#cors-security", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot startup slow due to component scanning",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#component-scanning", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#lazy-initialization", "grade": 1 },
+      { "chunkId": "spring-boot/features/startup#startup-performance", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot test @Transactional rollback not working as expected",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/testing/spring-boot-test#transactional-tests", "grade": 2 },
+      { "chunkId": "spring-boot/data/transactions#rollback-rules", "grade": 1 },
+      { "chunkId": "spring-boot/testing/spring-boot-test#web-environment", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot DataSource connection timeout errors",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/data/datasource#connection-pool", "grade": 2 },
+      { "chunkId": "spring-boot/data/datasource#hikari-config", "grade": 1 },
+      { "chunkId": "spring-boot/data/datasource#datasource-configuration", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot actuator endpoints not exposed over HTTP",
+    "queryType": "TROUBLESHOOTING",
+    "judgments": [
+      { "chunkId": "spring-boot/actuator/endpoints#exposing-endpoints", "grade": 2 },
+      { "chunkId": "spring-boot/actuator/endpoints#enabling-endpoints", "grade": 1 },
+      { "chunkId": "spring-boot/security/http-security#actuator-security", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot Docker image layering with buildpacks",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/deployment/docker#buildpacks", "grade": 2 },
+      { "chunkId": "spring-boot/deployment/docker#layered-jars", "grade": 1 },
+      { "chunkId": "spring-boot/deployment/docker#dockerfile", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot configuration metadata annotation processor",
+    "queryType": "FACTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/externalized-config#metadata-annotations", "grade": 2 },
+      { "chunkId": "spring-boot/core/externalized-config#configuration-metadata", "grade": 1 },
+      { "chunkId": "spring-boot/core/externalized-config#configuration-properties", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot scope management work for beans",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/spring-framework#bean-scopes", "grade": 2 },
+      { "chunkId": "spring-boot/core/spring-framework#singleton-prototype", "grade": 1 },
+      { "chunkId": "spring-boot/core/spring-framework#request-session-scope", "grade": 1 }
+    ]
+  },
+  {
+    "query": "Spring Boot event-driven architecture with ApplicationEvent",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/events#application-events", "grade": 2 },
+      { "chunkId": "spring-boot/core/events#event-listener", "grade": 1 },
+      { "chunkId": "spring-boot/core/events#async-events", "grade": 1 }
+    ]
+  },
+  {
+    "query": "How does Spring Boot conditional bean registration work internally",
+    "queryType": "CONCEPTUAL",
+    "judgments": [
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-annotations", "grade": 2 },
+      { "chunkId": "spring-boot/core/auto-configuration#condition-evaluation", "grade": 1 },
+      { "chunkId": "spring-boot/core/auto-configuration#conditional-on-class", "grade": 1 }
+    ]
+  }
+]
