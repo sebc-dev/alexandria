@@ -31,7 +31,7 @@
 - [x] **Phase 11: Quality & Security Tooling** — Safety net before refactoring (completed 2026-02-20)
 - [x] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact (completed 2026-02-21)
 - [x] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes (completed 2026-02-21)
-- [ ] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose
+- [x] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose (completed 2026-02-22)
 - [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
 - [ ] **Phase 16: MCP Testing** — Snapshot and round-trip test coverage
 - [ ] **Phase 17: Monitoring Stack** — Observability for the production pipeline
@@ -91,9 +91,9 @@
   3. jqwik property-based tests verify chunker invariants: content conservation (no data loss), size bounds respected, code blocks balanced, tables complete
 **Plans**: 3 plans
 Plans:
-- [ ] 14-01-PLAN.md — TDD refactor MarkdownChunker for parent-child chunk hierarchy
-- [ ] 14-02-PLAN.md — Wire parent-child into ingestion and search pipeline
-- [ ] 14-03-PLAN.md — jqwik property-based tests for chunker invariants
+- [x] 14-01-PLAN.md — TDD refactor MarkdownChunker for parent-child chunk hierarchy (completed 2026-02-22)
+- [x] 14-02-PLAN.md — Wire parent-child into ingestion and search pipeline (completed 2026-02-22)
+- [x] 14-03-PLAN.md — jqwik property-based tests for chunker invariants (completed 2026-02-22)
 
 ### Phase 15: Search Fusion Overhaul
 **Goal**: Hybrid search uses Convex Combination with configurable parameters, replacing RRF for better score utilisation
@@ -155,7 +155,7 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
 | 13. Retrieval Evaluation Framework | v0.2 | Complete    | 2026-02-21 | 2026-02-21 |
-| 14. Parent-Child Chunking | 2/3 | In Progress|  | - |
+| 14. Parent-Child Chunking | v0.2 | 3/3 | Complete | 2026-02-22 |
 | 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
 | 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |

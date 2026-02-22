@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 14 of 18 (Parent-Child Chunking)
-Plan: 02 of 03 complete (14-01, 14-03 done; 14-02 remaining)
-Status: In progress
-Last activity: 2026-02-22 — Plan 14-03 complete (jqwik property-based tests for MarkdownChunker invariants)
+Phase: 14 of 18 (Parent-Child Chunking) -- COMPLETE
+Plan: 03 of 03 complete
+Status: Phase complete
+Last activity: 2026-02-22 — Plan 14-02 complete (parent-child ingestion + search pipeline wiring)
 
-Progress: [██████░░░░] ~50% (12/~20 plans)
+Progress: [██████░░░░] ~55% (13/~20 plans)
 
 ## Performance Metrics
 
@@ -35,6 +35,7 @@ Progress: [██████░░░░] ~50% (12/~20 plans)
 | 13-02 | 1 | 8min | 8min |
 | 13-03 | 1 | 4min | 4min |
 | 14-01 | 1 | 11min | 11min |
+| 14-02 | 1 | 14min | 14min |
 | 14-03 | 1 | 7min | 7min |
 
 ## Accumulated Context
@@ -73,6 +74,9 @@ v0.2 decisions:
 - parentId format: {sourceUrl}#{sectionPath} for deterministic child-to-parent linking — Phase 14-01
 - Consolidated appendRawNodeText and appendNodeText into single method (identical logic) — Phase 14-01
 - jqwik 1.9.2 for property-based testing; 200 tries per property for coverage vs speed balance — Phase 14-03
+- Both parent+child chunks embedded for search; no separate context-only storage mechanism — Phase 14-02
+- Reranker scores child text for precision, SearchService substitutes parent text for context richness — Phase 14-02
+- Parent text batch-fetched via native query using source_url#section_path composite key — Phase 14-02
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 14-03-PLAN.md (jqwik property-based tests for MarkdownChunker invariants)
-Resume file: .planning/phases/14-parent-child-chunking/14-03-SUMMARY.md
-Next: 14-02-PLAN.md
+Stopped at: Completed 14-02-PLAN.md (parent-child ingestion + search pipeline wiring)
+Resume file: .planning/phases/14-parent-child-chunking/14-02-SUMMARY.md
+Next: Phase 15 (Search Fusion Overhaul)
