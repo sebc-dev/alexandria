@@ -73,13 +73,6 @@ public class SearchService {
    * @return list of search results ordered by reranking score descending
    */
   public List<SearchResult> search(SearchRequest request) {
-    if (request.rrfK() != null) {
-      log.debug(
-          "rrfK={} provided on SearchRequest but cannot be applied per-request "
-              + "(store-level config in LangChain4j); using configured store value",
-          request.rrfK());
-    }
-
     Embedding queryEmbedding = embeddingModel.embed(BGE_QUERY_PREFIX + request.query()).content();
     Filter filter = buildFilter(request);
 

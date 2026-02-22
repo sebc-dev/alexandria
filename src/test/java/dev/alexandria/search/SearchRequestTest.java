@@ -50,14 +50,13 @@ class SearchRequestTest {
     assertThat(request.version()).isNull();
     assertThat(request.contentType()).isNull();
     assertThat(request.minScore()).isNull();
-    assertThat(request.rrfK()).isNull();
   }
 
   @Test
   void allArgsConstructorSetsAllFilterFields() {
     SearchRequest request =
         new SearchRequest(
-            "query", 5, "spring-boot", "getting-started/quick-start", "3.2.0", "CODE", 0.5, 42);
+            "query", 5, "spring-boot", "getting-started/quick-start", "3.2.0", "CODE", 0.5);
 
     assertThat(request.query()).isEqualTo("query");
     assertThat(request.maxResults()).isEqualTo(5);
@@ -66,12 +65,11 @@ class SearchRequestTest {
     assertThat(request.version()).isEqualTo("3.2.0");
     assertThat(request.contentType()).isEqualTo("CODE");
     assertThat(request.minScore()).isEqualTo(0.5);
-    assertThat(request.rrfK()).isEqualTo(42);
   }
 
   @Test
   void queryStillValidatedInFullConstructor() {
-    assertThatThrownBy(() -> new SearchRequest("", 5, "source", null, null, null, null, null))
+    assertThatThrownBy(() -> new SearchRequest("", 5, "source", null, null, null, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Query must not be blank");
   }

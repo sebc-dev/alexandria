@@ -102,7 +102,7 @@ class SearchServiceTest {
     stubRerankerReturnsEmpty();
 
     SearchRequest request =
-        new SearchRequest("test query", 10, "spring-boot", null, null, null, null, null);
+        new SearchRequest("test query", 10, "spring-boot", null, null, null, null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -119,8 +119,7 @@ class SearchServiceTest {
     stubStoreWithOneMatch();
     stubRerankerReturnsEmpty();
 
-    SearchRequest request =
-        new SearchRequest("test query", 10, null, null, "3.2.0", null, null, null);
+    SearchRequest request = new SearchRequest("test query", 10, null, null, "3.2.0", null, null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -138,8 +137,7 @@ class SearchServiceTest {
     stubRerankerReturnsEmpty();
 
     SearchRequest request =
-        new SearchRequest(
-            "test query", 10, null, "Getting Started/Quick Start", null, null, null, null);
+        new SearchRequest("test query", 10, null, "Getting Started/Quick Start", null, null, null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -156,8 +154,7 @@ class SearchServiceTest {
     stubStoreWithOneMatch();
     stubRerankerReturnsEmpty();
 
-    SearchRequest request =
-        new SearchRequest("test query", 10, null, null, null, "CODE", null, null);
+    SearchRequest request = new SearchRequest("test query", 10, null, null, null, "CODE", null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -174,8 +171,7 @@ class SearchServiceTest {
     stubStoreWithOneMatch();
     stubRerankerReturnsEmpty();
 
-    SearchRequest request =
-        new SearchRequest("test query", 10, null, null, null, "MIXED", null, null);
+    SearchRequest request = new SearchRequest("test query", 10, null, null, null, "MIXED", null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -189,7 +185,7 @@ class SearchServiceTest {
     stubRerankerReturnsEmpty();
 
     SearchRequest request =
-        new SearchRequest("test query", 10, "spring-boot", null, "3.2.0", null, null, null);
+        new SearchRequest("test query", 10, "spring-boot", null, "3.2.0", null, null);
     searchService.search(request);
 
     EmbeddingSearchRequest captured = searchRequestCaptor.getValue();
@@ -219,7 +215,7 @@ class SearchServiceTest {
     when(rerankerService.rerank(eq("test query"), eq(matches), eq(5), eq(0.7)))
         .thenReturn(List.of());
 
-    SearchRequest request = new SearchRequest("test query", 5, null, null, null, null, 0.7, null);
+    SearchRequest request = new SearchRequest("test query", 5, null, null, null, null, 0.7);
     searchService.search(request);
 
     verify(rerankerService).rerank("test query", matches, 5, 0.7);

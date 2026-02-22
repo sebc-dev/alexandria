@@ -90,22 +90,21 @@ class McpToolServiceTest {
     given(searchService.search(any())).willReturn(results);
     given(truncator.truncate(results)).willReturn("formatted output");
 
-    String output =
-        mcpToolService.searchDocs("spring boot", null, null, null, null, null, null, null);
+    String output = mcpToolService.searchDocs("spring boot", null, null, null, null, null, null);
 
     assertThat(output).isEqualTo("formatted output");
   }
 
   @Test
   void searchDocsWithNullQueryReturnsError() {
-    String output = mcpToolService.searchDocs(null, null, null, null, null, null, null, null);
+    String output = mcpToolService.searchDocs(null, null, null, null, null, null, null);
 
     assertThat(output).startsWith("Error:");
   }
 
   @Test
   void searchDocsWithBlankQueryReturnsError() {
-    String output = mcpToolService.searchDocs("   ", null, null, null, null, null, null, null);
+    String output = mcpToolService.searchDocs("   ", null, null, null, null, null, null);
 
     assertThat(output).startsWith("Error:");
   }
@@ -115,7 +114,7 @@ class McpToolServiceTest {
     given(searchService.search(any())).willReturn(Collections.emptyList());
 
     String output =
-        mcpToolService.searchDocs("nonexistent topic", null, null, null, null, null, null, null);
+        mcpToolService.searchDocs("nonexistent topic", null, null, null, null, null, null);
 
     assertThat(output).contains("No results found");
   }
@@ -124,7 +123,7 @@ class McpToolServiceTest {
   void searchDocsDefaultsMaxResultsTo10() {
     given(searchService.search(searchRequestCaptor.capture())).willReturn(Collections.emptyList());
 
-    mcpToolService.searchDocs("test query", null, null, null, null, null, null, null);
+    mcpToolService.searchDocs("test query", null, null, null, null, null, null);
 
     assertThat(searchRequestCaptor.getValue().maxResults()).isEqualTo(10);
   }
@@ -133,7 +132,7 @@ class McpToolServiceTest {
   void searchDocsClampsMaxResultsTo50() {
     given(searchService.search(searchRequestCaptor.capture())).willReturn(Collections.emptyList());
 
-    mcpToolService.searchDocs("test query", 100, null, null, null, null, null, null);
+    mcpToolService.searchDocs("test query", 100, null, null, null, null, null);
 
     assertThat(searchRequestCaptor.getValue().maxResults()).isEqualTo(50);
   }
@@ -142,8 +141,7 @@ class McpToolServiceTest {
   void searchDocsHandlesExceptionGracefully() {
     given(searchService.search(any())).willThrow(new RuntimeException("connection failed"));
 
-    String output =
-        mcpToolService.searchDocs("test query", null, null, null, null, null, null, null);
+    String output = mcpToolService.searchDocs("test query", null, null, null, null, null, null);
 
     assertThat(output).startsWith("Error");
     assertThat(output).contains("connection failed");
@@ -594,7 +592,7 @@ class McpToolServiceTest {
     given(truncator.truncate(any())).willReturn("output");
 
     mcpToolService.searchDocs(
-        "query", 5, "Spring Docs", "API Reference", "React 19", "PROSE", null, null);
+        "query", 5, "Spring Docs", "API Reference", "React 19", "PROSE", null);
 
     var captured = searchRequestCaptor.getValue();
     assertThat(captured.source()).isEqualTo("Spring Docs");
@@ -610,7 +608,7 @@ class McpToolServiceTest {
             List.of(new SearchResult("content", 0.9, "https://docs.example.com", "Section")));
     given(truncator.truncate(any())).willReturn("output");
 
-    mcpToolService.searchDocs("query", null, null, null, null, null, 0.75, null);
+    mcpToolService.searchDocs("query", null, null, null, null, null, 0.75);
 
     assertThat(searchRequestCaptor.getValue().minScore()).isEqualTo(0.75);
   }
@@ -622,8 +620,7 @@ class McpToolServiceTest {
     given(documentChunkRepository.findDistinctSourceNames())
         .willReturn(List.of("Spring Docs", "React Docs"));
 
-    String output =
-        mcpToolService.searchDocs("query", null, null, null, "React 19", null, null, null);
+    String output = mcpToolService.searchDocs("query", null, null, null, "React 19", null, null);
 
     assertThat(output).contains("No results for query");
     assertThat(output).contains("version='React 19'");
@@ -637,7 +634,7 @@ class McpToolServiceTest {
   void searchDocsEmptyResultWithoutFiltersShowsPlainMessage() {
     given(searchService.search(any())).willReturn(Collections.emptyList());
 
-    String output = mcpToolService.searchDocs("query", null, null, null, null, null, null, null);
+    String output = mcpToolService.searchDocs("query", null, null, null, null, null, null);
 
     assertThat(output).isEqualTo("No results found for query: query");
   }

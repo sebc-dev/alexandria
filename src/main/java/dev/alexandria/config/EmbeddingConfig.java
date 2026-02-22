@@ -18,8 +18,9 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Uses the ONNX-based bge-small-en-v1.5 quantized model (384 dimensions) running in-process,
  * avoiding any external embedding API. The {@link PgVectorEmbeddingStore} is configured in {@link
- * SearchMode#HYBRID} mode with configurable RRF fusion constant and shares the application's
- * HikariCP {@link DataSource} to avoid duplicate connection pools.
+ * SearchMode#VECTOR} mode for pure vector search; full-text search is executed separately via
+ * {@link dev.alexandria.document.DocumentChunkRepository} and results are fused using {@link
+ * dev.alexandria.search.ConvexCombinationFusion}.
  *
  * @see dev.alexandria.search.SearchService
  */
@@ -52,28 +53,24 @@ public class EmbeddingConfig {
   }
 
   /**
-   * Configures the pgvector embedding store in hybrid search mode.
+   * Configures the pgvector embedding store in vector-only search mode.
    *
    * <p>Schema and HNSW index are managed by Flyway; {@code createTable} and {@code useIndex} are
-   * disabled to avoid conflicts. The {@code textSearchConfig("english")} must match the GIN index
-   * configuration in the V1 migration.
+   * disabled to avoid conflicts. Full-text search is handled separately by the search pipeline via
+   * native SQL queries on the same table.
    *
    * @param dataSource the shared HikariCP data source (no duplicate pool)
-   * @param rrfK the RRF fusion constant (default 60, from original RRF paper)
-   * @return a hybrid-search-capable embedding store backed by pgvector
+   * @return a vector-search-capable embedding store backed by pgvector
    */
   @Bean
-  public EmbeddingStore<TextSegment> embeddingStore(
-      DataSource dataSource, @Value("${alexandria.search.rrf-k:60}") int rrfK) {
+  public EmbeddingStore<TextSegment> embeddingStore(DataSource dataSource) {
     return PgVectorEmbeddingStore.datasourceBuilder()
         .datasource(dataSource)
         .table("document_chunks")
         .dimension(384)
         .createTable(false) // Schema managed by Flyway migrations
         .useIndex(false) // HNSW index managed by Flyway V1
-        .searchMode(SearchMode.HYBRID)
-        .textSearchConfig("english") // Must match GIN index config in V1 migration
-        .rrfK(rrfK) // RRF constant (configurable via alexandria.search.rrf-k)
+        .searchMode(SearchMode.VECTOR)
         .build();
   }
 }

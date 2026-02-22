@@ -13,8 +13,6 @@ import org.jspecify.annotations.Nullable;
  *   <li>{@code version} - exact match on version metadata
  *   <li>{@code contentType} - exact match on content_type metadata (MIXED/null skips filter)
  *   <li>{@code minScore} - minimum reranking score threshold
- *   <li>{@code rrfK} - RRF k parameter (carried for API completeness; store-level config in
- *       practice)
  * </ul>
  *
  * @param query the search query text (must not be null or blank)
@@ -24,7 +22,6 @@ import org.jspecify.annotations.Nullable;
  * @param version optional version filter (exact match)
  * @param contentType optional content type filter ("prose", "code", "mixed"/null means no filter)
  * @param minScore optional minimum reranking score threshold
- * @param rrfK optional RRF k parameter (store-level; not applied per-request)
  */
 public record SearchRequest(
     String query,
@@ -33,8 +30,7 @@ public record SearchRequest(
     @Nullable String sectionPath,
     @Nullable String version,
     @Nullable String contentType,
-    @Nullable Double minScore,
-    @Nullable Integer rrfK) {
+    @Nullable Double minScore) {
 
   /** Default number of results when not specified. */
   private static final int DEFAULT_MAX_RESULTS = 10;
@@ -51,11 +47,11 @@ public record SearchRequest(
 
   /** Convenience constructor defaulting maxResults to 10 and all filters to null. */
   public SearchRequest(String query) {
-    this(query, DEFAULT_MAX_RESULTS, null, null, null, null, null, null);
+    this(query, DEFAULT_MAX_RESULTS, null, null, null, null, null);
   }
 
   /** Convenience constructor with query and maxResults, all filters null. */
   public SearchRequest(String query, int maxResults) {
-    this(query, maxResults, null, null, null, null, null, null);
+    this(query, maxResults, null, null, null, null, null);
   }
 }

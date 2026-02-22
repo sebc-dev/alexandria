@@ -100,24 +100,15 @@ public class McpToolService {
               description =
                   "Minimum reranking confidence score (0.0-1.0). Results below this threshold are excluded.",
               required = false)
-          @Nullable Double minScore,
-      @ToolParam(
-              description =
-                  "RRF k parameter for reciprocal rank fusion (default 60). Higher values reduce the impact of rank differences.",
-              required = false)
-          @Nullable Integer rrfK) {
+          @Nullable Double minScore) {
     try {
       if (query == null || query.isBlank()) {
         return "Error: Query must not be empty. Provide a search query string.";
       }
-      if (rrfK != null) {
-        log.debug("rrfK={} accepted but applied at store-level configuration only", rrfK);
-      }
       int max = clampMaxResults(maxResults);
       List<SearchResult> results =
           searchService.search(
-              new SearchRequest(
-                  query, max, source, sectionPath, version, contentType, minScore, rrfK));
+              new SearchRequest(query, max, source, sectionPath, version, contentType, minScore));
 
       if (results.isEmpty()) {
         return buildEmptyResultMessage(query, source, sectionPath, version, contentType);
