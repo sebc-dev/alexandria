@@ -61,6 +61,8 @@ class IngestionServiceTest {
             "2026-05-01T12:00:00Z",
             null,
             null,
+            null,
+            null,
             null);
     when(chunker.chunk("# Heading\nContent", "https://example.com/page", "2026-05-01T12:00:00Z"))
         .thenReturn(List.of(chunkData));
@@ -98,6 +100,8 @@ class IngestionServiceTest {
             "2026-02-15T10:30:00Z",
             null,
             null,
+            null,
+            null,
             null);
     when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
     when(embeddingModel.embedAll(any()))
@@ -126,6 +130,8 @@ class IngestionServiceTest {
             "2026-01-01T00:00:00Z",
             "java",
             null,
+            null,
+            null,
             null);
     when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(codeChunk));
     when(embeddingModel.embedAll(any()))
@@ -153,6 +159,8 @@ class IngestionServiceTest {
             "2026-01-01T00:00:00Z",
             null,
             null,
+            null,
+            null,
             null);
     var chunk2 =
         new DocumentChunkData(
@@ -161,6 +169,8 @@ class IngestionServiceTest {
             "b",
             ContentType.PROSE,
             "2026-01-01T00:00:00Z",
+            null,
+            null,
             null,
             null,
             null);
@@ -208,6 +218,8 @@ class IngestionServiceTest {
             "2026-01-01T00:00:00Z",
             null,
             null,
+            null,
+            null,
             null);
     when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
     when(embeddingModel.embedAll(any()))
@@ -235,6 +247,8 @@ class IngestionServiceTest {
             "section",
             ContentType.PROSE,
             "2026-01-01T00:00:00Z",
+            null,
+            null,
             null,
             null,
             null);
@@ -276,6 +290,8 @@ class IngestionServiceTest {
             "2026-01-01T00:00:00Z",
             null,
             null,
+            null,
+            null,
             null);
     when(chunker.chunk(anyString(), anyString(), anyString())).thenReturn(List.of(chunkData));
     when(embeddingModel.embedAll(any()))
@@ -303,6 +319,8 @@ class IngestionServiceTest {
             "section",
             ContentType.PROSE,
             "2026-01-01T00:00:00Z",
+            null,
+            null,
             null,
             null,
             null);

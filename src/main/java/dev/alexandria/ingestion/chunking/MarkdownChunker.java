@@ -165,7 +165,16 @@ public class MarkdownChunker {
     if (proseText.length() <= maxChunkSize) {
       chunks.add(
           new DocumentChunkData(
-              proseText, sourceUrl, sectionPath, ContentType.PROSE, lastUpdated, null, null, null));
+              proseText,
+              sourceUrl,
+              sectionPath,
+              ContentType.PROSE,
+              lastUpdated,
+              null,
+              null,
+              null,
+              null,
+              null));
     } else {
       splitOversizedText(proseText, maxChunkSize)
           .forEach(
@@ -177,6 +186,8 @@ public class MarkdownChunker {
                           sectionPath,
                           ContentType.PROSE,
                           lastUpdated,
+                          null,
+                          null,
                           null,
                           null,
                           null)));
@@ -198,7 +209,16 @@ public class MarkdownChunker {
       String language = detectLanguage(codeBlock);
       chunks.add(
           new DocumentChunkData(
-              code, sourceUrl, sectionPath, ContentType.CODE, lastUpdated, language, null, null));
+              code,
+              sourceUrl,
+              sectionPath,
+              ContentType.CODE,
+              lastUpdated,
+              language,
+              null,
+              null,
+              null,
+              null));
     }
   }
 
