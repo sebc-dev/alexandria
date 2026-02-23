@@ -114,8 +114,11 @@ Plans:
 **Requirements**: MCPT-01, MCPT-02
 **Success Criteria** (what must be TRUE):
   1. A snapshot test compares the current tools/list MCP schema against a versioned reference file and fails if the schema changes unexpectedly
-  2. Round-trip integration tests via McpAsyncClient exercise all 7 MCP tools (happy path and error cases), verifying end-to-end JSON-RPC communication
-**Plans**: TBD
+  2. Round-trip integration tests via McpSyncClient exercise all 7 MCP tools (happy path and error cases), verifying end-to-end JSON-RPC communication
+**Plans**: 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — MCP tool schema snapshot test (unit test + Gradle task)
+- [ ] 16-02-PLAN.md — Round-trip integration tests via McpSyncClient over SSE
 
 ### Phase 17: Monitoring Stack
 **Goal**: Every stage of the search pipeline is instrumented and observable via dashboards with alerting on critical thresholds
@@ -160,6 +163,6 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 13. Retrieval Evaluation Framework | v0.2 | Complete    | 2026-02-21 | 2026-02-21 |
 | 14. Parent-Child Chunking | v0.2 | Complete    | 2026-02-22 | 2026-02-22 |
 | 15. Search Fusion Overhaul | 2/2 | Complete    | 2026-02-22 | - |
-| 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
+| 16. MCP Testing | v0.2 | 0/2 | Planned | - |
 | 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |
 | 18. Ablation Study & Validation | v0.2 | 0/TBD | Not started | - |
