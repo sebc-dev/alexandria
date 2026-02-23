@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 16 of 18 (MCP Testing)
-Plan: 01 of 02 complete
-Status: In progress
-Last activity: 2026-02-23 — Plan 16-01 complete (MCP tool schema snapshot test)
+Plan: 02 of 02 complete
+Status: Phase complete
+Last activity: 2026-02-23 — Plan 16-02 complete (MCP round-trip integration tests)
 
-Progress: [████████░░] ~73% (16/~22 plans)
+Progress: [████████░░] ~77% (17/~22 plans)
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [████████░░] ~73% (16/~22 plans)
 | 15-01 | 1 | 5min | 5min |
 | 15-02 | 1 | 10min | 10min |
 | 16-01 | 1 | 6min | 6min |
+| 16-02 | 1 | 6min | 6min |
 
 ## Accumulated Context
 
@@ -88,6 +89,9 @@ v0.2 decisions:
 - FTS without metadata filtering; fusion+dedup+rerank naturally filters irrelevant candidates — Phase 15-02
 - Mockito mocks for McpToolService constructor params; only @Tool annotation scanning occurs — Phase 16-01
 - Structural JSON comparison via readTree() to avoid whitespace sensitivity in snapshot test — Phase 16-01
+- Random normalized 384-dim vectors for seed data (tests MCP transport, not search quality) — Phase 16-02
+- PER_CLASS test lifecycle with shared McpSyncClient for efficiency — Phase 16-02
+- System.nanoTime() in add_source URLs to avoid unique constraint conflicts across test runs — Phase 16-02
 
 ### Pending Todos
 
@@ -100,6 +104,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 16-01-PLAN.md (MCP tool schema snapshot test)
-Resume file: .planning/phases/16-mcp-testing/16-01-SUMMARY.md
-Next: Plan 16-02 (MCP round-trip integration tests)
+Stopped at: Completed 16-02-PLAN.md (MCP round-trip integration tests)
+Resume file: .planning/phases/16-mcp-testing/16-02-SUMMARY.md
+Next: Phase 17 (next phase in roadmap)
