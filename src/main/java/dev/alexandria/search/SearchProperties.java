@@ -2,7 +2,7 @@ package dev.alexandria.search;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * Externalised configuration for the search pipeline.
@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  * <p>Validated at startup via {@link #validate()}; the application fails to start if values are out
  * of range.
  */
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "alexandria.search")
 public class SearchProperties {
 

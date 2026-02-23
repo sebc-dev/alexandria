@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -244,37 +245,35 @@ public class SearchService {
   Map<String, String> resolveParentTexts(List<EmbeddingMatch<TextSegment>> candidates) {
     // Collect unique parent_ids and map child text -> parent_id
     Map<String, String> childTextToParentId = new HashMap<>();
-    List<String> parentIds = new ArrayList<>();
+    LinkedHashSet<String> parentIdSet = new LinkedHashSet<>();
 
     for (EmbeddingMatch<TextSegment> match : candidates) {
       String chunkType = match.embedded().metadata().getString("chunk_type");
       String parentId = match.embedded().metadata().getString("parent_id");
       if ("child".equals(chunkType) && parentId != null) {
         childTextToParentId.put(match.embedded().text(), parentId);
-        if (!parentIds.contains(parentId)) {
-          parentIds.add(parentId);
-        }
+        parentIdSet.add(parentId);
       }
     }
 
-    if (parentIds.isEmpty()) {
+    if (parentIdSet.isEmpty()) {
       return Map.of();
     }
 
     // Batch-fetch parent texts from DB
     Map<String, String> parentIdToText = new HashMap<>();
     List<Object[]> rows =
-        documentChunkRepository.findParentTextsByKeys(parentIds.toArray(String[]::new));
+        documentChunkRepository.findParentTextsByKeys(parentIdSet.toArray(String[]::new));
     for (Object[] row : rows) {
       String parentKey = (String) row[0];
       String text = (String) row[1];
       parentIdToText.put(parentKey, text);
     }
 
-    if (parentIdToText.size() < parentIds.size()) {
+    if (parentIdToText.size() < parentIdSet.size()) {
       log.warn(
           "Could not resolve all parent texts: requested={}, found={}",
-          parentIds.size(),
+          parentIdSet.size(),
           parentIdToText.size());
     }
 

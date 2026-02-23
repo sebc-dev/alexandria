@@ -31,6 +31,9 @@ alexandria:
   mcp:
     token-budget: 5000
   search:
+    # alpha: convex combination weight for vector vs FTS scores.
+    # 0.0 = FTS only, 1.0 = vector only. 0.7 favours semantic similarity
+    # while still boosting exact keyword matches via FTS.
     alpha: 0.7
     rerank-candidates: 30
   reranker:

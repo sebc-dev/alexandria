@@ -189,10 +189,10 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, UU
   @Query(
       value =
           """
-            SELECT metadata->>'source_url' || '#' || metadata->>'section_path' AS parent_key, text
+            SELECT (metadata->>'source_url') || '#' || (metadata->>'section_path') AS parent_key, text
             FROM document_chunks
             WHERE metadata->>'chunk_type' = 'parent'
-              AND metadata->>'source_url' || '#' || metadata->>'section_path' = ANY(:parentKeys)
+              AND (metadata->>'source_url') || '#' || (metadata->>'section_path') = ANY(CAST(:parentKeys AS text[]))
             """,
       nativeQuery = true)
   List<Object[]> findParentTextsByKeys(@Param("parentKeys") String[] parentKeys);

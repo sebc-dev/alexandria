@@ -106,11 +106,14 @@ public final class ConvexCombinationFusion {
    * @param stats summary statistics containing min and max for the source
    * @return normalised score in [0, 1]
    */
+  private static final double EPSILON = 1e-10;
+
   private static double normalise(double score, DoubleSummaryStatistics stats) {
-    if (stats.getMax() == stats.getMin()) {
+    double range = stats.getMax() - stats.getMin();
+    if (range < EPSILON) {
       return 1.0;
     }
-    return (score - stats.getMin()) / (stats.getMax() - stats.getMin());
+    return (score - stats.getMin()) / range;
   }
 
   /** Computes min/max/count statistics for a list of candidates in a single pass. */

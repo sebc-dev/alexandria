@@ -6,8 +6,11 @@ import dev.langchain4j.model.embedding.onnx.bgesmallenv15q.BgeSmallEnV15Quantize
 import dev.langchain4j.model.scoring.ScoringModel;
 import dev.langchain4j.model.scoring.onnx.OnnxScoringModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.pgvector.DefaultMetadataStorageConfig;
+import dev.langchain4j.store.embedding.pgvector.MetadataStorageMode;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore.SearchMode;
+import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -71,6 +74,11 @@ public class EmbeddingConfig {
         .createTable(false) // Schema managed by Flyway migrations
         .useIndex(false) // HNSW index managed by Flyway V1
         .searchMode(SearchMode.VECTOR)
+        .metadataStorageConfig(
+            DefaultMetadataStorageConfig.builder()
+                .storageMode(MetadataStorageMode.COMBINED_JSONB)
+                .columnDefinitions(List.of("metadata JSONB NULL"))
+                .build())
         .build();
   }
 }
