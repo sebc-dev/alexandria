@@ -36,19 +36,23 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(3);
+    // 3 sections, each producing parent + child = 6 chunks
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(3);
 
-    assertThat(chunks.get(0).contentType()).isEqualTo(PROSE);
-    assertThat(chunks.get(0).sectionPath()).isEqualTo("introduction");
-    assertThat(chunks.get(0).text()).contains("Some intro text.");
+    assertThat(children.get(0).contentType()).isEqualTo(PROSE);
+    assertThat(children.get(0).sectionPath()).isEqualTo("introduction");
+    assertThat(children.get(0).text()).contains("Some intro text.");
 
-    assertThat(chunks.get(1).contentType()).isEqualTo(PROSE);
-    assertThat(chunks.get(1).sectionPath()).isEqualTo("introduction/getting-started");
-    assertThat(chunks.get(1).text()).contains("Getting started text.");
+    assertThat(children.get(1).contentType()).isEqualTo(PROSE);
+    assertThat(children.get(1).sectionPath()).isEqualTo("introduction/getting-started");
+    assertThat(children.get(1).text()).contains("Getting started text.");
 
-    assertThat(chunks.get(2).contentType()).isEqualTo(PROSE);
-    assertThat(chunks.get(2).sectionPath()).isEqualTo("introduction/getting-started/configuration");
-    assertThat(chunks.get(2).text()).contains("Config details here.");
+    assertThat(children.get(2).contentType()).isEqualTo(PROSE);
+    assertThat(children.get(2).sectionPath())
+        .isEqualTo("introduction/getting-started/configuration");
+    assertThat(children.get(2).text()).contains("Config details here.");
   }
 
   // --- Case 2: Code block extraction ---
@@ -67,18 +71,20 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    // 1 prose + 1 code
-    assertThat(chunks.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
-    assertThat(chunks.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(1);
+    // Filter children only: 1 prose child + 1 code child (parent is separate)
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
+    assertThat(children.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(1);
 
     DocumentChunkData prose =
-        chunks.stream().filter(c -> PROSE == c.contentType()).findFirst().orElseThrow();
+        children.stream().filter(c -> PROSE == c.contentType()).findFirst().orElseThrow();
     assertThat(prose.text()).contains("Install the package.");
     assertThat(prose.text()).contains("Then configure it.");
     assertThat(prose.language()).isNull();
 
     DocumentChunkData code =
-        chunks.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+        children.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
     assertThat(code.text()).contains("import com.example.Foo;");
     assertThat(code.language()).isEqualTo("java");
     assertThat(code.sectionPath()).isEqualTo("setup");
@@ -100,12 +106,17 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    DocumentChunkData chunk = chunks.get(0);
-    assertThat(chunk.text()).contains("Main API docs.");
-    assertThat(chunk.text()).contains("Method details.");
-    assertThat(chunk.text()).contains("Property details.");
-    assertThat(chunk.sectionPath()).isEqualTo("api-reference");
+    // 1 parent + 1 child prose chunk (H4 content folded into parent H3)
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+
+    // The child prose chunk includes all H4 content
+    DocumentChunkData child = children.get(0);
+    assertThat(child.text()).contains("Main API docs.");
+    assertThat(child.text()).contains("Method details.");
+    assertThat(child.text()).contains("Property details.");
+    assertThat(child.sectionPath()).isEqualTo("api-reference");
   }
 
   // --- Case 4: Heading inside code block NOT treated as split ---
@@ -124,12 +135,14 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
-    assertThat(chunks.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(1);
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
+    assertThat(children.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(1);
 
     // The heading inside the code block must NOT create a separate chunk
     DocumentChunkData code =
-        chunks.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+        children.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
     assertThat(code.text()).contains("## This Is Not A Real Heading");
   }
 
@@ -152,15 +165,17 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
-    assertThat(chunks.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(2);
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children.stream().filter(c -> PROSE == c.contentType()).count()).isEqualTo(1);
+    assertThat(children.stream().filter(c -> CODE == c.contentType()).count()).isEqualTo(2);
 
     List<DocumentChunkData> codeChunks =
-        chunks.stream().filter(c -> CODE == c.contentType()).toList();
+        children.stream().filter(c -> CODE == c.contentType()).toList();
     assertThat(codeChunks.get(0).language()).isEqualTo("java");
     assertThat(codeChunks.get(1).language()).isEqualTo("python");
 
-    // All share the same section path
+    // All chunks share the same section path
     assertThat(chunks).allMatch(c -> "examples".equals(c.sectionPath()));
   }
 
@@ -179,7 +194,10 @@ class MarkdownChunkerTest {
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
     DocumentChunkData code =
-        chunks.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+        chunks.stream()
+            .filter(c -> CODE == c.contentType() && "child".equals(c.chunkType()))
+            .findFirst()
+            .orElseThrow();
     assertThat(code.language()).isEqualTo("java");
   }
 
@@ -197,9 +215,12 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).contentType()).isEqualTo(CODE);
-    assertThat(chunks.get(0).language()).isEqualTo("bash");
+    // Parent chunk (with code as raw markdown) + 1 code child chunk
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+    assertThat(children.get(0).contentType()).isEqualTo(CODE);
+    assertThat(children.get(0).language()).isEqualTo("bash");
   }
 
   // --- Case 8: Empty document ---
@@ -229,21 +250,24 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(2);
+    // Preamble: parent + child; First Section: parent + child = 4 chunks
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(2);
 
-    DocumentChunkData preamble = chunks.get(0);
-    assertThat(preamble.sectionPath()).isEmpty();
-    assertThat(preamble.text()).contains("This is a preamble before any heading.");
+    DocumentChunkData preambleChild = children.get(0);
+    assertThat(preambleChild.sectionPath()).isEmpty();
+    assertThat(preambleChild.text()).contains("This is a preamble before any heading.");
 
-    DocumentChunkData section = chunks.get(1);
-    assertThat(section.sectionPath()).isEqualTo("first-section");
-    assertThat(section.text()).contains("Content here.");
+    DocumentChunkData sectionChild = children.get(1);
+    assertThat(sectionChild.sectionPath()).isEqualTo("first-section");
+    assertThat(sectionChild.text()).contains("Content here.");
   }
 
   // --- Case 10: Metadata completeness ---
 
   @Test
-  void everyChunkHasAllFiveMetadataFields() {
+  void everyChunkHasAllMetadataFields() {
     String markdown =
         """
                 ## Setup
@@ -260,11 +284,16 @@ class MarkdownChunkerTest {
       assertThat(chunk.sectionPath()).isNotNull();
       assertThat(chunk.contentType()).isNotNull();
       assertThat(chunk.lastUpdated()).isEqualTo(LAST_UPDATED);
+      assertThat(chunk.chunkType()).isIn("parent", "child");
 
-      if (CODE == chunk.contentType()) {
+      if ("child".equals(chunk.chunkType()) && CODE == chunk.contentType()) {
         assertThat(chunk.language()).isNotNull();
-      } else {
-        assertThat(chunk.language()).isNull();
+      }
+      if ("parent".equals(chunk.chunkType())) {
+        assertThat(chunk.parentId()).isNull();
+      }
+      if ("child".equals(chunk.chunkType())) {
+        assertThat(chunk.parentId()).isNotNull();
       }
     }
   }
@@ -283,11 +312,15 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).contentType()).isEqualTo(PROSE);
+    // Parent + 1 child prose (table content)
+    DocumentChunkData childProse =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()) && PROSE == c.contentType())
+            .findFirst()
+            .orElseThrow();
     // Table content preserved (not split by pipe characters)
-    assertThat(chunks.get(0).text()).contains("foo");
-    assertThat(chunks.get(0).text()).contains("bar");
+    assertThat(childProse.text()).contains("foo");
+    assertThat(childProse.text()).contains("bar");
   }
 
   // --- Additional edge cases ---
@@ -302,8 +335,8 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).sectionPath()).isEqualTo("configuration-routes");
+    // All chunks (parent + child) share the same section path
+    assertThat(chunks).allMatch(c -> "configuration-routes".equals(c.sectionPath()));
   }
 
   @Test
@@ -322,12 +355,15 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(4);
-    assertThat(chunks.get(0).sectionPath()).isEqualTo("top");
-    assertThat(chunks.get(1).sectionPath()).isEqualTo("top/sub-a");
-    assertThat(chunks.get(2).sectionPath()).isEqualTo("top/sub-a/detail-a1");
+    // 4 sections with parent+child each = 8 chunks
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(4);
+    assertThat(children.get(0).sectionPath()).isEqualTo("top");
+    assertThat(children.get(1).sectionPath()).isEqualTo("top/sub-a");
+    assertThat(children.get(2).sectionPath()).isEqualTo("top/sub-a/detail-a1");
     // Sub B should NOT carry Detail A1 -- deeper levels cleared
-    assertThat(chunks.get(3).sectionPath()).isEqualTo("top/sub-b");
+    assertThat(children.get(3).sectionPath()).isEqualTo("top/sub-b");
   }
 
   @Test
@@ -344,7 +380,10 @@ class MarkdownChunkerTest {
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
     DocumentChunkData code =
-        chunks.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+        chunks.stream()
+            .filter(c -> CODE == c.contentType() && "child".equals(c.chunkType()))
+            .findFirst()
+            .orElseThrow();
     assertThat(code.language()).isEqualTo("java");
   }
 
@@ -366,10 +405,12 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = smallChunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    // Should produce multiple prose chunks, all with same sectionPath
-    assertThat(chunks).hasSizeGreaterThan(1);
-    assertThat(chunks).allMatch(c -> "large-section".equals(c.sectionPath()));
-    assertThat(chunks).allMatch(c -> PROSE == c.contentType());
+    // Should produce multiple child prose chunks + 1 parent, all with same sectionPath
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSizeGreaterThan(1);
+    assertThat(children).allMatch(c -> "large-section".equals(c.sectionPath()));
+    assertThat(children).allMatch(c -> PROSE == c.contentType());
   }
 
   @Test
@@ -382,8 +423,11 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).contentType()).isEqualTo(PROSE);
+    // 1 parent + 1 child
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+    assertThat(children.get(0).contentType()).isEqualTo(PROSE);
   }
 
   @Test
@@ -418,11 +462,15 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    DocumentChunkData prose =
-        chunks.stream().filter(c -> PROSE == c.contentType()).findFirst().orElseThrow();
-    assertThat(prose.text()).doesNotContain("print(\"hello\")");
-    assertThat(prose.text()).contains("Before code.");
-    assertThat(prose.text()).contains("After code.");
+    // The child prose chunk should not contain code block content
+    DocumentChunkData proseChild =
+        chunks.stream()
+            .filter(c -> PROSE == c.contentType() && "child".equals(c.chunkType()))
+            .findFirst()
+            .orElseThrow();
+    assertThat(proseChild.text()).doesNotContain("print(\"hello\")");
+    assertThat(proseChild.text()).contains("Before code.");
+    assertThat(proseChild.text()).contains("After code.");
   }
 
   // --- Mutation-killing tests: chunk() clear() calls (lines 87-88) ---
@@ -445,7 +493,11 @@ class MarkdownChunkerTest {
 
     DocumentChunkData proseB =
         chunks.stream()
-            .filter(c -> PROSE == c.contentType() && c.sectionPath().equals("section-b"))
+            .filter(
+                c ->
+                    PROSE == c.contentType()
+                        && "child".equals(c.chunkType())
+                        && c.sectionPath().equals("section-b"))
             .findFirst()
             .orElseThrow();
     assertThat(proseB.text()).doesNotContain("Content for A only.");
@@ -453,7 +505,11 @@ class MarkdownChunkerTest {
     // Section B should have no code blocks from Section A
     long codeBCount =
         chunks.stream()
-            .filter(c -> CODE == c.contentType() && c.sectionPath().equals("section-b"))
+            .filter(
+                c ->
+                    CODE == c.contentType()
+                        && "child".equals(c.chunkType())
+                        && c.sectionPath().equals("section-b"))
             .count();
     assertThat(codeBCount).isZero();
   }
@@ -462,8 +518,8 @@ class MarkdownChunkerTest {
 
   @Test
   void headingOnlyWithCodeBlockEmitsCodeChunkNotProseChunk() {
-    // Kills mutation negating sectionHeading == null at line 122
-    // and codeBlocks.isEmpty() at line 122
+    // Kills mutation negating sectionHeading == null
+    // and codeBlocks.isEmpty()
     String markdown =
         """
                 ## Code Only
@@ -474,29 +530,31 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    // Should emit only 1 code chunk, no prose chunk (heading only, no content nodes)
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).contentType()).isEqualTo(CODE);
+    // Should emit 1 parent (code as raw md) + 1 code child, no prose child
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+    assertThat(children.get(0).contentType()).isEqualTo(CODE);
   }
 
   @Test
   void proseChunkAtExactlyMaxSizeIsNotSplit() {
-    // Kills boundary mutation at emitChunks line 131: proseText.length() <= maxChunkSize
+    // Kills boundary mutation: proseText.length() <= maxChunkSize
     // When the mutation changes <= to <, text exactly at maxChunkSize would be incorrectly split
-    // We need to build text whose prose output is exactly maxChunkSize chars
     int maxSize = 200;
     MarkdownChunker exactChunker = new MarkdownChunker(maxSize);
 
     // Build text without heading so we can precisely control length
     String content = "X".repeat(maxSize);
-    String markdown = content;
 
-    List<DocumentChunkData> chunks = exactChunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+    List<DocumentChunkData> chunks = exactChunker.chunk(content, SOURCE_URL, LAST_UPDATED);
 
-    // Should produce exactly 1 chunk (not split) since length == maxChunkSize
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).contentType()).isEqualTo(PROSE);
-    assertThat(chunks.get(0).text()).hasSize(maxSize);
+    // 1 parent + 1 child (not split since child prose is exactly at maxSize)
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+    assertThat(children.get(0).contentType()).isEqualTo(PROSE);
+    assertThat(children.get(0).text()).hasSize(maxSize);
   }
 
   @Test
@@ -515,7 +573,7 @@ class MarkdownChunkerTest {
 
   @Test
   void codeBlockWithTrailingNewlineHasItStripped() {
-    // Kills mutation negating code.endsWith("\n") at line 146
+    // Kills mutation negating code.endsWith("\n")
     String markdown =
         """
                 ## Code
@@ -527,7 +585,10 @@ class MarkdownChunkerTest {
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
     DocumentChunkData code =
-        chunks.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+        chunks.stream()
+            .filter(c -> CODE == c.contentType() && "child".equals(c.chunkType()))
+            .findFirst()
+            .orElseThrow();
     assertThat(code.text()).doesNotEndWith("\n");
     assertThat(code.text()).isEqualTo("class Foo {}");
   }
@@ -536,7 +597,7 @@ class MarkdownChunkerTest {
 
   @Test
   void proseChunkIncludesHeadingTextWhenContentExists() {
-    // Kills mutation removing appendNodeText(sectionHeading, ...) call at line 168
+    // Kills mutation removing appendNodeText(sectionHeading, ...) call
     String markdown =
         """
                 ## My Heading
@@ -545,8 +606,12 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    assertThat(chunks).hasSize(1);
-    assertThat(chunks.get(0).text()).startsWith("## My Heading");
+    DocumentChunkData childProse =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()) && PROSE == c.contentType())
+            .findFirst()
+            .orElseThrow();
+    assertThat(childProse.text()).startsWith("## My Heading");
   }
 
   // --- Mutation-killing tests: appendNodeText null/empty sourceSpans (lines 180) ---
@@ -560,7 +625,7 @@ class MarkdownChunkerTest {
 
   @Test
   void codeBlockBeforeAnyHeadingIsEmitted() {
-    // Kills mutation negating codeBlocks.isEmpty() at emitChunks line 122
+    // Kills mutation negating codeBlocks.isEmpty()
     // When sectionHeading is null and contentNodes is empty but codeBlocks is not empty,
     // the mutated condition would return early and skip the code block
     String markdown =
@@ -574,10 +639,14 @@ class MarkdownChunkerTest {
 
     List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
 
-    // The code block before any heading should be emitted
+    // The code block before any heading should be emitted as a child
     DocumentChunkData code =
         chunks.stream()
-            .filter(c -> CODE == c.contentType() && c.text().contains("Preamble"))
+            .filter(
+                c ->
+                    CODE == c.contentType()
+                        && "child".equals(c.chunkType())
+                        && c.text().contains("Preamble"))
             .findFirst()
             .orElseThrow();
     assertThat(code.sectionPath()).isEmpty();
@@ -773,5 +842,273 @@ class MarkdownChunkerTest {
 
     assertThat(parts).hasSize(1);
     assertThat(parts.get(0)).isEqualTo(sentence);
+  }
+
+  // ==========================================================================
+  // Parent-child chunking tests (TDD)
+  // ==========================================================================
+
+  @Test
+  void parentChunkContainsFullSectionContent() {
+    String markdown =
+        """
+                ## Setup
+                Install the package.
+                ```java
+                import com.example.Foo;
+                ```
+                Then configure it.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    // Find the parent chunk
+    List<DocumentChunkData> parents =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).toList();
+    assertThat(parents).hasSize(1);
+
+    DocumentChunkData parent = parents.get(0);
+    assertThat(parent.text()).contains("## Setup");
+    assertThat(parent.text()).contains("Install the package.");
+    assertThat(parent.text()).contains("```java");
+    assertThat(parent.text()).contains("import com.example.Foo;");
+    assertThat(parent.text()).contains("```");
+    assertThat(parent.text()).contains("Then configure it.");
+    assertThat(parent.parentId()).isNull();
+    assertThat(parent.sectionPath()).isEqualTo("setup");
+  }
+
+  @Test
+  void childChunksCreatedForEachBlock() {
+    String markdown =
+        """
+                ## Setup
+                Install the package.
+                ```java
+                import com.example.Foo;
+                ```
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    // 1 prose child + 1 code child
+    assertThat(children).hasSize(2);
+
+    DocumentChunkData proseChild =
+        children.stream().filter(c -> PROSE == c.contentType()).findFirst().orElseThrow();
+    assertThat(proseChild.parentId()).isEqualTo(SOURCE_URL + "#setup");
+
+    DocumentChunkData codeChild =
+        children.stream().filter(c -> CODE == c.contentType()).findFirst().orElseThrow();
+    assertThat(codeChild.parentId()).isEqualTo(SOURCE_URL + "#setup");
+  }
+
+  @Test
+  void h3CreatesSubParent() {
+    String markdown =
+        """
+                ## Overview
+                Overview intro.
+                ### Installation
+                Install steps.
+                ### Configuration
+                Config steps.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    // H3 sections each get their own parent
+    List<DocumentChunkData> parents =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).toList();
+
+    // H2 parent + 2 H3 sub-parents
+    assertThat(parents).hasSizeGreaterThanOrEqualTo(3);
+
+    // Children of H3 sections should link to H3 parents, not H2
+    List<DocumentChunkData> installChildren =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(c -> c.parentId() != null && c.parentId().contains("#overview/installation"))
+            .toList();
+    assertThat(installChildren).isNotEmpty();
+
+    List<DocumentChunkData> configChildren =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(c -> c.parentId() != null && c.parentId().contains("#overview/configuration"))
+            .toList();
+    assertThat(configChildren).isNotEmpty();
+  }
+
+  @Test
+  void h2WithNoH3ChildrenIsDirectParent() {
+    String markdown =
+        """
+                ## Simple Section
+                Just some prose here.
+                More prose.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    List<DocumentChunkData> parents =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).toList();
+    assertThat(parents).hasSize(1);
+    assertThat(parents.get(0).sectionPath()).isEqualTo("simple-section");
+
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).isNotEmpty();
+    assertThat(children).allMatch(c -> (SOURCE_URL + "#simple-section").equals(c.parentId()));
+  }
+
+  @Test
+  void h2ContentBeforeFirstH3CreatesH2Children() {
+    String markdown =
+        """
+                ## Guide
+                Intro text for the guide.
+                ### First Step
+                Step details.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    // The intro text before first H3 should be a child of the H2 parent
+    List<DocumentChunkData> h2Children =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(c -> c.parentId() != null && c.parentId().equals(SOURCE_URL + "#guide"))
+            .toList();
+    assertThat(h2Children).isNotEmpty();
+    assertThat(h2Children.stream().anyMatch(c -> c.text().contains("Intro text for the guide.")))
+        .isTrue();
+
+    // H3 content should belong to H3 parent, not H2
+    List<DocumentChunkData> h3Children =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(
+                c -> c.parentId() != null && c.parentId().equals(SOURCE_URL + "#guide/first-step"))
+            .toList();
+    assertThat(h3Children).isNotEmpty();
+    assertThat(h3Children.stream().anyMatch(c -> c.text().contains("Step details."))).isTrue();
+  }
+
+  @Test
+  void preambleCreatesRootParent() {
+    String markdown =
+        """
+                This is preamble content.
+                More preamble.
+                ## First Section
+                Section content.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    // Preamble should create a root parent with empty sectionPath
+    List<DocumentChunkData> preambleParents =
+        chunks.stream()
+            .filter(c -> "parent".equals(c.chunkType()) && c.sectionPath().isEmpty())
+            .toList();
+    assertThat(preambleParents).hasSize(1);
+
+    // Preamble children link to root parent
+    List<DocumentChunkData> preambleChildren =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(c -> c.parentId() != null && c.parentId().equals(SOURCE_URL + "#"))
+            .toList();
+    assertThat(preambleChildren).isNotEmpty();
+  }
+
+  @Test
+  void h4PlusIncludedInH3ParentContent() {
+    String markdown =
+        """
+                ### API Reference
+                Main API docs.
+                #### Methods
+                Method details.
+                #### Properties
+                Property details.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    // Only one parent for the H3 section (H4 does NOT create separate parents)
+    List<DocumentChunkData> parents =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).toList();
+    assertThat(parents).hasSize(1);
+
+    // Parent includes H4 content
+    DocumentChunkData parent = parents.get(0);
+    assertThat(parent.text()).contains("Method details.");
+    assertThat(parent.text()).contains("Property details.");
+    assertThat(parent.sectionPath()).isEqualTo("api-reference");
+  }
+
+  @Test
+  void parentIdFormat() {
+    String markdown =
+        """
+                ## Setup
+                ### Configuration
+                Config details.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    DocumentChunkData child =
+        chunks.stream()
+            .filter(c -> "child".equals(c.chunkType()))
+            .filter(c -> c.sectionPath().equals("setup/configuration"))
+            .findFirst()
+            .orElseThrow();
+    assertThat(child.parentId()).isEqualTo("https://docs.example.com/guide#setup/configuration");
+  }
+
+  @Test
+  void parentChunkIncludesCodeAsRawMarkdown() {
+    String markdown =
+        """
+                ## Example
+                Some prose.
+                ```java
+                class Foo {}
+                ```
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    DocumentChunkData parent =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).findFirst().orElseThrow();
+    // Parent should include the fenced code block as raw markdown
+    assertThat(parent.text()).contains("```java");
+    assertThat(parent.text()).contains("class Foo {}");
+    assertThat(parent.text()).contains("```");
+  }
+
+  @Test
+  void singleChildSectionStillProducesParentAndChild() {
+    String markdown =
+        """
+                ### Tiny Section
+                Just one paragraph.
+                """;
+
+    List<DocumentChunkData> chunks = chunker.chunk(markdown, SOURCE_URL, LAST_UPDATED);
+
+    List<DocumentChunkData> parents =
+        chunks.stream().filter(c -> "parent".equals(c.chunkType())).toList();
+    assertThat(parents).hasSize(1);
+
+    List<DocumentChunkData> children =
+        chunks.stream().filter(c -> "child".equals(c.chunkType())).toList();
+    assertThat(children).hasSize(1);
+    assertThat(children.get(0).parentId()).isEqualTo(SOURCE_URL + "#tiny-section");
   }
 }

@@ -1,8 +1,10 @@
 package dev.alexandria.ingestion.chunking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.langchain4j.data.document.Metadata;
+import dev.langchain4j.data.segment.TextSegment;
 import org.junit.jupiter.api.Test;
 
 class DocumentChunkDataTest {
@@ -16,7 +18,16 @@ class DocumentChunkDataTest {
   void toMetadataIncludesVersionWhenPresent() {
     var chunk =
         new DocumentChunkData(
-            TEXT, SOURCE_URL, SECTION_PATH, ContentType.PROSE, LAST_UPDATED, null, "3.5", null);
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            "3.5",
+            null,
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -27,7 +38,16 @@ class DocumentChunkDataTest {
   void toMetadataExcludesVersionWhenNull() {
     var chunk =
         new DocumentChunkData(
-            TEXT, SOURCE_URL, SECTION_PATH, ContentType.PROSE, LAST_UPDATED, null, null, null);
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -45,7 +65,9 @@ class DocumentChunkDataTest {
             LAST_UPDATED,
             null,
             null,
-            "Spring Boot Docs");
+            "Spring Boot Docs",
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -56,7 +78,16 @@ class DocumentChunkDataTest {
   void toMetadataExcludesSourceNameWhenNull() {
     var chunk =
         new DocumentChunkData(
-            TEXT, SOURCE_URL, SECTION_PATH, ContentType.PROSE, LAST_UPDATED, null, null, null);
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -74,7 +105,9 @@ class DocumentChunkDataTest {
             LAST_UPDATED,
             "java",
             "4.0",
-            "Spring Framework");
+            "Spring Framework",
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -88,7 +121,16 @@ class DocumentChunkDataTest {
   void toMetadataAlwaysIncludesBaseFields() {
     var chunk =
         new DocumentChunkData(
-            TEXT, SOURCE_URL, SECTION_PATH, ContentType.PROSE, LAST_UPDATED, null, null, null);
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     Metadata metadata = chunk.toMetadata();
 
@@ -96,5 +138,114 @@ class DocumentChunkDataTest {
     assertThat(metadata.getString("section_path")).isEqualTo(SECTION_PATH);
     assertThat(metadata.getString("content_type")).isEqualTo("prose");
     assertThat(metadata.getString("last_updated")).isEqualTo(LAST_UPDATED);
+  }
+
+  // --- Parent-child metadata tests ---
+
+  @Test
+  void toMetadataIncludesChunkTypeAndParentIdWhenSet() {
+    var chunk =
+        new DocumentChunkData(
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            "child",
+            "https://docs.example.com/guide#guide/setup");
+
+    Metadata metadata = chunk.toMetadata();
+
+    assertThat(metadata.getString("chunk_type")).isEqualTo("child");
+    assertThat(metadata.getString("parent_id"))
+        .isEqualTo("https://docs.example.com/guide#guide/setup");
+  }
+
+  @Test
+  void toMetadataOmitsChunkTypeAndParentIdWhenNull() {
+    var chunk =
+        new DocumentChunkData(
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+    Metadata metadata = chunk.toMetadata();
+
+    assertThat(metadata.containsKey("chunk_type")).isFalse();
+    assertThat(metadata.containsKey("parent_id")).isFalse();
+  }
+
+  @Test
+  void toMetadataIncludesChunkTypeParentWithNullParentId() {
+    var chunk =
+        new DocumentChunkData(
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.PROSE,
+            LAST_UPDATED,
+            null,
+            null,
+            null,
+            "parent",
+            null);
+
+    Metadata metadata = chunk.toMetadata();
+
+    assertThat(metadata.getString("chunk_type")).isEqualTo("parent");
+    assertThat(metadata.containsKey("parent_id")).isFalse();
+  }
+
+  @Test
+  void toTextSegmentRoundTripsWithParentChildMetadata() {
+    var chunk =
+        new DocumentChunkData(
+            TEXT,
+            SOURCE_URL,
+            SECTION_PATH,
+            ContentType.CODE,
+            LAST_UPDATED,
+            "java",
+            null,
+            null,
+            "child",
+            "https://docs.example.com/guide#guide/setup");
+
+    TextSegment segment = chunk.toTextSegment();
+
+    assertThat(segment.text()).isEqualTo(TEXT);
+    assertThat(segment.metadata().getString("chunk_type")).isEqualTo("child");
+    assertThat(segment.metadata().getString("parent_id"))
+        .isEqualTo("https://docs.example.com/guide#guide/setup");
+    assertThat(segment.metadata().getString("language")).isEqualTo("java");
+  }
+
+  @Test
+  void parentChunkWithNonNullParentIdThrowsException() {
+    assertThatThrownBy(
+            () ->
+                new DocumentChunkData(
+                    TEXT,
+                    SOURCE_URL,
+                    SECTION_PATH,
+                    ContentType.PROSE,
+                    LAST_UPDATED,
+                    null,
+                    null,
+                    null,
+                    "parent",
+                    "some-parent-id"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Parent chunks must not have a parentId");
   }
 }

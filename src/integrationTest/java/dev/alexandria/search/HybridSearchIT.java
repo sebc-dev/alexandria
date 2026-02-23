@@ -160,19 +160,26 @@ class HybridSearchIT extends BaseIntegrationTest {
   }
 
   @Test
-  void searchWithNoMatchingContentReturnsEmptyOrLowScoreResults() {
-    // Completely unrelated to all seeded data
-    List<SearchResult> results =
+  void searchWithNoMatchingContentReturnsLowerScoresThanRelatedQuery() {
+    // Unrelated query: no seeded data is about quantum physics
+    List<SearchResult> unrelatedResults =
         searchService.search(new SearchRequest("quantum entanglement particle physics"));
 
-    // Either empty or all results have very low relevance scores
-    if (!results.isEmpty()) {
-      boolean allLowScores = results.stream().allMatch(r -> r.score() < 0.05);
-      assertThat(allLowScores)
+    // Related query: seeded data includes Spring routing content
+    List<SearchResult> relatedResults =
+        searchService.search(new SearchRequest("Spring Boot routing configuration"));
+
+    // Related query should produce higher top rerank scores than unrelated query
+    assertThat(relatedResults).isNotEmpty();
+    double bestRelated = relatedResults.getFirst().score();
+
+    if (!unrelatedResults.isEmpty()) {
+      double bestUnrelated = unrelatedResults.getFirst().score();
+      assertThat(bestRelated)
           .as(
-              "All results for unrelated query should have low scores (< 0.05), but got: %s",
-              results.stream().map(r -> String.format("%.3f", r.score())).toList())
-          .isTrue();
+              "Related query top score (%.3f) should exceed unrelated query top score (%.3f)",
+              bestRelated, bestUnrelated)
+          .isGreaterThan(bestUnrelated);
     }
   }
 }

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 13 — Retrieval Evaluation Framework
+**Current focus:** Phase 15 — Search Fusion Overhaul
 
 ## Current Position
 
-Phase: 13 of 18 (Retrieval Evaluation Framework)
-Plan: 03 complete — Phase 13 complete
+Phase: 15 of 18 (Search Fusion Overhaul)
+Plan: 02 of 02 complete
 Status: Phase complete
-Last activity: 2026-02-21 — Plan 13-03 complete (Evaluation orchestration & integration test)
+Last activity: 2026-02-22 — Plan 15-02 complete (SearchService CC fusion pipeline wiring)
 
-Progress: [████░░░░░░] ~40% (10/~20 plans)
+Progress: [████████░░] ~68% (15/~22 plans)
 
 ## Performance Metrics
 
@@ -34,6 +34,11 @@ Progress: [████░░░░░░] ~40% (10/~20 plans)
 | 13-01 | 1 | 5min | 5min |
 | 13-02 | 1 | 8min | 8min |
 | 13-03 | 1 | 4min | 4min |
+| 14-01 | 1 | 11min | 11min |
+| 14-02 | 1 | 14min | 14min |
+| 14-03 | 1 | 7min | 7min |
+| 15-01 | 1 | 5min | 5min |
+| 15-02 | 1 | 10min | 10min |
 
 ## Accumulated Context
 
@@ -67,6 +72,19 @@ v0.2 decisions:
 - Detailed CSV includes per-query metrics only on first chunk row to avoid redundancy — Phase 13-02
 - Chunk ID matching uses sourceUrl + '#' + sectionPath with exact-then-substring fallback for golden set alignment — Phase 13-03
 - useJUnitPlatform excludeTags("eval") conditional on -PincludeEvalTag property for on-demand evaluation — Phase 13-03
+- Parent chunk text reconstructed from raw source lines including code fences, merged in source order — Phase 14-01
+- parentId format: {sourceUrl}#{sectionPath} for deterministic child-to-parent linking — Phase 14-01
+- Consolidated appendRawNodeText and appendNodeText into single method (identical logic) — Phase 14-01
+- jqwik 1.9.2 for property-based testing; 200 tries per property for coverage vs speed balance — Phase 14-03
+- Both parent+child chunks embedded for search; no separate context-only storage mechanism — Phase 14-02
+- Reranker scores child text for precision, SearchService substitutes parent text for context richness — Phase 14-02
+- Parent text batch-fetched via native query using source_url#section_path composite key — Phase 14-02
+- DoubleSummaryStatistics for single-pass min/max in fusion normalisation — Phase 15-01
+- EMPTY_EMBEDDING (float[0]) placeholder for FTS-only results in fusion pipeline — Phase 15-01
+- CompletableFuture.supplyAsync() for parallel vector+FTS queries; virtual threads via Spring Boot — Phase 15-02
+- FTS query extracts individual metadata fields to avoid ObjectMapper dependency — Phase 15-02
+- SearchProperties @Configuration + @ConfigurationProperties with @PostConstruct validation — Phase 15-02
+- FTS without metadata filtering; fusion+dedup+rerank naturally filters irrelevant candidates — Phase 15-02
 
 ### Pending Todos
 
@@ -78,7 +96,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Stopped at: Completed 13-03-PLAN.md (Evaluation orchestration & integration test) — Phase 13 complete
-Resume file: .planning/phases/13-retrieval-evaluation-framework/13-03-SUMMARY.md
-Next: Phase 14 planning
+Last session: 2026-02-22
+Stopped at: Completed 15-02-PLAN.md (SearchService CC fusion pipeline wiring)
+Resume file: .planning/phases/15-search-fusion-overhaul/15-02-SUMMARY.md
+Next: Phase 16 (next phase in roadmap)

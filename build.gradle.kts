@@ -53,6 +53,7 @@ dependencies {
     // Testing
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.archunit)
+    testImplementation(libs.jqwik)
 
     // Error Prone + NullAway
     errorprone(libs.errorprone.core)

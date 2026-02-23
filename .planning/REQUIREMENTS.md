@@ -9,15 +9,15 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 
 ### Chunking & Retrieval
 
-- [ ] **CHUNK-01**: Le systeme produit des parent chunks (section H2/H3 complete code+prose) et des child chunks (paragraphes/blocs individuels) avec lien parent-child en metadata
-- [ ] **CHUNK-02**: La recherche retourne les parent chunks complets quand un child chunk matche, reunissant code et prose dans le contexte
+- [x] **CHUNK-01**: Le systeme produit des parent chunks (section H2/H3 complete code+prose) et des child chunks (paragraphes/blocs individuels) avec lien parent-child en metadata
+- [x] **CHUNK-02**: La recherche retourne les parent chunks complets quand un child chunk matche, reunissant code et prose dans le contexte
 - [ ] **CHUNK-03**: Le prefixe query BGE est applique sur les requetes de recherche (pas sur les documents a l'indexation)
 
 ### Search Fusion
 
-- [ ] **FUSE-01**: La fusion hybride utilise Convex Combination (score normalise) au lieu de RRF
-- [ ] **FUSE-02**: Le parametre alpha de Convex Combination est configurable via application properties
-- [ ] **FUSE-03**: Le nombre de candidats reranking est configurable (defaut: 30, testable 20/30/50)
+- [x] **FUSE-01**: La fusion hybride utilise Convex Combination (score normalise) au lieu de RRF
+- [x] **FUSE-02**: Le parametre alpha de Convex Combination est configurable via application properties
+- [x] **FUSE-03**: Le nombre de candidats reranking est configurable (defaut: 30, testable 20/30/50)
 
 ### Retrieval Evaluation
 
@@ -32,7 +32,7 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 - [ ] **QUAL-01**: Error Prone 2.45+ est integre au build Gradle avec les checks ERROR actifs
 - [ ] **QUAL-02**: NullAway est integre et les packages annotes avec @NullMarked/@Nullable
 - [ ] **QUAL-03**: Spotless + google-java-format enforce le formatage sur le code modifie (ratchetFrom)
-- [ ] **QUAL-04**: jqwik teste les invariants structurels du MarkdownChunker (conservation contenu, bornes taille, code blocks equilibres, tables completes)
+- [x] **QUAL-04**: jqwik teste les invariants structurels du MarkdownChunker (conservation contenu, bornes taille, code blocks equilibres, tables completes)
 
 ### Security
 
@@ -110,12 +110,12 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 | EVAL-02 | Phase 13 | Pending |
 | EVAL-03 | Phase 13 | Pending |
 | EVAL-05 | Phase 13 | Pending |
-| CHUNK-01 | Phase 14 | Pending |
+| CHUNK-01 | Phase 14 | Complete |
 | CHUNK-02 | Phase 14 | Pending |
-| QUAL-04 | Phase 14 | Pending |
-| FUSE-01 | Phase 15 | Pending |
-| FUSE-02 | Phase 15 | Pending |
-| FUSE-03 | Phase 15 | Pending |
+| QUAL-04 | Phase 14 | Complete |
+| FUSE-01 | Phase 15 | Complete |
+| FUSE-02 | Phase 15 | Complete |
+| FUSE-03 | Phase 15 | Complete |
 | MCPT-01 | Phase 16 | Pending |
 | MCPT-02 | Phase 16 | Pending |
 | MONI-01 | Phase 17 | Pending |

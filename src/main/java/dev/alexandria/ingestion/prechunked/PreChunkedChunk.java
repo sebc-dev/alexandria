@@ -33,6 +33,6 @@ public record PreChunkedChunk(
   /** Converts to the internal chunk representation used across the ingestion pipeline. */
   public DocumentChunkData toDocumentChunkData() {
     return new DocumentChunkData(
-        text, sourceUrl, sectionPath, contentType, lastUpdated, language, null, null);
+        text, sourceUrl, sectionPath, contentType, lastUpdated, language, null, null, null, null);
   }
 }

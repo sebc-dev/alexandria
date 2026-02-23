@@ -31,8 +31,8 @@
 - [x] **Phase 11: Quality & Security Tooling** — Safety net before refactoring (completed 2026-02-20)
 - [x] **Phase 12: Performance Quick Wins** — Config-level tuning with immediate impact (completed 2026-02-21)
 - [x] **Phase 13: Retrieval Evaluation Framework** — Measurement before pipeline changes (completed 2026-02-21)
-- [ ] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose
-- [ ] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF
+- [x] **Phase 14: Parent-Child Chunking** — Restructure chunks to reunite code and prose (completed 2026-02-22)
+- [x] **Phase 15: Search Fusion Overhaul** — Convex Combination replaces RRF (completed 2026-02-22)
 - [ ] **Phase 16: MCP Testing** — Snapshot and round-trip test coverage
 - [ ] **Phase 17: Monitoring Stack** — Observability for the production pipeline
 - [ ] **Phase 18: Ablation Study & Validation** — Measure the optimised pipeline end-to-end
@@ -89,7 +89,11 @@
   1. The chunker produces parent chunks (full H2/H3 sections with code+prose) and child chunks (individual paragraphs/blocks) with parent-child links in metadata
   2. When a child chunk matches a search query, the search service returns the parent chunk's full content, reuniting code and prose in context
   3. jqwik property-based tests verify chunker invariants: content conservation (no data loss), size bounds respected, code blocks balanced, tables complete
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [x] 14-01-PLAN.md — TDD refactor MarkdownChunker for parent-child chunk hierarchy (completed 2026-02-22)
+- [x] 14-02-PLAN.md — Wire parent-child into ingestion and search pipeline (completed 2026-02-22)
+- [x] 14-03-PLAN.md — jqwik property-based tests for chunker invariants (completed 2026-02-22)
 
 ### Phase 15: Search Fusion Overhaul
 **Goal**: Hybrid search uses Convex Combination with configurable parameters, replacing RRF for better score utilisation
@@ -99,7 +103,10 @@
   1. Hybrid search fuses vector and FTS scores using Convex Combination (normalised score weighting) instead of RRF
   2. The alpha parameter controlling vector vs FTS weight is configurable via application.properties and can be changed without rebuild
   3. The number of candidates sent to the reranker is configurable (default 30, supports 20/30/50) via application.properties
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 15-01-PLAN.md — TDD Convex Combination fusion engine (pure computation)
+- [ ] 15-02-PLAN.md — Wire CC fusion into SearchService, configure properties, remove RRF
 
 ### Phase 16: MCP Testing
 **Goal**: MCP tool contracts are verified by snapshot tests and round-trip integration tests
@@ -151,8 +158,8 @@ Phase 16 (MCP Testing) is independent and can execute in parallel with phases 14
 | 11. Quality & Security Tooling | v0.2 | 3/3 | Complete | 2026-02-20 |
 | 12. Performance Quick Wins | v0.2 | 2/2 | Complete | 2026-02-21 |
 | 13. Retrieval Evaluation Framework | v0.2 | Complete    | 2026-02-21 | 2026-02-21 |
-| 14. Parent-Child Chunking | v0.2 | 0/TBD | Not started | - |
-| 15. Search Fusion Overhaul | v0.2 | 0/TBD | Not started | - |
+| 14. Parent-Child Chunking | v0.2 | Complete    | 2026-02-22 | 2026-02-22 |
+| 15. Search Fusion Overhaul | 2/2 | Complete    | 2026-02-22 | - |
 | 16. MCP Testing | v0.2 | 0/TBD | Not started | - |
 | 17. Monitoring Stack | v0.2 | 0/TBD | Not started | - |
 | 18. Ablation Study & Validation | v0.2 | 0/TBD | Not started | - |
