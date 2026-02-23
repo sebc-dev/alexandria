@@ -1,0 +1,176 @@
+[ {
+  "description" : "Add a documentation source URL for crawling and indexing. Optionally specify scope controls: allow/block URL patterns (glob), max depth, max pages.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : {
+      "allowPatterns" : {
+        "description" : "Comma-separated glob patterns for allowed URL paths (e.g., '/docs/**,/api/**'). Empty = allow all.",
+        "type" : "string"
+      },
+      "blockPatterns" : {
+        "description" : "Comma-separated glob patterns for blocked URL paths (e.g., '/archive/**,/old/**'). Empty = block none.",
+        "type" : "string"
+      },
+      "llmsTxtUrl" : {
+        "description" : "Manual llms.txt URL if auto-detection fails.",
+        "type" : "string"
+      },
+      "maxDepth" : {
+        "description" : "Maximum crawl depth from root URL. Null = unlimited.",
+        "type" : "integer"
+      },
+      "maxPages" : {
+        "description" : "Maximum number of pages to crawl (default: 500).",
+        "type" : "integer"
+      },
+      "name" : {
+        "description" : "Human-readable name for this source",
+        "type" : "string"
+      },
+      "url" : {
+        "description" : "URL of the documentation site to index",
+        "type" : "string"
+      },
+      "version" : {
+        "description" : "Version label for this source (e.g., 'React 19', '3.5')",
+        "type" : "string"
+      }
+    },
+    "required" : [ "url", "name" ],
+    "type" : "object"
+  },
+  "name" : "add_source"
+}, {
+  "description" : "Check the crawl status and index statistics for a documentation source by ID.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : {
+      "sourceId" : {
+        "description" : "UUID of the source to check",
+        "type" : "string"
+      }
+    },
+    "required" : [ "sourceId" ],
+    "type" : "object"
+  },
+  "name" : "crawl_status"
+}, {
+  "description" : "View global index statistics: total chunks, sources, storage size, embedding dimensions, and last activity timestamp.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : { },
+    "required" : [ ],
+    "type" : "object"
+  },
+  "name" : "index_statistics"
+}, {
+  "description" : "List all indexed documentation sources with status, last crawl time, and chunk count.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : { },
+    "required" : [ ],
+    "type" : "object"
+  },
+  "name" : "list_sources"
+}, {
+  "description" : "Trigger a recrawl of an existing documentation source. Incremental by default (only re-processes changed pages). Use full=true to force complete re-processing.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : {
+      "allowPatterns" : {
+        "description" : "Override allow patterns for this crawl run (comma-separated globs)",
+        "type" : "string"
+      },
+      "blockPatterns" : {
+        "description" : "Override block patterns for this crawl run (comma-separated globs)",
+        "type" : "string"
+      },
+      "full" : {
+        "description" : "Force full recrawl (re-process all pages, not just changed ones)",
+        "type" : "boolean"
+      },
+      "maxDepth" : {
+        "description" : "Override max depth for this crawl run",
+        "type" : "integer"
+      },
+      "maxPages" : {
+        "description" : "Override max pages for this crawl run",
+        "type" : "integer"
+      },
+      "name" : {
+        "description" : "Update the display name for this source",
+        "type" : "string"
+      },
+      "sourceId" : {
+        "description" : "UUID of the source to re-crawl",
+        "type" : "string"
+      },
+      "version" : {
+        "description" : "Update the version label for this source",
+        "type" : "string"
+      }
+    },
+    "required" : [ "sourceId" ],
+    "type" : "object"
+  },
+  "name" : "recrawl_source"
+}, {
+  "description" : "Remove a documentation source and its indexed data by source ID.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : {
+      "sourceId" : {
+        "description" : "UUID of the source to remove",
+        "type" : "string"
+      }
+    },
+    "required" : [ "sourceId" ],
+    "type" : "object"
+  },
+  "name" : "remove_source"
+}, {
+  "description" : "Search indexed documentation by semantic query. Returns relevant excerpts with source URLs, section paths, and reranking scores for citation. Supports metadata filters for narrowing results.",
+  "inputSchema" : {
+    "$schema" : "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties" : false,
+    "properties" : {
+      "contentType" : {
+        "description" : "Filter by content type: PROSE, CODE, or MIXED (all)",
+        "type" : "string"
+      },
+      "maxResults" : {
+        "description" : "Maximum number of results (1-50, default 10)",
+        "type" : "integer"
+      },
+      "minScore" : {
+        "description" : "Minimum reranking confidence score (0.0-1.0). Results below this threshold are excluded.",
+        "type" : "number"
+      },
+      "query" : {
+        "description" : "Search query text",
+        "type" : "string"
+      },
+      "sectionPath" : {
+        "description" : "Filter by section path prefix, e.g. 'API Reference'",
+        "type" : "string"
+      },
+      "source" : {
+        "description" : "Filter by source name",
+        "type" : "string"
+      },
+      "version" : {
+        "description" : "Filter by version tag, e.g. 'React 19'",
+        "type" : "string"
+      }
+    },
+    "required" : [ "query", "maxResults" ],
+    "type" : "object"
+  },
+  "name" : "search_docs"
+} ]
