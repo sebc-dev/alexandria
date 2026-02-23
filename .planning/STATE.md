@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 15 — Search Fusion Overhaul
+**Current focus:** Phase 16 — MCP Testing
 
 ## Current Position
 
-Phase: 15 of 18 (Search Fusion Overhaul)
-Plan: 02 of 02 complete
-Status: Phase complete
-Last activity: 2026-02-22 — Plan 15-02 complete (SearchService CC fusion pipeline wiring)
+Phase: 16 of 18 (MCP Testing)
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-02-23 — Plan 16-01 complete (MCP tool schema snapshot test)
 
-Progress: [████████░░] ~68% (15/~22 plans)
+Progress: [████████░░] ~73% (16/~22 plans)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [████████░░] ~68% (15/~22 plans)
 | 14-03 | 1 | 7min | 7min |
 | 15-01 | 1 | 5min | 5min |
 | 15-02 | 1 | 10min | 10min |
+| 16-01 | 1 | 6min | 6min |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ v0.2 decisions:
 - FTS query extracts individual metadata fields to avoid ObjectMapper dependency — Phase 15-02
 - SearchProperties @Configuration + @ConfigurationProperties with @PostConstruct validation — Phase 15-02
 - FTS without metadata filtering; fusion+dedup+rerank naturally filters irrelevant candidates — Phase 15-02
+- Mockito mocks for McpToolService constructor params; only @Tool annotation scanning occurs — Phase 16-01
+- Structural JSON comparison via readTree() to avoid whitespace sensitivity in snapshot test — Phase 16-01
 
 ### Pending Todos
 
@@ -96,7 +99,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 15-02-PLAN.md (SearchService CC fusion pipeline wiring)
-Resume file: .planning/phases/15-search-fusion-overhaul/15-02-SUMMARY.md
-Next: Phase 16 (next phase in roadmap)
+Last session: 2026-02-23
+Stopped at: Completed 16-01-PLAN.md (MCP tool schema snapshot test)
+Resume file: .planning/phases/16-mcp-testing/16-01-SUMMARY.md
+Next: Plan 16-02 (MCP round-trip integration tests)
