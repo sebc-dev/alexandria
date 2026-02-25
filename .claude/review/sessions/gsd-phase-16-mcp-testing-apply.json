@@ -1,0 +1,179 @@
+{
+  "branch": "gsd/phase-16-mcp-testing",
+  "source_session": ".claude/review/sessions/gsd-phase-16-mcp-testing.json",
+  "created_at": "2026-02-24T14:00:00Z",
+  "status": "completed",
+  "completed_at": "2026-02-25T10:00:00Z",
+  "files": [
+    {
+      "index": 1,
+      "path": "src/integrationTest/java/dev/alexandria/mcp/McpRoundTripIT.java",
+      "category": "tests",
+      "observations": [
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "search_docs_happy_path_returns_results: assertion isNotBlank() trop faible, proche du Liar.",
+          "status": "applied",
+          "change_summary": "Deja corrige: isNotBlank() remplace par contains(auto-configur) + contains(Spring Boot)"
+        },
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "search_docs_with_source_filter: ne verifie pas que les resultats sont filtres. Ajouter assertThat(text).contains(LangChain4j).",
+          "status": "applied",
+          "change_summary": "Ajout assertThat(text).contains(LangChain4j) pour verifier le filtrage"
+        },
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "list_sources_includes_status_info: potentiel Free Ride, meme appel que list_sources_returns_all_sources.",
+          "status": "dismissed",
+          "change_summary": "Faux positif: deux tests distincts verifiant des concepts differents (completude vs statut)"
+        },
+        {
+          "criterion": "boundary-values",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "Manque boundary values: search_docs maxResults=0/51, add_source URL invalide, index vide, crawl_status CRAWLING/ERROR.",
+          "status": "skipped",
+          "change_summary": "A traiter dans un ticket dedie — trop large pour correction chirurgicale"
+        },
+        {
+          "criterion": "aaa",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "extractText() helper contient des assertions implicites masquant une partie de la section Assert.",
+          "status": "applied",
+          "change_summary": "Suppression des 2 assertThat caches dans extractText(), helper reduit a extraction pure"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "path": "build.gradle.kts",
+      "category": "build-config",
+      "observations": [
+        {
+          "criterion": "conventions",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "Dependance io.modelcontextprotocol.sdk:mcp:0.10.0 hardcodee au lieu du version catalog libs.versions.toml. Rompt le pattern etabli du projet et risque de desynchronisation de version avec le Spring AI BOM.",
+          "status": "applied",
+          "change_summary": "Migration vers libs.versions.toml sans version explicite, geree par Spring AI BOM"
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "La dependance MCP SDK est deja disponible transitivement via spring-ai-mcp-server-webmvc. L ajout explicite est defendable mais un commentaire justificatif serait bienvenu.",
+          "status": "applied",
+          "change_summary": "Commentaire inline ajouté justifiant la dependance explicite MCP SDK"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "path": "src/test/java/dev/alexandria/mcp/McpToolSchemaSnapshotTest.java",
+      "category": "tests",
+      "observations": [
+        {
+          "criterion": "anti-patterns",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "schema_matches_reference uses if/fail instead of AssertJ withFailMessage. Conditional test logic anti-pattern.",
+          "status": "applied",
+          "change_summary": "if/fail remplace par assertThat().withFailMessage(supplier).isEqualTo(), import fail supprime"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "path": "src/test/java/dev/alexandria/mcp/McpSchemaSnapshotGenerator.java",
+      "category": "tests",
+      "observations": [
+        {
+          "criterion": "doubles",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "McpSchemaSnapshotGenerator.createMockToolService() uses 7 Mockito.mock() calls exceeding 2-3 threshold. Consider using null or Dummy objects instead.",
+          "status": "applied",
+          "change_summary": "7 Mockito.mock() remplaces par null, import Mockito supprime"
+        },
+        {
+          "criterion": "FIRST-fast",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "tool_count_guard takes 5.3s due to Mockito/ByteBuddy warmup. Replacing mocks with nulls would bring under 100ms.",
+          "status": "dismissed",
+          "change_summary": "Resolu par obs 4.1: mocks remplaces par null, plus de warmup Mockito"
+        },
+        {
+          "criterion": "AAA",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "schema_matches_reference uses if/fail instead of AssertJ withFailMessage. Conditional test logic anti-pattern.",
+          "status": "dismissed",
+          "change_summary": "Doublon de obs 3.1, deja corrige dans McpToolSchemaSnapshotTest.java"
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "path": "src/test/resources/mcp/tools-schema.json",
+      "category": "tests",
+      "observations": [
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Les champs sourceId sont declares type:string mais representent des UUIDs. JSON Schema 2020-12 supporte format:uuid.",
+          "status": "dismissed",
+          "change_summary": "Limitation Spring AI 1.0.3: JsonSchemaGenerator supprime explicitement le champ format"
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Verifier la presence d une newline finale POSIX dans le fichier genere.",
+          "status": "dismissed",
+          "change_summary": "Deja conforme: fichier termine par 0x0a (newline POSIX)"
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "path": "src/integrationTest/resources/mcp/seed-data.sql",
+      "category": "tests",
+      "observations": [
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "INSERT sources omet colonnes V2/V3 (allow_patterns, block_patterns, max_depth, llms_txt_url, version). Documenter leur absence.",
+          "status": "applied",
+          "change_summary": "Commentaire SQL ajouté documentant l'omission volontaire des colonnes V2/V3"
+        },
+        {
+          "criterion": "error-handling",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "DELETE chunks couvre sources 001/002 pas 003. Coherent mais commentaire precisant l asymetrie serait utile.",
+          "status": "applied",
+          "change_summary": "Commentaire SQL ajouté: source 003 PENDING sans chunks, pas de DELETE"
+        },
+        {
+          "criterion": "test-coverage",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Vecteurs 384-dim synthetiques. Acceptable pour transport MCP mais un commentaire le precisant previendrait malentendus.",
+          "status": "applied",
+          "change_summary": "Commentaire SQL ajouté: vecteurs synthetiques suffisants pour tests transport MCP"
+        }
+      ]
+    }
+  ]
+}

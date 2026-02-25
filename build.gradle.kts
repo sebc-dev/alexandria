@@ -86,7 +86,7 @@ testing {
                 implementation(libs.langchain4j.core)
                 implementation(libs.langchain4j.embeddings.bge)
                 implementation(libs.langchain4j.pgvector)
-                implementation("io.modelcontextprotocol.sdk:mcp:0.10.0")
+                implementation(libs.mcp.sdk) // Explicit: tests use McpSchema types directly (transitive via spring-ai-mcp-server-webmvc)
             }
             targets {
                 all {

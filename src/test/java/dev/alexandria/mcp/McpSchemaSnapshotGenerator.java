@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.mockito.Mockito;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
@@ -20,8 +19,8 @@ import org.springframework.ai.tool.method.MethodToolCallbackProvider;
  * Utility to extract MCP tool schemas from {@link McpToolService} via reflection on {@code @Tool}
  * annotations. Produces a sorted, deterministic JSON representation for snapshot testing.
  *
- * <p>Uses Mockito to create a dummy McpToolService instance (only annotations are read, no runtime
- * invocations occur).
+ * <p>Creates a McpToolService instance with null dependencies (only annotations are read, no
+ * runtime invocations occur).
  */
 public final class McpSchemaSnapshotGenerator {
 
@@ -83,16 +82,9 @@ public final class McpSchemaSnapshotGenerator {
     System.out.println("MCP snapshot updated: " + target);
   }
 
-  @SuppressWarnings("NullAway") // Mocks return null by default; only annotation scanning occurs
+  @SuppressWarnings("NullAway") // Null dependencies are safe; only annotation scanning occurs
   private static McpToolService createMockToolService() {
-    return new McpToolService(
-        Mockito.mock(dev.alexandria.search.SearchService.class),
-        Mockito.mock(dev.alexandria.source.SourceRepository.class),
-        Mockito.mock(TokenBudgetTruncator.class),
-        Mockito.mock(dev.alexandria.crawl.CrawlService.class),
-        Mockito.mock(dev.alexandria.crawl.CrawlProgressTracker.class),
-        Mockito.mock(dev.alexandria.ingestion.IngestionService.class),
-        Mockito.mock(dev.alexandria.document.DocumentChunkRepository.class));
+    return new McpToolService(null, null, null, null, null, null, null);
   }
 
   private static Object parseJson(String json) {

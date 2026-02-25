@@ -83,8 +83,8 @@ class McpRoundTripIT {
         client.callTool(new CallToolRequest("search_docs", Map.of("query", "auto-configuration")));
 
     String text = extractText(result);
-    assertThat(text).isNotBlank();
-    // The response should contain content from the seeded Spring Boot chunks
+    assertThat(text).contains("auto-configur");
+    assertThat(text).contains("Spring Boot");
     assertThat(result.isError()).isNotEqualTo(Boolean.TRUE);
   }
 
@@ -97,6 +97,7 @@ class McpRoundTripIT {
 
     String text = extractText(result);
     assertThat(text).isNotBlank();
+    assertThat(text).contains("LangChain4j");
     assertThat(result.isError()).isNotEqualTo(Boolean.TRUE);
   }
 
@@ -334,8 +335,6 @@ class McpRoundTripIT {
   // ---------------------------------------------------------------------------
 
   private static String extractText(CallToolResult result) {
-    assertThat(result.content()).isNotEmpty();
-    assertThat(result.content().getFirst()).isInstanceOf(TextContent.class);
     return ((TextContent) result.content().getFirst()).text();
   }
 }

@@ -1,7 +1,6 @@
 package dev.alexandria.mcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -79,10 +78,9 @@ class McpToolSchemaSnapshotTest {
     JsonNode referenceTree = MAPPER.readTree(referenceJson);
     JsonNode currentTree = MAPPER.readTree(currentJson);
 
-    if (!referenceTree.equals(currentTree)) {
-      String diffMessage = buildDiffMessage(referenceTree, currentTree);
-      fail(diffMessage);
-    }
+    assertThat(currentTree)
+        .withFailMessage(() -> buildDiffMessage(referenceTree, currentTree))
+        .isEqualTo(referenceTree);
   }
 
   // --- Helpers ---

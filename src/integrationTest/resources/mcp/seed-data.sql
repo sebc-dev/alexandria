@@ -1,8 +1,10 @@
 -- MCP round-trip test seed data.
 -- Inserts sources and document chunks with pre-computed 384-dim embeddings
 -- for testing MCP tools via McpSyncClient over SSE transport.
+-- Vectors are synthetic (random, not from a real model); sufficient since MCP tests verify transport, not search quality.
 
 -- Clean slate (idempotent)
+-- No DELETE for source 003: PENDING status, no chunks inserted
 DELETE FROM document_chunks WHERE source_id IN (
     '00000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000002'
@@ -13,7 +15,8 @@ DELETE FROM sources WHERE id IN (
     '00000000-0000-0000-0000-000000000003'
 );
 
--- Sources
+-- Sources (V2/V3 columns omitted: allow_patterns, block_patterns, max_depth, llms_txt_url, version
+-- use database defaults and are not relevant for MCP transport tests)
 INSERT INTO sources (id, url, name, status, chunk_count, last_crawled_at, max_pages)
 VALUES
     ('00000000-0000-0000-0000-000000000001',

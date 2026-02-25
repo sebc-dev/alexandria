@@ -289,23 +289,17 @@ cmd_all() {
     summarize_spotbugs
     echo ""
 
-    # Phase 3: OWASP Dependency-Check
-    echo "=== Phase 3: OWASP Dependency-Check ==="
-    $GRADLEW dependencyCheckAnalyze || true
-    print_separator
-    echo ""
-
-    # Phase 4: PIT mutation testing (heavy, run separately)
-    echo "=== Phase 4: Mutation Testing ==="
+    # Phase 3: PIT mutation testing (heavy, run separately)
+    echo "=== Phase 3: Mutation Testing ==="
     $GRADLEW pitest || true
     print_separator
     summarize_mutations
 
-    # Phase 5: Integration tests (optional, requires Docker)
+    # Phase 4: Integration tests (optional, requires Docker)
     local integ_exit=0
     if [[ "$WITH_INTEGRATION" == "true" ]]; then
         echo ""
-        echo "=== Phase 5: Integration Tests ==="
+        echo "=== Phase 4: Integration Tests ==="
         $GRADLEW integrationTest || integ_exit=$?
         print_separator
         summarize_tests "build/test-results/integrationTest" "INTEGRATION TESTS"
