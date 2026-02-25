@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 16 — MCP Testing
+**Current focus:** Phase 16 complete — Next: Phase 17 (Monitoring Stack)
 
 ## Current Position
 
@@ -14,13 +14,13 @@ Plan: 02 of 02 complete
 Status: Phase complete
 Last activity: 2026-02-23 — Plan 16-02 complete (MCP round-trip integration tests)
 
-Progress: [████████░░] ~77% (17/~22 plans)
+Progress: [████████████████████] 100% (15/15 plans)
 
 ## Performance Metrics
 
 **Velocity:**
 - v0.1: 28 plans completed across 10 phases in 7 days
-- v0.2: Starting fresh
+- v0.2: 15 plans completed across 6 phases
 
 **By Phase:**
 
