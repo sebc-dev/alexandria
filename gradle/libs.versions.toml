@@ -32,6 +32,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
 spring-ai-mcp-server-webmvc = { module = "org.springframework.ai:spring-ai-starter-mcp-server-webmvc" }
+mcp-sdk = { module = "io.modelcontextprotocol.sdk:mcp", version = "0.10.0" }
 langchain4j-core = { module = "dev.langchain4j:langchain4j", version.ref = "langchain4j" }
 langchain4j-embeddings-bge = { module = "dev.langchain4j:langchain4j-embeddings-bge-small-en-v15-q", version.ref = "langchain4j-beta" }
 langchain4j-pgvector = { module = "dev.langchain4j:langchain4j-pgvector", version.ref = "langchain4j-beta" }

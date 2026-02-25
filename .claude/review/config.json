@@ -1,0 +1,37 @@
+{
+  "plugin_root": "/home/negus/.claude/plugins/marketplaces/sebc-dev-marketplace/scd-review",
+  "json_strategy": "jq",
+  "category_priority": [
+    "build-config",
+    "database-migrations",
+    "domain-models",
+    "infrastructure",
+    "business-logic",
+    "controllers-api",
+    "views-ui",
+    "integration-wiring",
+    "tests",
+    "i18n-docs"
+  ],
+  "review_criteria": [
+    "architecture",
+    "security",
+    "performance",
+    "conventions",
+    "error-handling",
+    "test-coverage"
+  ],
+  "severity": {
+    "good": "Pattern ou choix remarquable",
+    "question": "Point a clarifier ou discuter",
+    "attention": "Probleme potentiel a adresser"
+  },
+  "options": {
+    "default_base_branch": "master",
+    "language": "fr"
+  },
+  "platform": {
+    "type": "github",
+    "auto_post": true
+  }
+}

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** Claude Code peut trouver et retourner des extraits de documentation technique pertinents et precis pour n'importe quel framework ou librairie indexe, a la demande.
-**Current focus:** Phase 15 — Search Fusion Overhaul
+**Current focus:** Phase 16 — MCP Testing
 
 ## Current Position
 
-Phase: 15 of 18 (Search Fusion Overhaul)
+Phase: 16 of 18 (MCP Testing)
 Plan: 02 of 02 complete
 Status: Phase complete
-Last activity: 2026-02-22 — Plan 15-02 complete (SearchService CC fusion pipeline wiring)
+Last activity: 2026-02-23 — Plan 16-02 complete (MCP round-trip integration tests)
 
-Progress: [████████░░] ~68% (15/~22 plans)
+Progress: [████████░░] ~77% (17/~22 plans)
 
 ## Performance Metrics
 
@@ -39,6 +39,8 @@ Progress: [████████░░] ~68% (15/~22 plans)
 | 14-03 | 1 | 7min | 7min |
 | 15-01 | 1 | 5min | 5min |
 | 15-02 | 1 | 10min | 10min |
+| 16-01 | 1 | 6min | 6min |
+| 16-02 | 1 | 6min | 6min |
 
 ## Accumulated Context
 
@@ -85,6 +87,11 @@ v0.2 decisions:
 - FTS query extracts individual metadata fields to avoid ObjectMapper dependency — Phase 15-02
 - SearchProperties @Configuration + @ConfigurationProperties with @PostConstruct validation — Phase 15-02
 - FTS without metadata filtering; fusion+dedup+rerank naturally filters irrelevant candidates — Phase 15-02
+- Mockito mocks for McpToolService constructor params; only @Tool annotation scanning occurs — Phase 16-01
+- Structural JSON comparison via readTree() to avoid whitespace sensitivity in snapshot test — Phase 16-01
+- Random normalized 384-dim vectors for seed data (tests MCP transport, not search quality) — Phase 16-02
+- PER_CLASS test lifecycle with shared McpSyncClient for efficiency — Phase 16-02
+- System.nanoTime() in add_source URLs to avoid unique constraint conflicts across test runs — Phase 16-02
 
 ### Pending Todos
 
@@ -96,7 +103,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 15-02-PLAN.md (SearchService CC fusion pipeline wiring)
-Resume file: .planning/phases/15-search-fusion-overhaul/15-02-SUMMARY.md
-Next: Phase 16 (next phase in roadmap)
+Last session: 2026-02-23
+Stopped at: Completed 16-02-PLAN.md (MCP round-trip integration tests)
+Resume file: .planning/phases/16-mcp-testing/16-02-SUMMARY.md
+Next: Phase 17 (next phase in roadmap)

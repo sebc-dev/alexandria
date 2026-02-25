@@ -42,8 +42,8 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 
 ### MCP Testing
 
-- [ ] **MCPT-01**: Un snapshot test verifie le schema de tools/list contre un fichier de reference versionne
-- [ ] **MCPT-02**: Des tests d'integration round-trip via McpAsyncClient couvrent les 7 outils MCP (happy path + cas d'erreur)
+- [x] **MCPT-01**: Un snapshot test verifie le schema de tools/list contre un fichier de reference versionne
+- [x] **MCPT-02**: Des tests d'integration round-trip via McpAsyncClient couvrent les 7 outils MCP (happy path + cas d'erreur)
 
 ### Performance Tuning
 
@@ -116,8 +116,8 @@ Requirements for the Audit & Optimisation milestone. Each maps to roadmap phases
 | FUSE-01 | Phase 15 | Complete |
 | FUSE-02 | Phase 15 | Complete |
 | FUSE-03 | Phase 15 | Complete |
-| MCPT-01 | Phase 16 | Pending |
-| MCPT-02 | Phase 16 | Pending |
+| MCPT-01 | Phase 16 | Complete |
+| MCPT-02 | Phase 16 | Complete |
 | MONI-01 | Phase 17 | Pending |
 | MONI-02 | Phase 17 | Pending |
 | MONI-03 | Phase 17 | Pending |

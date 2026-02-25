@@ -1,0 +1,344 @@
+{
+  "branch": "gsd/phase-16-mcp-testing",
+  "base": "master",
+  "merge_base": "fdc3b8d7303fdf33939fed571f43e0bb4522524f",
+  "created_at": "2026-02-24T12:00:00Z",
+  "status": "completed",
+  "summary": {
+    "total_files": 6,
+    "completed": 6,
+    "green": 24,
+    "yellow": 16,
+    "red": 0,
+    "blocking": 6
+  },
+  "files": [
+    {
+      "index": 1,
+      "path": "build.gradle.kts",
+      "category": "build-config",
+      "status": "completed",
+      "green": 4,
+      "yellow": 2,
+      "red": 0,
+      "blocking": 1,
+      "observations": [
+        {
+          "criterion": "conventions",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "Dependance io.modelcontextprotocol.sdk:mcp:0.10.0 hardcodee au lieu du version catalog libs.versions.toml. Rompt le pattern etabli du projet et risque de desynchronisation de version avec le Spring AI BOM."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "La dependance MCP SDK est deja disponible transitivement via spring-ai-mcp-server-webmvc. L ajout explicite est defendable mais un commentaire justificatif serait bienvenu."
+        },
+        {
+          "criterion": "architecture",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Tache updateMcpSnapshot bien structuree : groupe verification, classpath correct, generator isole avec main() dedie."
+        },
+        {
+          "criterion": "security",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Pas de probleme de securite. Dependance officielle MCP SDK."
+        },
+        {
+          "criterion": "error-handling",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Gestion erreurs adequate dans McpSchemaSnapshotGenerator et comportement standard JavaExec."
+        },
+        {
+          "criterion": "test-coverage",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Changements supportent directement l ajout de couverture MCP."
+        }
+      ],
+      "note": "Version MCP SDK hardcodee au lieu du version catalog; tache updateMcpSnapshot bien structuree"
+    },
+    {
+      "index": 2,
+      "path": "src/test/java/dev/alexandria/mcp/McpSchemaSnapshotGenerator.java",
+      "category": "tests",
+      "status": "completed",
+      "green": 2,
+      "yellow": 3,
+      "red": 0,
+      "blocking": 0,
+      "observations": [
+        {
+          "criterion": "doubles",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "McpSchemaSnapshotGenerator.createMockToolService() uses 7 Mockito.mock() calls exceeding 2-3 threshold. Consider using null or Dummy objects instead."
+        },
+        {
+          "criterion": "FIRST-fast",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "tool_count_guard takes 5.3s due to Mockito/ByteBuddy warmup. Replacing mocks with nulls would bring under 100ms."
+        },
+        {
+          "criterion": "AAA",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "schema_matches_reference uses if/fail instead of AssertJ withFailMessage. Conditional test logic anti-pattern."
+        },
+        {
+          "criterion": "naming",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "All 3 test names follow descriptive scenario_and_result convention."
+        },
+        {
+          "criterion": "design",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Clean separation between pure generateSchema() and I/O writeSchemaToFile(). Good snapshot testing pattern."
+        }
+      ],
+      "note": "Utilitaire bien concu, 7 mocks justifies mais au-dessus du seuil, premier test lent (Mockito warmup)"
+    },
+    {
+      "index": 3,
+      "path": "src/test/java/dev/alexandria/mcp/McpToolSchemaSnapshotTest.java",
+      "category": "tests",
+      "status": "completed",
+      "green": 5,
+      "yellow": 1,
+      "red": 0,
+      "blocking": 1,
+      "observations": [
+        {
+          "criterion": "anti-patterns",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "schema_matches_reference uses if/fail instead of AssertJ withFailMessage. Conditional test logic anti-pattern."
+        },
+        {
+          "criterion": "naming",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "3/3 test names follow descriptive scenario_and_result convention."
+        },
+        {
+          "criterion": "doubles",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Mocks encapsulated in Generator. No mock interaction verified. Conformant usage."
+        },
+        {
+          "criterion": "FIRST",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Fast, isolated, repeatable, self-validating. No real filesystem I/O."
+        },
+        {
+          "criterion": "boundary-values",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Triple verification: count guard (7), name set equality, full schema snapshot."
+        },
+        {
+          "criterion": "couverture-pertinence",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Tests API contract stability, not runtime behavior. Correct Khorikov classification."
+        }
+      ],
+      "note": "Snapshot test solide, 3 gardes independants. Remplacer if/fail par AssertJ withFailMessage."
+    },
+    {
+      "index": 4,
+      "path": "src/test/resources/mcp/tools-schema.json",
+      "category": "tests",
+      "status": "completed",
+      "green": 4,
+      "yellow": 2,
+      "red": 0,
+      "blocking": 0,
+      "observations": [
+        {
+          "criterion": "architecture",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Pattern snapshot testing bien execute : fichier deterministe, regenerable via Gradle task."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "JSON bien formate, descriptions claires avec valeurs par defaut documentees, camelCase coherent."
+        },
+        {
+          "criterion": "test-coverage",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Triple couverture : guard numerique (7 outils), guard nominatif (noms), et snapshot exact."
+        },
+        {
+          "criterion": "security",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "additionalProperties:false sur les 7 outils empeche injection de proprietes inattendues via MCP."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Les champs sourceId sont declares type:string mais representent des UUIDs. JSON Schema 2020-12 supporte format:uuid."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Verifier la presence d une newline finale POSIX dans le fichier genere."
+        }
+      ],
+      "note": "Snapshot MCP solide, schema deterministe, triple guard test, additionalProperties:false partout"
+    },
+    {
+      "index": 5,
+      "path": "src/integrationTest/java/dev/alexandria/mcp/McpRoundTripIT.java",
+      "category": "tests",
+      "status": "completed",
+      "green": 5,
+      "yellow": 5,
+      "red": 0,
+      "blocking": 4,
+      "observations": [
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "search_docs_happy_path_returns_results: assertion isNotBlank() trop faible, proche du Liar."
+        },
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "search_docs_with_source_filter: ne verifie pas que les resultats sont filtres. Ajouter assertThat(text).contains(LangChain4j)."
+        },
+        {
+          "criterion": "anti-pattern",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "list_sources_includes_status_info: potentiel Free Ride, meme appel que list_sources_returns_all_sources."
+        },
+        {
+          "criterion": "boundary-values",
+          "severity": "bloquant",
+          "level": "yellow",
+          "text": "Manque boundary values: search_docs maxResults=0/51, add_source URL invalide, index vide, crawl_status CRAWLING/ERROR."
+        },
+        {
+          "criterion": "aaa",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "extractText() helper contient des assertions implicites masquant une partie de la section Assert."
+        },
+        {
+          "criterion": "architecture",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Classification Khorikov correcte: McpToolService Controller (7 collaborateurs) teste via integration full-stack sans mock."
+        },
+        {
+          "criterion": "naming",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Nommage exemplaire: 19/19 tests suivent le format descriptif tool_scenario_resultat."
+        },
+        {
+          "criterion": "isolation",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "@Sql(BEFORE_TEST_METHOD) avec script seed idempotent garantit isolation entre tests."
+        },
+        {
+          "criterion": "first",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "FIRST respecte: 19 tests en 3s, isoles, deterministes, self-validating."
+        },
+        {
+          "criterion": "doubles",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Zero mocks: collaborateurs reels via Testcontainers et Spring Boot context complet."
+        }
+      ],
+      "note": "19/19 tests pass. Integration architecture exemplaire. Renforcer assertions search_docs et ajouter boundary values."
+    },
+    {
+      "index": 6,
+      "path": "src/integrationTest/resources/mcp/seed-data.sql",
+      "category": "tests",
+      "status": "completed",
+      "green": 4,
+      "yellow": 3,
+      "red": 0,
+      "blocking": 0,
+      "observations": [
+        {
+          "criterion": "architecture",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Fichier bien place, 3 sources INDEXED/PENDING, UUIDs deterministes, separation nette test seed vs migrations Flyway."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "UUIDs reconnaissables, commentaires SQL clairs, chunk_count coherent avec nombre reel de chunks inseres."
+        },
+        {
+          "criterion": "security",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "Aucune donnee sensible, URLs publiques, fichier uniquement dans ressources de test."
+        },
+        {
+          "criterion": "error-handling",
+          "severity": "suggestion",
+          "level": "green",
+          "text": "DELETE-then-INSERT idempotent, combine avec @Sql(BEFORE_TEST_METHOD) pour etat propre."
+        },
+        {
+          "criterion": "conventions",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "INSERT sources omet colonnes V2/V3 (allow_patterns, block_patterns, max_depth, llms_txt_url, version). Documenter leur absence."
+        },
+        {
+          "criterion": "error-handling",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "DELETE chunks couvre sources 001/002 pas 003. Coherent mais commentaire precisant l asymetrie serait utile."
+        },
+        {
+          "criterion": "test-coverage",
+          "severity": "suggestion",
+          "level": "yellow",
+          "text": "Vecteurs 384-dim synthetiques. Acceptable pour transport MCP mais un commentaire le precisant previendrait malentendus."
+        }
+      ],
+      "note": "Seed data SQL bien structure et idempotent, vecteurs synthetiques coherents avec scope tests MCP transport"
+    }
+  ],
+  "agent_tasks": {
+    "build.gradle.kts": "ab5155d8a879145f7",
+    "src/test/java/dev/alexandria/mcp/McpSchemaSnapshotGenerator.java": "a2678259ce2f0cde5",
+    "src/test/java/dev/alexandria/mcp/McpToolSchemaSnapshotTest.java": "ae593a5ca6daed59a",
+    "src/test/resources/mcp/tools-schema.json": "abe94d2556cc710ee",
+    "src/integrationTest/java/dev/alexandria/mcp/McpRoundTripIT.java": "af6cbb5b385eb5742"
+  },
+  "user_comments": [],
+  "head_at_completion": "f6787af0b63c1f96fc060da82901f621008b7e96"
+}

@@ -86,6 +86,7 @@ testing {
                 implementation(libs.langchain4j.core)
                 implementation(libs.langchain4j.embeddings.bge)
                 implementation(libs.langchain4j.pgvector)
+                implementation(libs.mcp.sdk) // Explicit: tests use McpSchema types directly (transitive via spring-ai-mcp-server-webmvc)
             }
             targets {
                 all {
@@ -250,3 +251,13 @@ dependencyCheck {
 // ---------------------------------------------------------------------------
 // CycloneDX - SBOM Generation (run manually: ./gradlew cyclonedxBom)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// MCP Snapshot - Regenerate MCP tool schema reference file
+// ---------------------------------------------------------------------------
+tasks.register<JavaExec>("updateMcpSnapshot") {
+    description = "Regenerate the MCP tools schema snapshot reference file"
+    group = "verification"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("dev.alexandria.mcp.McpSchemaSnapshotGenerator")
+}

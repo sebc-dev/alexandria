@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_TASK_LIST_ID": "alexandria"
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -9,13 +12,23 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gsd-context-monitor.js"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
     "type": "command",
-    "command": "node .claude/hooks/gsd-statusline.js"
+    "command": "bash -c '\"/home/negus/.nvm/versions/node/v22.21.1/bin/node\" \"$(ls -td ~/.claude/plugins/cache/claude-hud/claude-hud/*/ 2>/dev/null | head -1)dist/index.js\"'"
   },
-  "env": {
-    "CLAUDE_CODE_TASK_LIST_ID": "alexandria"
+  "enabledPlugins": {
+    "scd-review@sebc-dev-marketplace": true
   }
 }
